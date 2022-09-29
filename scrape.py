@@ -2,20 +2,17 @@ import os
 import time
 
 
-def test_get_data(sb):
+def login(sb):
     sb.open("https://omni.axisbank.co.in/axisretailbanking/")
     username = os.environ["AXIS_USERNAME"]
     password = os.environ["AXIS_PASSWORD"]
-    customer = os.environ["AXIS_CUSTOMID"]
-
-    ## Download Account transactions #######################
-
-    # Login
     sb.type("input#custid", username)
     sb.type("input#pass", password)
     sb.click("button#APLOGIN")
     time.sleep(3)
 
+
+def download_account_transactions(sb):
     # Select Detailed Statements
     sb.click("a#ACHMEPG_0")
     time.sleep(3)
@@ -44,10 +41,11 @@ def test_get_data(sb):
 
     # Download
     sb.click("#StatementInputFilter0")
+    customer = os.environ["AXIS_CUSTOMID"]
     sb.assert_downloaded_file(f"{customer}.csv")
 
-    ## Download Credit card statement #######################
 
+def download_cc_statement(sb):
     # View detailed transaction info
     sb.click("#navList0")
     time.sleep(2)
@@ -87,3 +85,9 @@ def test_get_data(sb):
     sb.assert_downloaded_file(f"CC_Statement_2022_09_28.csv")
     time.sleep(2)
     sb.click(".MuiPaper-root svg")
+
+
+def test_get_data(sb):
+    login(sb)
+    download_account_transactions(sb)
+    download_cc_statement(sb)
