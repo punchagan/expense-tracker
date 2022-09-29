@@ -13,6 +13,7 @@ def login(sb):
     sb.type("input#pass", password)
     sb.click("button#APLOGIN")
     time.sleep(3)
+    print("Logged in successfully")
 
 
 def download_account_transactions(sb, duration=7):
@@ -52,6 +53,7 @@ def download_account_transactions(sb, duration=7):
 
 def download_cc_statement(sb):
     # View detailed transaction info
+    time.sleep(2)
     sb.click("#navList0")
     time.sleep(2)
     sb.click("a#CCSSOF_1")
@@ -60,35 +62,50 @@ def download_cc_statement(sb):
     time.sleep(5)
 
     # Navigate to Transactions
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.click("div.coach-step-3")
-    time.sleep(2)
 
     # Download Recent Transactions HTML
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
-    time.sleep(2)
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.click_nth_visible_element(
         "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
         4,
     )
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.assert_downloaded_file(f"CC_Statement_{TODAY:%Y_%m_%d}.html")
-    time.sleep(2)
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.click(".MuiPaper-root svg")
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
 
     # Select "Previous" Month
     sb.click(".title-card button.MuiButtonBase-root")
+    sb.wait_for_element_absent("div.loading_wrapper")
     time.sleep(1)
     sb.click_nth_visible_element("#month-expansion-panel__date-select", 2)
-    time.sleep(3)
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
 
     # Download Previous Month CSV
     sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
-    time.sleep(3)
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.click_nth_visible_element(
         "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
         3,
     )
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.assert_downloaded_file(f"CC_Statement_{TODAY:%Y_%m_%d}.csv")
-    time.sleep(2)
+    sb.wait_for_element_absent("div.loading_wrapper")
+    time.sleep(1)
     sb.click(".MuiPaper-root svg")
 
 
