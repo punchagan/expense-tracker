@@ -8,6 +8,8 @@ def test_get_data(sb):
     password = os.environ["AXIS_PASSWORD"]
     customer = os.environ["AXIS_CUSTOMID"]
 
+    ## Download Account transactions #######################
+
     # Login
     sb.type("input#custid", username)
     sb.type("input#pass", password)
@@ -43,3 +45,45 @@ def test_get_data(sb):
     # Download
     sb.click("#StatementInputFilter0")
     sb.assert_downloaded_file(f"{customer}.csv")
+
+    ## Download Credit card statement #######################
+
+    # View detailed transaction info
+    sb.click("#navList0")
+    time.sleep(2)
+    sb.click("a#CCSSOF_1")
+    time.sleep(2)
+    sb.switch_to_newest_window()
+    time.sleep(2)
+
+    # Navigate to Transactions
+    sb.click("div.coach-step-3")
+    time.sleep(2)
+
+    # Download Recent Transactions HTML
+    sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
+    time.sleep(2)
+    sb.click_nth_visible_element(
+        "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
+        4,
+    )
+    sb.assert_downloaded_file(f"CC_Statement_2022_09_28.html")
+    time.sleep(2)
+    sb.click(".MuiPaper-root svg")
+
+    # Select "Previous" Month
+    sb.click(".title-card button.MuiButtonBase-root")
+    time.sleep(1)
+    sb.click_nth_visible_element("#month-expansion-panel__date-select", 2)
+    time.sleep(3)
+
+    # Download Previous Month CSV
+    sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
+    time.sleep(3)
+    sb.click_nth_visible_element(
+        "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
+        3,
+    )
+    sb.assert_downloaded_file(f"CC_Statement_2022_09_28.csv")
+    time.sleep(2)
+    sb.click(".MuiPaper-root svg")
