@@ -57,7 +57,7 @@ def download_cc_statement(sb):
     sb.click("a#CCSSOF_1")
     time.sleep(2)
     sb.switch_to_newest_window()
-    time.sleep(2)
+    time.sleep(5)
 
     # Navigate to Transactions
     sb.click("div.coach-step-3")
@@ -92,7 +92,11 @@ def download_cc_statement(sb):
     sb.click(".MuiPaper-root svg")
 
 
-def test_get_data(sb):
+def test_get_ac_data(sb):
     login(sb)
     download_account_transactions(sb)
+
+
+def test_get_cc_data(sb):
+    login(sb)
     download_cc_statement(sb)

@@ -581,6 +581,18 @@ python-versions = "*"
 pytest = "*"
 
 [[package]]
+name = "pytest-parallel"
+version = "0.1.1"
+description = "a pytest plugin for parallel and concurrent testing"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pytest = ">=3.0.0"
+tblib = "*"
+
+[[package]]
 name = "pytest-rerunfailures"
 version = "10.2"
 description = "pytest plugin to re-run tests to eliminate flaky failures"
@@ -788,6 +800,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "tblib"
+version = "1.7.0"
+description = "Traceback serialization library."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -907,7 +927,7 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "dd9a5d36ec985255e696c70454c519ca6488f44bbf571155f51e0e64530af6ac"
+content-hash = "3477a06dddbb8770e05e33441a82be5be9fa96509ad187637f7c95878dc81879"
 
 [metadata.files]
 appnope = []
@@ -962,6 +982,7 @@ pytest-forked = []
 pytest-html = []
 pytest-metadata = []
 pytest-ordering = []
+pytest-parallel = []
 pytest-rerunfailures = []
 pytest-xdist = []
 pyyaml = []
@@ -974,6 +995,7 @@ six = []
 sniffio = []
 sortedcontainers = []
 soupsieve = []
+tblib = []
 toml = []
 tomli = []
 tqdm = []
