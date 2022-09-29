@@ -2,6 +2,8 @@ import datetime
 import os
 import time
 
+TODAY = datetime.date.today()
+
 
 def login(sb):
     sb.open("https://omni.axisbank.co.in/axisretailbanking/")
@@ -14,7 +16,7 @@ def login(sb):
 
 
 def download_account_transactions(sb, duration=7):
-    end_date = datetime.date.today()
+    end_date = TODAY
     start_date = end_date - datetime.timedelta(duration)
     print(f"Downloading transactions from {start_date} to {end_date}")
 
@@ -68,7 +70,7 @@ def download_cc_statement(sb):
         "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
         4,
     )
-    sb.assert_downloaded_file(f"CC_Statement_2022_09_28.html")
+    sb.assert_downloaded_file(f"CC_Statement_{TODAY:%Y_%m_%d}.html")
     time.sleep(2)
     sb.click(".MuiPaper-root svg")
 
@@ -85,7 +87,7 @@ def download_cc_statement(sb):
         "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
         3,
     )
-    sb.assert_downloaded_file(f"CC_Statement_2022_09_28.csv")
+    sb.assert_downloaded_file(f"CC_Statement_{TODAY:%Y_%m_%d}.csv")
     time.sleep(2)
     sb.click(".MuiPaper-root svg")
 
