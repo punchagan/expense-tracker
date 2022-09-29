@@ -1,3 +1,4 @@
+import datetime
 import os
 import time
 
@@ -12,7 +13,11 @@ def login(sb):
     time.sleep(3)
 
 
-def download_account_transactions(sb):
+def download_account_transactions(sb, duration=7):
+    end_date = datetime.date.today()
+    start_date = end_date - datetime.timedelta(duration)
+    print(f"Downloading transactions from {start_date} to {end_date}")
+
     # Select Detailed Statements
     sb.click("a#ACHMEPG_0")
     time.sleep(3)
@@ -23,14 +28,12 @@ def download_account_transactions(sb):
     time.sleep(1)
 
     # Select Date Range
-    sb.click("input#state_fromdate")
-    sb.click_nth_visible_element(
-        ".mat-calendar-body-cell-content", 24
-    )  # FIXME: Date since last crawl
     sb.click("input#state_todate")
-    sb.click_nth_visible_element(
-        ".mat-calendar-body-cell-content", 29
-    )  # FIXME: Today's date
+    sb.click_nth_visible_element(".mat-calendar-body-cell-content", end_date.day)
+    sb.click("input#state_fromdate")
+    for each in range(end_date.month - start_date.month):
+        sb.click("button.mat-calendar-previous-button")
+    sb.click_nth_visible_element(".mat-calendar-body-cell-content", start_date.day)
     time.sleep(1)
     sb.click("a#go")
 
