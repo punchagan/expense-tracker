@@ -3,7 +3,7 @@ import csv
 import csvparser
 
 
-def create_temp_csv(filepath, created_filepath, catch_word='Transaction Date', cc=True):
+def create_temp_csv(filepath, created_filepath, catch_word="Transaction Date", cc=True):
     """
     Performs cleaning of data of expenses csv file and returns the
     created_filepath.
@@ -12,7 +12,7 @@ def create_temp_csv(filepath, created_filepath, catch_word='Transaction Date', c
     catch_word to start cleaning from and if it has cc in filename.
 
     """
-    with open(filepath, 'r') as inp, open(created_filepath, 'w') as out:
+    with open(filepath, "r") as inp, open(created_filepath, "w") as out:
         writer = csv.writer(out)
         start_mark = False
         end_mark = False
@@ -43,6 +43,8 @@ def create_temp_csv(filepath, created_filepath, catch_word='Transaction Date', c
 
 
 from bs4 import BeautifulSoup
+
+
 def create_csv_from_html(htmlfile, csv_output_file):
     """
     Converts expenses html file to a csv that can be cleaned.
@@ -51,7 +53,7 @@ def create_csv_from_html(htmlfile, csv_output_file):
     table = soup.findAll("table")[1]
     rows = table.findAll("tr")
     # Create a csv file that can be passed to create_temp_csv
-    with open(csv_output_file, 'wt') as html_csv_output:
+    with open(csv_output_file, "wt") as html_csv_output:
         writer = csv.writer(html_csv_output)
         for row in rows:
             csv_row = []
@@ -62,12 +64,17 @@ def create_csv_from_html(htmlfile, csv_output_file):
 
 
 # Gather all records for each format - for further analysis
-filename_1 = create_temp_csv('../sample/axis-cc-statement.csv', 'axis-cc-temp.csv')
-with open(filename_1, 'r') as cleaned_csv1:
+filename_1 = create_temp_csv("../sample/axis-cc-statement.csv", "axis-cc-temp.csv")
+with open(filename_1, "r") as cleaned_csv1:
     records_cc_statement = csvparser.parse_csv(cleaned_csv1)
-filename_2 = create_temp_csv('../sample/axis-statement.csv', 'axis-temp.csv', catch_word='Tran Date', cc=False)
-with open(filename_2, 'r') as cleaned_csv2:
+filename_2 = create_temp_csv(
+    "../sample/axis-statement.csv", "axis-temp.csv", catch_word="Tran Date", cc=False
+)
+with open(filename_2, "r") as cleaned_csv2:
     records_statement = csvparser.parse_csv(cleaned_csv2)
-filename_3 = create_temp_csv(create_csv_from_html('../sample/axis-cc-statement.html', 'axis-temp-html.csv'), 'axis-cc-html.csv')
-with open(filename_3, 'r') as cleaned_html:
+filename_3 = create_temp_csv(
+    create_csv_from_html("../sample/axis-cc-statement.html", "axis-temp-html.csv"),
+    "axis-cc-html.csv",
+)
+with open(filename_3, "r") as cleaned_html:
     records_html = csvparser.parse_csv(cleaned_html)
