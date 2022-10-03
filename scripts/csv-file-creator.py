@@ -10,8 +10,7 @@ import csvparser
 
 
 def create_temp_csv(filepath, created_filepath, catch_word="Transaction Date", cc=True):
-    """
-    Performs cleaning of data of expenses csv file and returns the
+    """Performs cleaning of data of expenses csv file and returns the
     created_filepath.
 
     Takes filepath of the uncleaned csv, filepath to save the cleaned csv
@@ -49,9 +48,7 @@ def create_temp_csv(filepath, created_filepath, catch_word="Transaction Date", c
 
 
 def create_csv_from_html(htmlfile, csv_output_file):
-    """
-    Converts expenses html file to a csv that can be cleaned.
-    """
+    """Converts expenses html file to a csv that can be cleaned."""
     soup = BeautifulSoup(open(htmlfile), "html.parser")
     table = soup.findAll("table")[1]
     rows = table.findAll("tr")
