@@ -1,5 +1,6 @@
 # Standard libs
 import csv
+import io
 from pathlib import Path
 
 # 3rd party libs
@@ -9,85 +10,68 @@ from bs4 import BeautifulSoup
 import csvparser
 
 
-def create_temp_csv(filepath, created_filepath, catch_word="Transaction Date", cc=True):
-    """Performs cleaning of data of expenses csv file and returns the
-    created_filepath.
+def extract_csv(path, catch_phrase="Transaction Date"):
+    """Extact CSV part of a file, based on a catch phrase in the header."""
 
-    Takes filepath of the uncleaned csv, filepath to save the cleaned csv
-    catch_word to start cleaning from and if it has cc in filename.
+    if isinstance(path, io.StringIO):
+        text = path.read().splitlines()
 
-    """
-    with open(filepath, "r") as inp, open(created_filepath, "w") as out:
-        writer = csv.writer(out)
-        start_mark = False
-        end_mark = False
-        for row in csv.reader(inp):
-            try:
-                if cc:
-                    if catch_word in row[1]:
-                        start_mark = True
-                else:
-                    if catch_word in row[0]:
-                        start_mark = True
-            except Exception as e:
-                pass
-            # Check if row is empty and then stop the iteration
-            if row == []:
-                if start_mark:
-                    end_mark = True
-                else:
-                    continue
-            if end_mark:
-                break
-            if start_mark:
-                if cc:
-                    writer.writerow(row[1:])
-                else:
-                    writer.writerow(row)
-    return created_filepath
+    else:
+        with open(path) as f:
+            text = f.read().splitlines()
+
+    start_line = None
+    end_line = None
+
+    for num, line in enumerate(text):
+        # Set beginning of CSV if catch_phrase is found in a line
+        if catch_phrase in line:
+            start_line = num
+        # Set end of CSV as the first empty line after the header
+        elif start_line is not None and not line.strip():
+            end_line = num
+            break
+        else:
+            continue
+    else:
+        # If there's no empty line, continue until the end
+        end_line = num
+
+    # Strip leading and trailing commas
+    lines = [line.strip(",") for line in text[start_line:end_line]]
+    return io.StringIO("\n".join(lines))
 
 
-def create_csv_from_html(htmlfile, csv_output_file):
+def extract_csv_from_html(htmlfile):
     """Converts expenses html file to a csv that can be cleaned."""
     with open(htmlfile) as f:
         soup = BeautifulSoup(f, "html.parser")
     table = soup.findAll("table")[1]
     rows = table.findAll("tr")
-    # Create a csv file that can be passed to create_temp_csv
-    with open(csv_output_file, "w") as html_csv_output:
-        writer = csv.writer(html_csv_output)
-        for row in rows:
-            csv_row = []
-            for cell in row.findAll(["td", "th"]):
-                csv_row.append(cell.get_text())
-            writer.writerow(csv_row[1:])
-    return csv_output_file
+    csv_output = io.StringIO()
+    csv_rows = [
+        [cell.get_text().strip() for cell in row.findAll(["td", "th"])][2:-2]
+        for row in rows
+    ]
+    writer = csv.writer(csv_output)
+    writer.writerows(csv_rows)
+    csv_output.seek(0)
+    return csv_output
 
 
 if __name__ == "__main__":
     # Gather all records for each format - for further analysis
     HERE = Path(__file__).parent
 
-    filename_1 = create_temp_csv(
-        HERE.joinpath("../sample/axis-cc-statement.csv"), "axis-cc-temp.csv"
-    )
-    with open(filename_1, "r") as cleaned_csv1:
-        records_cc_statement = csvparser.parse_csv(cleaned_csv1)
+    filename_1 = extract_csv(HERE.joinpath("../sample/axis-cc-statement.csv"))
+    records_cc_statement = csvparser.parse_csv(filename_1)
 
-    filename_2 = create_temp_csv(
-        HERE.joinpath("../sample/axis-statement.csv"),
-        "axis-temp.csv",
-        catch_word="Tran Date",
-        cc=False,
+    filename_2 = extract_csv(
+        HERE.joinpath("../sample/axis-statement.csv"), catch_phrase="Tran Date"
     )
-    with open(filename_2, "r") as cleaned_csv2:
-        records_statement = csvparser.parse_csv(cleaned_csv2)
+    records_statement = csvparser.parse_csv(filename_2)
 
-    filename_3 = create_temp_csv(
-        create_csv_from_html(
-            HERE.joinpath("../sample/axis-cc-statement.html"), "axis-temp-html.csv"
-        ),
-        "axis-cc-html.csv",
+    filename_3 = extract_csv(
+        extract_csv_from_html(HERE.joinpath("../sample/axis-cc-statement.html"))
     )
-    with open(filename_3, "r") as cleaned_html:
-        records_html = csvparser.parse_csv(cleaned_html)
+    records_html = csvparser.parse_csv(filename_3)
