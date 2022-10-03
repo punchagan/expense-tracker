@@ -10,6 +10,16 @@ from bs4 import BeautifulSoup
 import csvparser
 
 
+def parse_data(path, catch_phrase):
+    if path.endswith(".html"):
+        data = extract_csv_from_html(path)
+    else:
+        data = path
+
+    csv = extract_csv(data, catch_phrase)
+    return csvparser.parse_csv(csv)
+
+
 def extract_csv(path, catch_phrase="Transaction Date"):
     """Extact CSV part of a file, based on a catch phrase in the header."""
 
@@ -63,18 +73,16 @@ def extract_csv_from_html(htmlfile):
 
 
 if __name__ == "__main__":
-    # Gather all records for each format - for further analysis
-    HERE = Path(__file__).parent
+    import argparse
+    from pprint import pprint
 
-    filename_1 = extract_csv(HERE.joinpath("../sample/axis-cc-statement.csv"))
-    records_cc_statement = csvparser.parse_csv(filename_1)
-
-    filename_2 = extract_csv(
-        HERE.joinpath("../sample/axis-statement.csv"), catch_phrase="Tran Date"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path", help="Path to the file to be parsed")
+    parser.add_argument(
+        "--catch-phrase",
+        default="Transaction Date",
+        help="Phrase in file to identify CSV header",
     )
-    records_statement = csvparser.parse_csv(filename_2)
 
-    filename_3 = extract_csv(
-        extract_csv_from_html(HERE.joinpath("../sample/axis-cc-statement.html"))
-    )
-    records_html = csvparser.parse_csv(filename_3)
+    args = parser.parse_args()
+    pprint(parse_data(args.path, args.catch_phrase))
