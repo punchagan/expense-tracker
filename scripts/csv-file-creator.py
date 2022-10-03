@@ -8,6 +8,16 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 
+def get_transformed_row(x):
+    columns = ["date", "details", "amount"]
+    x = x.fillna(0)
+    cc = "Transaction Date" in x.index
+    date = x["Transaction Date"] if cc else x["Tran Date"]
+    details = x["Transaction Details"] if cc else x["PARTICULARS"]
+    amount = x["Amount in INR"] if cc else (x["DR"] - x["CR"])
+    return pd.Series([date, details, amount], index=columns)
+
+
 def parse_data(path, catch_phrase):
     if path.endswith(".html"):
         data = extract_csv_from_html(path)
@@ -15,7 +25,25 @@ def parse_data(path, catch_phrase):
         data = path
 
     csv = extract_csv(data, catch_phrase)
-    data = pd.read_csv(csv, parse_dates=[catch_phrase], dayfirst=True)
+    transaction_date = catch_phrase
+    data = (
+        pd.read_csv(
+            csv,
+            parse_dates=[transaction_date],
+            dayfirst=True,
+            dtype={
+                "Amount in INR": "float64",
+                "DR": "float64",
+                "CR": "float64",
+            },
+            thousands=",",
+            na_values=[" "],
+        )
+        .fillna(0)
+        .sort_values(by=[transaction_date], ignore_index=True)
+    )
+    # Transform the data
+    data = data.apply(get_transformed_row, axis=1)
     return data
 
 
@@ -73,7 +101,6 @@ def extract_csv_from_html(htmlfile):
 
 if __name__ == "__main__":
     import argparse
-    from pprint import pprint
 
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Path to the file to be parsed")
@@ -84,4 +111,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    pprint(parse_data(args.path, args.catch_phrase))
+    print(parse_data(args.path, args.catch_phrase))
