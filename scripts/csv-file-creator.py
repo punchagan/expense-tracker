@@ -15,7 +15,7 @@ def parse_data(path, catch_phrase):
         data = path
 
     csv = extract_csv(data, catch_phrase)
-    data = pd.read_csv(csv)
+    data = pd.read_csv(csv, parse_dates=[catch_phrase], dayfirst=True)
     return data
 
 
