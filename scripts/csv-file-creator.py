@@ -1,5 +1,11 @@
-# csv-file-creator.py
+# Standard libs
 import csv
+from pathlib import Path
+
+# 3rd party libs
+from bs4 import BeautifulSoup
+
+# Local libs
 import csvparser
 
 
@@ -42,9 +48,6 @@ def create_temp_csv(filepath, created_filepath, catch_word="Transaction Date", c
     return created_filepath
 
 
-from bs4 import BeautifulSoup
-
-
 def create_csv_from_html(htmlfile, csv_output_file):
     """
     Converts expenses html file to a csv that can be cleaned.
@@ -63,18 +66,30 @@ def create_csv_from_html(htmlfile, csv_output_file):
     return csv_output_file
 
 
-# Gather all records for each format - for further analysis
-filename_1 = create_temp_csv("../sample/axis-cc-statement.csv", "axis-cc-temp.csv")
-with open(filename_1, "r") as cleaned_csv1:
-    records_cc_statement = csvparser.parse_csv(cleaned_csv1)
-filename_2 = create_temp_csv(
-    "../sample/axis-statement.csv", "axis-temp.csv", catch_word="Tran Date", cc=False
-)
-with open(filename_2, "r") as cleaned_csv2:
-    records_statement = csvparser.parse_csv(cleaned_csv2)
-filename_3 = create_temp_csv(
-    create_csv_from_html("../sample/axis-cc-statement.html", "axis-temp-html.csv"),
-    "axis-cc-html.csv",
-)
-with open(filename_3, "r") as cleaned_html:
-    records_html = csvparser.parse_csv(cleaned_html)
+if __name__ == "__main__":
+    # Gather all records for each format - for further analysis
+    HERE = Path(__file__).parent
+
+    filename_1 = create_temp_csv(
+        HERE.joinpath("../sample/axis-cc-statement.csv"), "axis-cc-temp.csv"
+    )
+    with open(filename_1, "r") as cleaned_csv1:
+        records_cc_statement = csvparser.parse_csv(cleaned_csv1)
+
+    filename_2 = create_temp_csv(
+        HERE.joinpath("../sample/axis-statement.csv"),
+        "axis-temp.csv",
+        catch_word="Tran Date",
+        cc=False,
+    )
+    with open(filename_2, "r") as cleaned_csv2:
+        records_statement = csvparser.parse_csv(cleaned_csv2)
+
+    filename_3 = create_temp_csv(
+        create_csv_from_html(
+            HERE.joinpath("../sample/axis-cc-statement.html"), "axis-temp-html.csv"
+        ),
+        "axis-cc-html.csv",
+    )
+    with open(filename_3, "r") as cleaned_html:
+        records_html = csvparser.parse_csv(cleaned_html)
