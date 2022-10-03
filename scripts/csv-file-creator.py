@@ -49,7 +49,8 @@ def create_temp_csv(filepath, created_filepath, catch_word="Transaction Date", c
 
 def create_csv_from_html(htmlfile, csv_output_file):
     """Converts expenses html file to a csv that can be cleaned."""
-    soup = BeautifulSoup(open(htmlfile), "html.parser")
+    with open(htmlfile) as f:
+        soup = BeautifulSoup(f, "html.parser")
     table = soup.findAll("table")[1]
     rows = table.findAll("tr")
     # Create a csv file that can be passed to create_temp_csv
