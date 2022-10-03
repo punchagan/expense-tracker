@@ -14,11 +14,14 @@ def extract_csv(path, catch_phrase="Transaction Date"):
     """Extact CSV part of a file, based on a catch phrase in the header."""
 
     if isinstance(path, io.StringIO):
-        text = path.read().splitlines()
+        text = path.read().strip().splitlines()
 
     else:
         with open(path) as f:
-            text = f.read().splitlines()
+            text = f.read().strip().splitlines()
+
+    if not text:
+        return io.StringIO("")
 
     start_line = None
     end_line = None
