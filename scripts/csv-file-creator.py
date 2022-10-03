@@ -53,7 +53,7 @@ def create_csv_from_html(htmlfile, csv_output_file):
     table = soup.findAll("table")[1]
     rows = table.findAll("tr")
     # Create a csv file that can be passed to create_temp_csv
-    with open(csv_output_file, "wt") as html_csv_output:
+    with open(csv_output_file, "w") as html_csv_output:
         writer = csv.writer(html_csv_output)
         for row in rows:
             csv_row = []
