@@ -6,6 +6,7 @@ from pathlib import Path
 # 3rd party libs
 from bs4 import BeautifulSoup
 import pandas as pd
+from sqlalchemy import create_engine
 
 
 def get_transformed_row(x):
@@ -43,8 +44,15 @@ def parse_data(path, catch_phrase):
         .sort_values(by=[transaction_date], ignore_index=True)
     )
     # Transform the data
-    data = data.apply(get_transformed_row, axis=1)
-    return data
+    return data.apply(get_transformed_row, axis=1)
+
+
+def insert_data(data):
+    here = Path(__file__).parent.parent
+    db_path = here.joinpath("expenses.db")
+    engine = create_engine(f"sqlite:///{db_path}")
+    rows = data.to_sql("expenses", engine, if_exists="append", index=False)
+    print(f"Wrote {rows} rows to the {db_path}")
 
 
 def extract_csv(path, catch_phrase="Transaction Date"):
@@ -111,4 +119,5 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    print(parse_data(args.path, args.catch_phrase))
+    data = parse_data(args.path, args.catch_phrase)
+    insert_data(data)
