@@ -5,9 +5,7 @@ from pathlib import Path
 
 # 3rd party libs
 from bs4 import BeautifulSoup
-
-# Local libs
-import csvparser
+import pandas as pd
 
 
 def parse_data(path, catch_phrase):
@@ -17,7 +15,8 @@ def parse_data(path, catch_phrase):
         data = path
 
     csv = extract_csv(data, catch_phrase)
-    return csvparser.parse_csv(csv)
+    data = pd.read_csv(csv)
+    return data
 
 
 def extract_csv(path, catch_phrase="Transaction Date"):
