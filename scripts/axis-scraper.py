@@ -50,7 +50,13 @@ def download_account_transactions(sb, start_date):
     sb.assert_downloaded_file(f"{customer}.csv")
 
 
-def download_cc_statement(sb):
+def download_cc_statement(sb, start_date):
+    end_date = TODAY
+    # NOTE: Currently, start_date being in the previous year isn't supported
+    # correctly, all the months in the current year get downloaded. This might
+    # be a problem if no data is collected after December bill is generated
+    # until the next year.
+    print(f"Downloading account transactions from {start_date} to {end_date}")
     # View detailed transaction info
     time.sleep(2)
     sb.click("#navList0")
@@ -84,28 +90,42 @@ def download_cc_statement(sb):
     sb.wait_for_element_absent("div.loading_wrapper")
     time.sleep(1)
 
-    # Select "Previous" Month
+    repeat_months = (
+        end_date.month - (start_date.month - 1)
+        if end_date.year == start_date.year
+        else end_date.month
+    )
+
     sb.click(".title-card button.MuiButtonBase-root")
     sb.wait_for_element_absent("div.loading_wrapper")
     time.sleep(1)
-    sb.click_nth_visible_element("#month-expansion-panel__date-select", 2)
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-
-    # Download Previous Month CSV
-    sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-    sb.click_nth_visible_element(
-        "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
-        3,
-    )
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-    sb.assert_downloaded_file(f"CC_Statement_{TODAY:%Y_%m_%d}.csv")
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
+    months = len(sb.find_visible_elements("#month-expansion-panel__date-select"))
     sb.click(".MuiPaper-root svg")
+
+    for index in range(0, min(repeat_months, months - 1)):
+        # Select "Previous" Month
+        sb.click(".title-card button.MuiButtonBase-root")
+        sb.wait_for_element_absent("div.loading_wrapper")
+        time.sleep(3)
+        sb.click_nth_visible_element("#month-expansion-panel__date-select", 2 + index)
+        sb.wait_for_element_absent("div.loading_wrapper")
+        time.sleep(3)
+
+        # Download Previous Month HTML (CSVs don't work for all months)
+        sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
+        sb.wait_for_element_absent("div.loading_wrapper")
+        time.sleep(3)
+        sb.click_nth_visible_element(
+            "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
+            4,
+        )
+        sb.wait_for_element_absent("div.loading_wrapper")
+        time.sleep(3)
+        name = f"{TODAY:%Y_%m_%d}({index + 1})"
+        sb.assert_downloaded_file(f"CC_Statement_{name}.html")
+        sb.wait_for_element_absent("div.loading_wrapper")
+        time.sleep(3)
+        sb.click(".MuiPaper-root svg")
 
 
 def test_get_ac_data(sb, start_date):
@@ -115,5 +135,4 @@ def test_get_ac_data(sb, start_date):
 
 def test_get_cc_data(sb, start_date):
     login(sb)
-    # FIXME: start_date isn't used when downloading CC statement
-    download_cc_statement(sb)
+    download_cc_statement(sb, start_date)
