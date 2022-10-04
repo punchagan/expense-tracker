@@ -10,5 +10,7 @@ pytest -sv "${HERE}/axis-scraper.py" --browser=firefox --start-date "${LAST_DATE
 
 # Update new data in the database
 python "${HERE}/parse-data.py" "${HERE}/../downloaded_files/${AXIS_CUSTOMID}.csv" --catch-phrase 'Tran Date'
-python "${HERE}/parse-data.py" "${HERE}/../downloaded_files/CC_Statement_${TODAY}.csv"
-python "${HERE}/parse-data.py" "${HERE}/../downloaded_files/CC_Statement_${TODAY}.html"
+for each in $(ls "${HERE}/../downloaded_files/CC_Statement_${TODAY}"*".html");
+do
+    python "${HERE}/parse-data.py" "${each}"
+done
