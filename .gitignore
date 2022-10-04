@@ -1,4 +1,5 @@
 __pycache__/
+/latest_logs/
 /downloaded_files/
 /archived_files/
 /.envrc
