@@ -66,7 +66,7 @@ def parse_data(path, catch_phrase):
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
     rows = data.to_sql("expenses", engine, if_exists="append", index=False)
-    print(f"Wrote {rows} rows to the {engine.url}")
+    print(f"Wrote {rows} rows from {path} to the {engine.url}")
 
 
 def extract_csv(path, catch_phrase="Transaction Date"):
