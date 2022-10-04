@@ -16,9 +16,9 @@ def login(sb):
     print("Logged in successfully")
 
 
-def download_account_transactions(sb, duration=7):
+def download_account_transactions(sb, start_date):
     end_date = TODAY
-    start_date = end_date - datetime.timedelta(duration)
+    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
     print(f"Downloading transactions from {start_date} to {end_date}")
 
     # Select Detailed Statements
@@ -109,11 +109,12 @@ def download_cc_statement(sb):
     sb.click(".MuiPaper-root svg")
 
 
-def test_get_ac_data(sb):
+def test_get_ac_data(sb, start_date):
     login(sb)
-    download_account_transactions(sb)
+    download_account_transactions(sb, start_date)
 
 
-def test_get_cc_data(sb):
+def test_get_cc_data(sb, start_date):
     login(sb)
+    # FIXME: start_date isn't used when downloading CC statement
     download_cc_statement(sb)
