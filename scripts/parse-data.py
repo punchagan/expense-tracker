@@ -1,22 +1,30 @@
 # Standard libs
 import csv
+from hashlib import sha1
 import io
 from pathlib import Path
 
 # 3rd party libs
 from bs4 import BeautifulSoup
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 
 
 def get_transformed_row(x):
-    columns = ["date", "details", "amount"]
+    columns = ["id", "date", "details", "amount"]
     x = x.fillna(0)
     cc = "Transaction Date" in x.index
     date = x["Transaction Date"] if cc else x["Tran Date"]
     details = x["Transaction Details"] if cc else x["PARTICULARS"]
     amount = x["Amount in INR"] if cc else (x["DR"] - x["CR"])
-    return pd.Series([date, details, amount], index=columns)
+    sha = sha1(details.encode("utf8")).hexdigest()
+    return pd.Series([sha, date, details, amount], index=columns)
+
+
+def get_db_engine():
+    here = Path(__file__).parent.parent
+    db_path = here.joinpath("expenses.db")
+    return create_engine(f"sqlite:///{db_path}")
 
 
 def parse_data(path, catch_phrase):
@@ -43,16 +51,22 @@ def parse_data(path, catch_phrase):
         .fillna(0)
         .sort_values(by=[transaction_date], ignore_index=True)
     )
-    # Transform the data
-    return data.apply(get_transformed_row, axis=1)
+    data = data.apply(get_transformed_row, axis=1)
 
+    engine = get_db_engine()
+    data["id"].to_sql("new_ids", engine, if_exists="replace", index=False)
+    try:
+        new_ids = engine.execute(
+            "SELECT id FROM new_ids WHERE id NOT IN (SELECT id FROM expenses)"
+        ).fetchall()
+        new_ids = [id_ for (id_,) in new_ids]
+    except exc.OperationalError:
+        new_ids = list(data["id"])
 
-def insert_data(data):
-    here = Path(__file__).parent.parent
-    db_path = here.joinpath("expenses.db")
-    engine = create_engine(f"sqlite:///{db_path}")
+    # Select only IDs not already in the DB.
+    data = data[data["id"].isin(new_ids)]
     rows = data.to_sql("expenses", engine, if_exists="append", index=False)
-    print(f"Wrote {rows} rows to the {db_path}")
+    print(f"Wrote {rows} rows to the {engine.url}")
 
 
 def extract_csv(path, catch_phrase="Transaction Date"):
@@ -119,5 +133,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    data = parse_data(args.path, args.catch_phrase)
-    insert_data(data)
+    parse_data(args.path, args.catch_phrase)
