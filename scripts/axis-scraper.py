@@ -18,7 +18,6 @@ def login(sb):
 
 def download_account_transactions(sb, start_date):
     end_date = TODAY
-    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
     print(f"Downloading account transactions from {start_date} to {end_date}")
 
     # Select Detailed Statements
