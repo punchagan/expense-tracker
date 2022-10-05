@@ -81,7 +81,7 @@ def display_transactions(data, start_date, end_date):
     n = len(data)
 
     with st.expander(f"View {n} transactions", expanded=True):
-        n = 3
+        n = [1, 1, 6]
         data_columns = ["date", "amount", "details"]
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
