@@ -85,27 +85,31 @@ def display_transactions(data, start_date, end_date):
         data.apply(display_transaction, axis=1)
 
 
+def display_sidebar(title):
+    with st.sidebar:
+        st.title(title)
+        months = get_months()
+        option = st.selectbox("Select Month to view", months, format_func=format_month)
+        start_date = datetime.datetime(*option + (1,))
+        _, num_days = calendar.monthrange(*option)
+        end_date = datetime.datetime(*option + (num_days,))
+
+    return start_date, end_date
+
+
 def main():
     title = "Personal Expense Tracker"
 
     st.set_page_config(
         page_title=title,
         page_icon=":credit-card:",
-        layout="centered",
+        layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
     )
 
-    st.title(title)
-
-    months = get_months()
-    option = st.selectbox("Select Month to view", months, format_func=format_month)
-
-    start_date = datetime.datetime(*option + (1,))
-    _, num_days = calendar.monthrange(*option)
-    end_date = datetime.datetime(*option + (num_days,))
+    start_date, end_date = display_sidebar(title)
     data = load_data(start_date, end_date)
-
     display_transactions(data, start_date, end_date)
 
     # Add a note about the last updated date
