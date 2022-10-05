@@ -81,7 +81,7 @@ def display_transactions(data, start_date, end_date):
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
     n = len(data)
 
-    with st.expander(f"View {n} transactions"):
+    with st.expander(f"View {n} transactions", expanded=True):
         data.apply(display_transaction, axis=1)
 
 
