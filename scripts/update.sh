@@ -6,7 +6,7 @@ LAST_DATE=$(sqlite3 "${HERE}/../expenses.db" 'SELECT MAX(date) FROM expenses;' |
 TODAY=$(date +%Y_%m_%d)
 
 # Download data
-pytest -sv "${HERE}/axis-scraper.py" --browser=firefox --start-date "${LAST_DATE:-2022-01-01}" --workers=2 --reruns=5 --reruns-delay=20
+pytest -sv "${HERE}/axis-scraper.py" --browser=firefox --start-date "${LAST_DATE:-2022-01-01}" --workers=2 --reruns=5 --reruns-delay=20 --archive-downloads
 
 # Update new data in the database
 python "${HERE}/parse-data.py" "${HERE}/../downloaded_files/${AXIS_CUSTOMID}.csv" --catch-phrase 'Tran Date'
