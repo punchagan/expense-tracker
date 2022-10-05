@@ -80,7 +80,7 @@ def display_transactions(data, start_date, end_date):
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
     n = len(data)
 
-    with st.expander(f"View {n} transactions", expanded=True):
+    with st.expander(f"Total {n} transactions", expanded=True):
         n = [1, 1, 6]
         data_columns = ["date", "amount", "details"]
         headers = st.columns(n)
@@ -118,6 +118,9 @@ def main():
 
     start_date, end_date = display_sidebar(title)
     data = load_data(start_date, end_date)
+
+    groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
+    st.bar_chart(groups.sum())
     display_transactions(data, start_date, end_date)
 
 
