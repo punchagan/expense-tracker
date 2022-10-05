@@ -98,6 +98,10 @@ def display_sidebar(title):
         _, num_days = calendar.monthrange(*option)
         end_date = datetime.datetime(*option + (num_days,))
 
+        # Add a note about the last updated date
+        updated = last_updated()
+        st.info(f"Expense data last updated on {updated}")
+
     return start_date, end_date
 
 
@@ -115,10 +119,6 @@ def main():
     start_date, end_date = display_sidebar(title)
     data = load_data(start_date, end_date)
     display_transactions(data, start_date, end_date)
-
-    # Add a note about the last updated date
-    updated = last_updated()
-    st.info(f"Expense data last updated on {updated}", icon="❓")
 
 
 if __name__ == "__main__":
