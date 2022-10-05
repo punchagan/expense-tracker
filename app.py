@@ -61,9 +61,8 @@ def format_month(month):
     return datetime.date(*(month + (1,))).strftime("%b, '%y")
 
 
-def display_transaction(row):
-    columns = st.columns(3)
-    data_columns = ["date", "amount", "details"]
+def display_transaction(row, n, data_columns):
+    columns = st.columns(n)
     for idx, name in enumerate(data_columns):
         value = row[name]
         if name == "date":
@@ -82,7 +81,12 @@ def display_transactions(data, start_date, end_date):
     n = len(data)
 
     with st.expander(f"View {n} transactions", expanded=True):
-        data.apply(display_transaction, axis=1)
+        n = 3
+        data_columns = ["date", "amount", "details"]
+        headers = st.columns(n)
+        for idx, name in enumerate(data_columns):
+            headers[idx].write(f"**{name.title()}**")
+        data.apply(display_transaction, axis=1, n=n, data_columns=data_columns)
 
 
 def display_sidebar(title):
