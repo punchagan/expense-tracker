@@ -100,7 +100,7 @@ def display_sidebar(title):
 
         # Add a note about the last updated date
         updated = last_updated()
-        st.info(f"Expense data last updated on {updated}")
+        st.caption(f"Expense data last updated on {updated}")
 
     return start_date, end_date
 
