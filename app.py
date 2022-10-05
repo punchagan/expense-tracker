@@ -102,7 +102,7 @@ def main():
 
     st.set_page_config(
         page_title=title,
-        page_icon=":credit-card:",
+        page_icon=":bar-chart:",
         layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
