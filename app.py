@@ -115,20 +115,7 @@ def display_sidebar(title):
     return start_date, end_date
 
 
-def main():
-    title = "Personal Expense Tracker"
-
-    st.set_page_config(
-        page_title=title,
-        page_icon=":bar-chart:",
-        layout="wide",
-        initial_sidebar_state="auto",
-        menu_items=None,
-    )
-
-    start_date, end_date = display_sidebar(title)
-    data = load_data(start_date, end_date)
-
+def display_barcharts(data):
     # Show bar chart by day of month
     groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
     st.bar_chart(groups.sum(["amount"]))
@@ -147,6 +134,23 @@ def main():
         .mark_bar()
         .encode(x=alt.X("weekdays", sort=None), y="amount")
     )
+
+
+def main():
+    title = "Personal Expense Tracker"
+
+    st.set_page_config(
+        page_title=title,
+        page_icon=":bar-chart:",
+        layout="wide",
+        initial_sidebar_state="auto",
+        menu_items=None,
+    )
+
+    start_date, end_date = display_sidebar(title)
+    data = load_data(start_date, end_date)
+
+    display_barcharts(data)
 
     display_transactions(data, start_date, end_date)
 
