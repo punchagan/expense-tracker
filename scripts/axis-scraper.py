@@ -56,7 +56,7 @@ def download_cc_statement(sb, start_date):
     # correctly, all the months in the current year get downloaded. This might
     # be a problem if no data is collected after December bill is generated
     # until the next year.
-    print(f"Downloading account transactions from {start_date} to {end_date}")
+    print(f"Downloading credit-card transactions from {start_date} to {end_date}")
     # View detailed transaction info
     time.sleep(2)
     sb.click("#navList0")
