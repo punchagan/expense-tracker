@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 import streamlit as st
 import pandas as pd
 import numpy as np
+import altair as alt
 
 DATE_FMT = "%d %b '%y"
 WEEKDAYS = [
@@ -136,11 +137,16 @@ def main():
     weekday_amounts = (
         data.groupby(by=lambda idx: data.iloc[idx]["date"].day_name())
         .sum(["amount"])
-        .sort_index(key=lambda x: [WEEKDAYS.index(e) for e in x])
+        .reset_index(names="weekdays")
+        .sort_values(by="weekdays", key=lambda x: [WEEKDAYS.index(e) for e in x])
     )
-    # FIXME: The weekday names are not sorted, even after sorting
-    # above.  Probably need to use altair_chart directly?
-    st.bar_chart(weekday_amounts, y="amount")
+    # Weird code for turning off x-axis sorting based on
+    # https://discuss.streamlit.io/t/sort-the-bar-chart-in-descending-order/1037/2
+    st.write(
+        alt.Chart(weekday_amounts)
+        .mark_bar()
+        .encode(x=alt.X("weekdays", sort=None), y="amount")
+    )
 
     display_transactions(data, start_date, end_date)
 
