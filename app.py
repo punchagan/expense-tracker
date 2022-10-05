@@ -10,6 +10,15 @@ import pandas as pd
 import numpy as np
 
 DATE_FMT = "%d %b '%y"
+WEEKDAYS = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+]
 
 
 def remove_ignore_rows(data):
@@ -119,8 +128,20 @@ def main():
     start_date, end_date = display_sidebar(title)
     data = load_data(start_date, end_date)
 
+    # Show bar chart by day of month
     groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
-    st.bar_chart(groups.sum())
+    st.bar_chart(groups.sum(["amount"]))
+
+    # Show bar chart by weekday
+    weekday_amounts = (
+        data.groupby(by=lambda idx: data.iloc[idx]["date"].day_name())
+        .sum(["amount"])
+        .sort_index(key=lambda x: [WEEKDAYS.index(e) for e in x])
+    )
+    # FIXME: The weekday names are not sorted, even after sorting
+    # above.  Probably need to use altair_chart directly?
+    st.bar_chart(weekday_amounts, y="amount")
+
     display_transactions(data, start_date, end_date)
 
 
