@@ -129,10 +129,11 @@ def display_barcharts(data):
     )
     # Weird code for turning off x-axis sorting based on
     # https://discuss.streamlit.io/t/sort-the-bar-chart-in-descending-order/1037/2
-    st.write(
+    st.altair_chart(
         alt.Chart(weekday_amounts)
         .mark_bar()
-        .encode(x=alt.X("weekdays", sort=None), y="amount")
+        .encode(x=alt.X("weekdays", sort=None), y="amount"),
+        use_container_width=True,
     )
 
 
@@ -151,7 +152,6 @@ def main():
     data = load_data(start_date, end_date)
 
     display_barcharts(data)
-
     display_transactions(data, start_date, end_date)
 
 
