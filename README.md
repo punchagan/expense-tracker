@@ -72,3 +72,24 @@ the scripts described above.
 
 - Once the dependencies have been installed you can simply run the
   `scripts/run-sample.sh` script to see the sample data visualized.
+
+
+## Features
+
+- Visualize expenses by Month
+  - View barcharts of expenses by day of month
+  - View barcharts of expenses by day of week
+
+### To be implemented/ideas
+
+- Mark some transactions as to-be ignored (from the UI or a config file)
+- Choose categories (or tags) for transactions
+  - Automatically add categories for similar transactions
+  - Multiple tags for a transaction might be useful
+- Categorize transactions by type (UPI/CC/AC/etc)
+- Mark some transactions as repayment for another transaction, when spending in a group
+- Filter view by Month & Category/Tag or just category/tag
+- Filter by transactions made to a particular account/merchant
+  - Allow adding full names to account/merchants when full name cannot be
+    inferred from downloaded transactions.
+- Allow adding comments on transactions, additional notes...
