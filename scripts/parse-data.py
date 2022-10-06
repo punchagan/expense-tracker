@@ -16,6 +16,7 @@ DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 
 
 def get_transformed_row(x):
+    """Transform a parsed row into a row to be saved in the DB."""
     columns = ["id", "date", "details", "amount"]
     x = x.fillna(0)
     cc = "Transaction Date" in x.index
@@ -33,6 +34,7 @@ def get_db_engine():
 
 
 def parse_data(path, catch_phrase):
+    """Parses the data in a given `path` and dumps to `DB_NAME`."""
     if path.endswith(".html"):
         data = extract_csv_from_html(path)
     else:
@@ -110,7 +112,7 @@ def extract_csv(path, catch_phrase="Transaction Date"):
 
 
 def extract_csv_from_html(htmlfile):
-    """Converts expenses html file to a csv that can be cleaned."""
+    """Converts html to a CSV."""
     with open(htmlfile) as f:
         soup = BeautifulSoup(f, "html.parser")
     table = soup.findAll("table")[1]
