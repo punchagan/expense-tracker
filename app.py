@@ -1,6 +1,7 @@
 # Standard library
 import calendar
 import datetime
+import os
 from pathlib import Path
 
 # 3rd party libs
@@ -20,6 +21,7 @@ WEEKDAYS = [
     "Saturday",
     "Sunday",
 ]
+DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 
 
 def remove_ignore_rows(data):
@@ -35,7 +37,7 @@ def remove_ignore_rows(data):
 
 def get_db_engine():
     here = Path(__file__).parent
-    db_path = here.joinpath("expenses.db")
+    db_path = here.joinpath(DB_NAME)
     return create_engine(f"sqlite:///{db_path}")
 
 
