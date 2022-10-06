@@ -36,6 +36,34 @@ arrives. You could then write a parser for this SMS messages file.
 - If you prefer `pip`, you could run `pip install -r requirements.txt` inside a
   virtualenv.
 
+## Running the code
+
+- The `axis-scraper.py` uses `seleniumbase` plugin for `pytest` to scrape the
+  data. This lets us configure re-runs when the scraping sometimes fails due to
+  network errors, etc. It also lets us run the Credit card transactions scraper
+  in parallel with the account transactions scraper.
+
+  To run the scraper:
+
+  ```bash
+  pytest -sv ./scripts/axis-scraper.py --browser=firefox --workers=2 --reruns=5 --reruns-delay=20 --archive-downloads
+  ```
+
+- Once the data has been downloaded, the `parse-data.py` can be used to parse
+  it and save it into the DB.
+
+  ```bash
+  python ./scripts/parse-data.py ./downloaded_files/xxx.csv
+  ```
+
+- To visualize the data in the DB, you can run the `streamlit` app:
+
+  ```bash
+  streamlit run app.py
+  ```
+
+Look at the scripts `update.sh` and `run-sample.sh` for examples of how to run
+the scripts described above.
 
 ## Sample data and UI
 
