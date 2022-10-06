@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Standard libs
 import csv
 from hashlib import sha1
