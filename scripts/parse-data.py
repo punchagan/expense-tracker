@@ -2,12 +2,15 @@
 import csv
 from hashlib import sha1
 import io
+import os
 from pathlib import Path
 
 # 3rd party libs
 from bs4 import BeautifulSoup
 import pandas as pd
 from sqlalchemy import create_engine, exc
+
+DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 
 
 def get_transformed_row(x):
@@ -23,7 +26,7 @@ def get_transformed_row(x):
 
 def get_db_engine():
     here = Path(__file__).parent.parent
-    db_path = here.joinpath("expenses.db")
+    db_path = here.joinpath(DB_NAME)
     return create_engine(f"sqlite:///{db_path}")
 
 
