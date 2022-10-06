@@ -84,11 +84,20 @@ def display_transaction(row, n, data_columns):
         columns[idx].write(value)
 
 
-def display_transactions(data, start_date, end_date):
+def delta_percent(curr, prev):
+    if prev == 0:
+        return 100
+    else:
+        return (curr - prev) * 100 / prev
+
+
+def display_transactions(data, prev_data):
     col1, col2 = st.columns(2)
     total = data["amount"].sum()
+    prev_total = prev_data["amount"].sum()
+    delta = f"{delta_percent(total, prev_total):.2f} %"
     max_ = data["amount"].max()
-    col1.metric("Total Spend", f"₹ {total:.2f}")
+    col1.metric("Total Spend", f"₹ {total:.2f}", delta=delta, delta_color="inverse")
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
     n = len(data)
 
@@ -115,6 +124,12 @@ def display_sidebar(title):
         st.caption(f"Expense data last updated on {updated}")
 
     return start_date, end_date
+
+
+def previous_month(start_date):
+    end_ = start_date - datetime.timedelta(days=1)
+    start = datetime.date(end_.year, end_.month, 1)
+    return start, end_
 
 
 def display_barcharts(data):
@@ -153,8 +168,11 @@ def main():
     start_date, end_date = display_sidebar(title)
     data = load_data(start_date, end_date)
 
+    prev_start, prev_end = previous_month(start_date)
+    prev_data = load_data(prev_start, prev_end)
+
     display_barcharts(data)
-    display_transactions(data, start_date, end_date)
+    display_transactions(data, prev_data)
 
 
 if __name__ == "__main__":
