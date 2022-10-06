@@ -1,0 +1,46 @@
+# Expense Tracker
+
+Expense tracker aims to build a simple UI to track monthly expenses.
+
+It is a collection of scripts to scrape and parse transaction data from
+bank/credit-card statements and dump them into a local SQLite DB.  There's a
+simple UI that interacts with this local DB that lets the user explore and
+analyse their spending patterns.
+
+## Why build one yourself?
+
+We use a lot of Internet Banking these days, but I still don't feel comfortable
+sharing information about all my expenses with a 3rd-party.  So, I built a tool
+that runs locally on my computer and can only be accessed locally.
+
+## How do I use it?
+
+The repository currently only contains scrapers for Axis Bank. But, other
+scrapers could be easily written, if you'd like to use this repository.
+
+Another commonly used approach for tools like this is to parse SMS's sent by
+banks to get information about expenses. I considered this approach initially,
+but it turned out that that SMS's sent by my bank don't have enough information
+all the time. If you'd like to use this approach, you could setup a program
+like [Macro
+Droid](https://play.google.com/store/search?q=macro%20droid&c=apps&hl=en_IN&gl=US)
+or
+[Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm&hl=en_IN&gl=US)
+to update a text file on your phone, each time a new (transactional) SMS
+arrives. You could then write a parser for this SMS messages file.
+
+## Installation
+
+- If you use `poetry`, you could just run `poetry install`.
+
+- If you prefer `pip`, you could run `pip install -r requirements.txt` inside a
+  virtualenv.
+
+
+## Sample data and UI
+
+- The repo contains some sample data for writing the parsers, tests and testing
+  out the UI.
+
+- Once the dependencies have been installed you can simply run the
+  `scripts/run-sample.sh` script to see the sample data visualized.
