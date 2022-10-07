@@ -15,14 +15,53 @@ from sqlalchemy import create_engine, exc
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 
 
+AXIS_COLUMNS = {
+    "date": "Tran Date",
+    "details": "PARTICULARS",
+    "credit": "CR",
+    "debit": "DR",
+    "amount": None,
+}
+
+AXIS_CC_COLUMNS = {
+    "date": "Transaction Date",
+    "details": "Transaction Details",
+    "credit": "CR",
+    "debit": "DR",
+    "amount": "Amount in INR",
+}
+
+SBI_COLUMNS = {
+    "date": "Txn Date",
+    "details": "Description",
+    "credit": "Credit",
+    "debit": "Debit",
+    "amount": None,
+}
+
+HEADERS = [AXIS_CC_COLUMNS, AXIS_COLUMNS, SBI_COLUMNS]
+
+
 def get_transformed_row(x):
     """Transform a parsed row into a row to be saved in the DB."""
     columns = ["id", "date", "details", "amount"]
     x = x.fillna(0)
-    cc = "Transaction Date" in x.index
-    date = x["Transaction Date"] if cc else x["Tran Date"]
-    details = x["Transaction Details"] if cc else x["PARTICULARS"]
-    amount = x["Amount in INR"] if cc else (x["DR"] - x["CR"])
+
+    for header_type in HEADERS:
+        if header_type["date"] in x.index:
+            break
+    else:
+        raise RuntimeError("Unknown CSV type")
+
+    date = x[header_type["date"]]
+    details = x[header_type["details"]]
+
+    amount_h, credit_h, debit_h = (
+        header_type["amount"],
+        header_type["credit"],
+        header_type["debit"],
+    )
+    amount = x[amount_h] if amount_h else x[debit_h] - x[credit_h]
     hash_text = f"{details}-{date}-{amount}"
     sha = sha1(hash_text.encode("utf8")).hexdigest()
     return pd.Series([sha, date, details, amount], index=columns)
@@ -52,6 +91,8 @@ def parse_data(path, catch_phrase):
                 "Amount in INR": "float64",
                 "DR": "float64",
                 "CR": "float64",
+                "Debit": "float64",
+                "Credit": "float64",
             },
             thousands=",",
             na_values=[" "],
