@@ -35,10 +35,14 @@ def remove_ignore_rows(data):
     ]
 
 
-def get_db_engine():
+def get_db_url():
     here = Path(__file__).parent.parent
     db_path = here.joinpath(DB_NAME)
-    return create_engine(f"sqlite:///{db_path}")
+    return f"sqlite:///{db_path}"
+
+
+def get_db_engine():
+    return create_engine(get_db_url())
 
 
 @st.cache
