@@ -12,6 +12,7 @@ pytest-parallel = "^0.1.1"
 pandas = "^1.5.0"
 SQLAlchemy = "^1.4.41"
 streamlit = "^1.13.0"
+alembic = "^1.8.1"
 
 [tool.poetry.dev-dependencies]
 
