@@ -59,7 +59,7 @@ arrives. You could then write a parser for this SMS messages file.
 - To visualize the data in the DB, you can run the `streamlit` app:
 
   ```bash
-  streamlit run app.py
+  streamlit run app/app.py
   ```
 
 Look at the scripts `update.sh` and `run-sample.sh` for examples of how to run

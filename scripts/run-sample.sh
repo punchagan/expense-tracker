@@ -10,5 +10,5 @@ pushd "${HERE}/.."
 $PARSE ./sample/axis-cc-statement.csv
 $PARSE ./sample/axis-cc-statement.html
 $PARSE ./sample/axis-statement.csv --catch-phrase 'Tran Date'
-streamlit run app.py
+streamlit run app/app.py
 popd
