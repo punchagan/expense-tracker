@@ -162,7 +162,10 @@ def main():
         page_icon=":bar-chart:",
         layout="wide",
         initial_sidebar_state="auto",
-        menu_items=None,
+        menu_items={
+            "Get Help": "https://github.com/punchagan/expense-tracker/issues",
+            "Report a bug": "https://github.com/punchagan/expense-tracker/issues",
+        },
     )
 
     start_date, end_date = display_sidebar(title)
