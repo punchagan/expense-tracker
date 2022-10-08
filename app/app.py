@@ -3,6 +3,10 @@ import calendar
 import datetime
 import os
 from pathlib import Path
+import sys
+
+# Hack for streamlit to work correctly
+sys.path.insert(0, str(Path(__file__).parent))
 
 # 3rd party libs
 from sqlalchemy import create_engine
