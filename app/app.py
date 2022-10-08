@@ -127,7 +127,7 @@ def display_transactions(data, prev_data):
     total = data_clean["amount"].sum()
     prev_total = prev_data_clean["amount"].sum()
     delta = f"{delta_percent(total, prev_total):.2f} %"
-    max_ = data["amount"].max()
+    max_ = data_clean["amount"].max()
     col1.metric("Total Spend", f"₹ {total:.2f}", delta=delta, delta_color="inverse")
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
     n = len(data)
