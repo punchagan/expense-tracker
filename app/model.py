@@ -19,7 +19,7 @@ class Expense(Base):
     )
 
     def __repr__(self):
-        return f"Expense(date={self.date!r}, amount={self.amount!r} details={self.details!r})"
+        return f"Expense(id={self.id!r}, date={self.date!r}, amount={self.amount!r}, details={self.details!r}, ignore={self.ignore!r})"
 
 
 class NewID(Base):

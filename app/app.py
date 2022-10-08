@@ -6,10 +6,14 @@ from pathlib import Path
 
 # 3rd party libs
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
+
+# Local
+from model import Expense
 
 DATE_FMT = "%d %b '%y"
 WEEKDAYS = [
@@ -46,6 +50,13 @@ def get_db_engine():
     return create_engine(get_db_url())
 
 
+@st.experimental_singleton
+def get_sqlalchemy_session():
+    engine = get_db_engine()
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+
 @st.experimental_memo
 def last_updated():
     engine = get_db_engine()
@@ -60,7 +71,7 @@ def load_data(start_date, end_date):
     sql = (
         f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date <= '{end_date}'"
     )
-    data = pd.read_sql_query(sql, engine, parse_dates=["date"])
+    data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
     data = remove_ignore_rows(data)
     return data.sort_values(by=["date"], ignore_index=True, ascending=False)
 
@@ -78,15 +89,34 @@ def format_month(month):
     return datetime.date(*(month + (1,))).strftime("%b, '%y")
 
 
+def set_ignore_value(row, value):
+    session = get_sqlalchemy_session()
+    row["ignore"] = value
+    id_ = row["id"]
+    expense = session.query(Expense).get({"id": id_})
+    expense.ignore = value
+    session.commit()
+
+
 def display_transaction(row, n, data_columns):
     columns = st.columns(n)
+    id = row["id"]
     for idx, name in enumerate(data_columns):
-        value = row[name]
-        if name == "date":
+        value = row.get(name)
+        written = False
+        if name == "ignore":
+            ignore_value = columns[idx].checkbox("", value=value, key=f"ignore-{id}")
+            written = True
+            if ignore_value != value:
+                set_ignore_value(row, ignore_value)
+
+        elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
             value = f"{value:.2f}"
-        columns[idx].write(value)
+
+        if not written:
+            columns[idx].write(value)
 
 
 def delta_percent(curr, prev):
@@ -107,8 +137,8 @@ def display_transactions(data, prev_data):
     n = len(data)
 
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 10]
-        data_columns = ["date", "amount", "details"]
+        n = [1, 1, 10, 1]
+        data_columns = ["date", "amount", "details", "ignore"]
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
             headers[idx].write(f"**{name.title()}**")
