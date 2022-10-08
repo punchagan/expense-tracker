@@ -55,7 +55,8 @@ def last_updated():
 
 
 @st.experimental_memo
-def load_data(start_date, end_date):
+def load_data(start_date, end_date, db_last_modified):
+    # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
     sql = (
         f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date <= '{end_date}'"
@@ -84,6 +85,7 @@ def set_ignore_value(row, value):
     expense = session.query(Expense).get({"id": id_})
     expense.ignore = value
     session.commit()
+    st.experimental_rerun()
 
 
 def display_transaction(row, n, data_columns):
@@ -202,11 +204,15 @@ def main():
         },
     )
 
+    _, db_path = get_db_url().split("///")
+    # Detect DB changes and invalidate Streamlit memoized data
+    db_last_modified = os.path.getmtime(db_path)
+
     start_date, end_date = display_sidebar(title)
-    data = load_data(start_date, end_date)
+    data = load_data(start_date, end_date, db_last_modified)
 
     prev_start, prev_end = previous_month(start_date)
-    prev_data = load_data(prev_start, prev_end)
+    prev_data = load_data(prev_start, prev_end, db_last_modified)
 
     display_barcharts(data)
     display_transactions(data, prev_data)
