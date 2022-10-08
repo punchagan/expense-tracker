@@ -23,7 +23,8 @@ def get_transformed_row(x):
     date = x["Transaction Date"] if cc else x["Tran Date"]
     details = x["Transaction Details"] if cc else x["PARTICULARS"]
     amount = x["Amount in INR"] if cc else (x["DR"] - x["CR"])
-    sha = sha1(details.encode("utf8")).hexdigest()
+    hash_text = f"{details}-{date}-{amount}"
+    sha = sha1(hash_text.encode("utf8")).hexdigest()
     return pd.Series([sha, date, details, amount], index=columns)
 
 
