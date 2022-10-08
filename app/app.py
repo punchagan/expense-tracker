@@ -28,17 +28,6 @@ WEEKDAYS = [
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 
 
-def remove_ignore_rows(data):
-    # FIXME: Make these configurable? Or may be just mark them in the UI and
-    # store as different column
-    credit_card_payments = ("CreditCard Payment", "MB PAYMENT #")
-    details = data["details"].str
-    self_payments = "/PUNEETH H/State Ban/"
-    return data[
-        ~details.startswith(credit_card_payments) & ~details.contains(self_payments)
-    ]
-
-
 def get_db_url():
     here = Path(__file__).parent.parent
     db_path = here.joinpath(DB_NAME)
@@ -72,7 +61,6 @@ def load_data(start_date, end_date):
         f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date <= '{end_date}'"
     )
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
-    data = remove_ignore_rows(data)
     return data.sort_values(by=["date"], ignore_index=True, ascending=False)
 
 
@@ -128,8 +116,10 @@ def delta_percent(curr, prev):
 
 def display_transactions(data, prev_data):
     col1, col2 = st.columns(2)
-    total = data["amount"].sum()
-    prev_total = prev_data["amount"].sum()
+    data_clean = remove_ignored_rows(data)
+    prev_data_clean = remove_ignored_rows(prev_data)
+    total = data_clean["amount"].sum()
+    prev_total = prev_data_clean["amount"].sum()
     delta = f"{delta_percent(total, prev_total):.2f} %"
     max_ = data["amount"].max()
     col1.metric("Total Spend", f"₹ {total:.2f}", delta=delta, delta_color="inverse")
@@ -139,10 +129,12 @@ def display_transactions(data, prev_data):
     with st.expander(f"Total {n} transactions", expanded=True):
         n = [1, 1, 10, 1]
         data_columns = ["date", "amount", "details", "ignore"]
+        hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
             headers[idx].write(f"**{name.title()}**")
-        data.apply(display_transaction, axis=1, n=n, data_columns=data_columns)
+        df = data_clean if hide_ignored_transactions else data
+        df.apply(display_transaction, axis=1, n=n, data_columns=data_columns)
 
 
 def display_sidebar(title):
@@ -167,7 +159,14 @@ def previous_month(start_date):
     return start, end_
 
 
+def remove_ignored_rows(data):
+    return data[data["ignore"] == False].reset_index(drop=True)
+
+
 def display_barcharts(data):
+    # Filter ignored transactions
+    data = remove_ignored_rows(data)
+
     # Show bar chart by day of month
     groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
     st.bar_chart(groups.sum(["amount"]))
