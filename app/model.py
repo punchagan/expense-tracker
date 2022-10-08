@@ -14,3 +14,11 @@ class Expense(Base):
 
     def __repr__(self):
         return f"Expense(date={self.date!r}, amount={self.amount!r} details={self.details!r})"
+
+
+class NewID(Base):
+    __tablename__ = "new_ids"
+    id = sa.Column(sa.String(40), primary_key=True)
+
+    def __repr__(self):
+        return f"NewID(id={self.id!r})"
