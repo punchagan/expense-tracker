@@ -41,11 +41,12 @@ def get_db_url():
     return f"sqlite:///{db_path}"
 
 
+@st.experimental_singleton
 def get_db_engine():
     return create_engine(get_db_url())
 
 
-@st.cache
+@st.experimental_memo
 def last_updated():
     engine = get_db_engine()
     (date,) = engine.execute("SELECT MAX(date) FROM expenses").fetchone()
@@ -53,7 +54,7 @@ def last_updated():
     return date
 
 
-@st.cache
+@st.experimental_memo
 def load_data(start_date, end_date):
     engine = get_db_engine()
     sql = (
@@ -64,7 +65,7 @@ def load_data(start_date, end_date):
     return data.sort_values(by=["date"], ignore_index=True, ascending=False)
 
 
-@st.cache
+@st.experimental_memo
 def get_months():
     engine = get_db_engine()
     sql = f"SELECT date FROM expenses"
