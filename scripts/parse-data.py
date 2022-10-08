@@ -62,12 +62,13 @@ def parse_data(path, catch_phrase):
     data = data.apply(get_transformed_row, axis=1)
 
     engine = get_db_engine()
-    data["id"].to_sql("new_ids", engine, if_exists="replace", index=False)
+    data["id"].to_sql("new_ids", engine, if_exists="append", index=False)
     try:
         new_ids = engine.execute(
             "SELECT id FROM new_ids WHERE id NOT IN (SELECT id FROM expenses)"
         ).fetchall()
         new_ids = [id_ for (id_,) in new_ids]
+        engine.execute("DELETE FROM new_ids")
     except exc.OperationalError:
         new_ids = list(data["id"])
 
