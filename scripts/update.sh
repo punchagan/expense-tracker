@@ -5,6 +5,9 @@ HERE=$(dirname "$0")
 LAST_DATE=$(sqlite3 "${HERE}/../expenses.db" 'SELECT MAX(date) FROM expenses;' | cut -d " " -f 1) || true
 TODAY=$(date +%Y_%m_%d)
 
+# Make sure DB has the latest structure
+alembic upgrade head
+
 # Download data
 pytest -s "${HERE}/axis-scraper.py" --browser=firefox --start-date "${LAST_DATE:-2022-01-01}" --workers=2 --reruns=5 --reruns-delay=20 --archive-downloads
 

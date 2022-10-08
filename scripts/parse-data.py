@@ -132,6 +132,7 @@ def extract_csv_from_html(htmlfile):
 
 if __name__ == "__main__":
     import argparse
+    import sys
 
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Path to the file to be parsed")
@@ -142,4 +143,10 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    engine = get_db_engine()
+    try:
+        engine.execute("SELECT * FROM expenses").fetchone()
+        engine.execute("SELECT * FROM new_ids").fetchone()
+    except exc.OperationalError:
+        sys.exit(f"Run `alembic upgrade head` before running {sys.argv[0]}.")
     parse_data(args.path, args.catch_phrase)

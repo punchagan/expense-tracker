@@ -38,6 +38,8 @@ arrives. You could then write a parser for this SMS messages file.
 
 ## Running the code
 
+- To setup the DB correctly, run `alembic upgrade head`.
+
 - The `axis-scraper.py` uses `seleniumbase` plugin for `pytest` to scrape the
   data. This lets us configure re-runs when the scraping sometimes fails due to
   network errors, etc. It also lets us run the Credit card transactions scraper
