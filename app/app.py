@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 # Hack for streamlit to work correctly
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
 from sqlalchemy import create_engine
@@ -17,7 +17,7 @@ import numpy as np
 import altair as alt
 
 # Local
-from model import Expense
+from app.model import Expense
 
 DATE_FMT = "%d %b '%y"
 WEEKDAYS = [
