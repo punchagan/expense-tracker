@@ -19,11 +19,8 @@ def read_file(from_filename, to_folderpath):
     content = content.replace(",", "").replace("\t", ",")
     content = re.sub(" +", " ", content)
 
-    # Set the to_filename path for the output csv file
-    to_filename = str(from_filename).rsplit("/")[-1]
-    to_filename = to_filename.split(".")[0] + ".csv"
-    # Path for new filename
-    nfilename = here.joinpath(to_folderpath + "/" + to_filename)
+    to_filename = from_filename.with_suffix(".csv").name
+    nfilename = Path(to_folderpath).absolute().joinpath(to_filename)
 
     with open(nfilename, "w") as f:
         f.write(content)
