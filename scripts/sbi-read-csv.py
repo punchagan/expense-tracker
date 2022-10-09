@@ -1,3 +1,4 @@
+import io
 import re
 import pandas as pd
 from pathlib import Path
@@ -10,29 +11,24 @@ def read_file(from_filename, to_folderpath):
     """
     # Path variables
     here = Path(__file__).parent.parent
-    # Get data from the downloaded folder - "./downloaded_files/sbi-cc-account.xls"
     from_filename = here.joinpath(from_filename)
-
-    with open(from_filename) as f:
-        content = f.read()
-
-    content = content.replace(",", "").replace("\t", ",")
-    content = re.sub(" +", " ", content)
-
     to_filename = from_filename.with_suffix(".csv").name
     nfilename = Path(to_folderpath).absolute().joinpath(to_filename)
 
-    with open(nfilename, "w") as f:
-        f.write(content)
+    with open(from_filename) as f:
+        data = f.readlines()
+        for idx, line in enumerate(data):
+            if "Txn Date" in line:
+                n = idx
+                break
+        else:
+            n = 0
+    lines = [line.strip().strip(",") for line in data]
+    text = "\n".join(lines[n:-2])
 
-    df = pd.read_csv(nfilename, sep=",", header=None, names=[0, 1, 2, 3, 4, 5, 6, 7])
-    df.fillna(" ", inplace=True)
-    df = df[:-1]  # Remove "**This is a computer generate statement..."
-    df.to_csv(nfilename, header=False, index=False)
-    # Just return the dataframe after it is created - don't
-    # because use "sample/sbi-cc-statement.csv" for parsing
-    # os.remove(nfilename)
-    # return df
+    df = pd.read_csv(io.StringIO(text), sep="\t")
+    df.columns = [c.strip() for c in df.columns]
+    df.to_csv(nfilename, index=False)
     return nfilename
 
 
