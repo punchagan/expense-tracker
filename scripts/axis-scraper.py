@@ -1,10 +1,17 @@
 import csv
 import datetime
+import io
 import os
 from pathlib import Path
 import time
+import sys
 
 from bs4 import BeautifulSoup
+
+# HACK: include app module in sys.path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from app.util import extract_csv
 
 TODAY = datetime.date.today()
 
@@ -20,9 +27,13 @@ def extract_csv_from_html(htmlfile):
         for row in rows
     ]
     to_filename = Path(htmlfile).with_suffix(".csv")
+    csv_output = io.StringIO()
+    writer = csv.writer(csv_output)
+    writer.writerows(csv_rows)
     with open(to_filename, "w") as f:
-        writer = csv.writer(f)
-        writer.writerows(csv_rows)
+        csv_output.seek(0)
+        f.write(extract_csv(csv_output).read())
+
     print(f"Created {to_filename}")
 
 
@@ -68,7 +79,12 @@ def download_account_transactions(sb, start_date):
     # Download
     sb.click("#StatementInputFilter0")
     customer = os.environ["AXIS_CUSTOMID"]
-    sb.assert_downloaded_file(f"{customer}.csv")
+    filename = f"{customer}.csv"
+    sb.assert_downloaded_file(filename)
+    path = sb.get_path_of_downloaded_file(filename)
+    text = extract_csv(path, catch_phrase="Tran Date")
+    with open(path, "w") as f:
+        f.write(text.read())
 
 
 def download_cc_statement(sb, start_date):
