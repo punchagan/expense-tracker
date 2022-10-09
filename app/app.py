@@ -113,10 +113,7 @@ def display_transaction(row, n, data_columns):
 
 
 def delta_percent(curr, prev):
-    if prev == 0:
-        return 100
-    else:
-        return (curr - prev) * 100 / prev
+    return 100 if prev == 0 else (curr - prev) * 100 / prev
 
 
 def display_transactions(data, prev_data):
