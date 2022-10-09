@@ -15,8 +15,16 @@ that runs locally on my computer and can only be accessed locally.
 
 ## How do I use it?
 
-The repository currently only contains scrapers for Axis Bank. But, other
-scrapers could be easily written, if you'd like to use this repository.
+The repository currently contains:
+
+- Data Scrapers
+  - Axis Bank
+
+- Data Parsers
+  - SBI (downloaded tsv/xls)
+  - Axis Bank (scraped/downloaded data)
+
+But, other scrapers/parsers could be easily written.
 
 Another commonly used approach for tools like this is to parse SMS's sent by
 banks to get information about expenses. I considered this approach initially,
