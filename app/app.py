@@ -62,9 +62,7 @@ def last_updated():
 def load_data(start_date, end_date, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
-    sql = (
-        f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date <= '{end_date}'"
-    )
+    sql = f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date < '{end_date}'"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
     return data.sort_values(by=["date"], ignore_index=True, ascending=False)
 
@@ -150,7 +148,7 @@ def display_sidebar(title):
         option = st.selectbox("Select Month to view", months, format_func=format_month)
         start_date = datetime.datetime(*option + (1,))
         _, num_days = calendar.monthrange(*option)
-        end_date = datetime.datetime(*option + (num_days,))
+        end_date = start_date + datetime.timedelta(days=num_days + 1)
 
         # Add a note about the last updated date
         updated = last_updated()
@@ -160,9 +158,10 @@ def display_sidebar(title):
 
 
 def previous_month(start_date):
-    end_ = start_date - datetime.timedelta(days=1)
-    start = datetime.date(end_.year, end_.month, 1)
-    return start, end_
+    end = start_date
+    prev = end - datetime.timedelta(days=1)
+    start = datetime.date(prev.year, prev.month, 1)
+    return start, end
 
 
 def remove_ignored_rows(data):
