@@ -65,7 +65,9 @@ def load_data(start_date, end_date, db_last_modified):
     engine = get_db_engine()
     sql = f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date < '{end_date}'"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
-    return data.sort_values(by=["date"], ignore_index=True, ascending=False)
+    return data.sort_values(
+        by=["date", "amount", "details"], ignore_index=True, ascending=False
+    )
 
 
 @st.experimental_memo
