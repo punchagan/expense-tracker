@@ -30,11 +30,12 @@ WEEKDAYS = [
     "Sunday",
 ]
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
+HERE = Path(__file__).parent
+ROOT = HERE.parent
 
 
 def get_db_url():
-    here = Path(__file__).parent.parent
-    db_path = here.joinpath(DB_NAME)
+    db_path = ROOT.joinpath(DB_NAME)
     return f"sqlite:///{db_path}"
 
 
@@ -193,6 +194,11 @@ def display_barcharts(data):
     )
 
 
+def local_css(file_name):
+    with open(HERE.joinpath(file_name)) as f:
+        st.markdown("<style>{}</style>".format(f.read()), unsafe_allow_html=True)
+
+
 def main():
     title = "Personal Expense Tracker"
 
@@ -206,6 +212,8 @@ def main():
             "Report a bug": "https://github.com/punchagan/expense-tracker/issues",
         },
     )
+
+    local_css("style.css")
 
     _, db_path = get_db_url().split("///")
     # Detect DB changes and invalidate Streamlit memoized data
