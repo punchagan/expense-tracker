@@ -22,8 +22,17 @@ SBI_COLUMNS = {
     "amount": None,
 }
 
+CASH_COLUMNS = {
+    "date": "Timestamp",
+    "details": "Details",
+    "credit": None,
+    "debit": None,
+    "amount": "Amount",
+}
+
 CSV_TYPES = {
     "axis-cc": AXIS_CC_COLUMNS,
     "axis": AXIS_COLUMNS,
     "sbi": SBI_COLUMNS,
+    "cash": CASH_COLUMNS,
 }
