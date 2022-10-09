@@ -4,15 +4,19 @@
 import csv
 from hashlib import sha1
 import io
-import os
 from pathlib import Path
+import sys
+
+# HACK: include app module in sys.path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
 from bs4 import BeautifulSoup
 import pandas as pd
 from sqlalchemy import create_engine, exc
 
-DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
+# Local
+from app.util import DB_NAME, get_db_url
 
 
 AXIS_COLUMNS = {
@@ -68,9 +72,7 @@ def get_transformed_row(x):
 
 
 def get_db_engine():
-    here = Path(__file__).parent.parent
-    db_path = here.joinpath(DB_NAME)
-    return create_engine(f"sqlite:///{db_path}")
+    return create_engine(get_db_url())
 
 
 def parse_data(path, catch_phrase):
