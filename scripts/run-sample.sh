@@ -8,9 +8,9 @@ PARSE="${HERE}/parse-data.py"
 
 pushd "${HERE}/.."
 alembic upgrade head
-$PARSE ./sample/axis-cc-statement.csv
-$PARSE ./sample/axis-cc-statement-1.csv
-$PARSE ./sample/axis-statement.csv --catch-phrase 'Tran Date'
-$PARSE ./sample/sbi-statement.csv --catch-phrase 'Txn Date'
+$PARSE ./sample/axis-cc-statement.csv --csv-type axis-cc
+$PARSE ./sample/axis-cc-statement-1.csv --csv-type axis-cc
+$PARSE ./sample/axis-statement.csv
+$PARSE ./sample/sbi-statement.csv --csv-type sbi
 streamlit run app/app.py
 popd

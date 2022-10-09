@@ -40,23 +40,21 @@ SBI_COLUMNS = {
     "amount": None,
 }
 
-HEADERS = [AXIS_CC_COLUMNS, AXIS_COLUMNS, SBI_COLUMNS]
+CSV_TYPES = {
+    "axis-cc": AXIS_CC_COLUMNS,
+    "axis": AXIS_COLUMNS,
+    "sbi": SBI_COLUMNS,
+}
 
 
-def get_transformed_row(x):
+def get_transformed_row(x, csv_type):
     """Transform a parsed row into a row to be saved in the DB."""
     columns = ["id", "date", "details", "amount"]
     x = x.fillna(0)
 
-    for header_type in HEADERS:
-        if header_type["date"] in x.index:
-            break
-    else:
-        raise RuntimeError("Unknown CSV type")
-
+    header_type = CSV_TYPES[csv_type]
     date = x[header_type["date"]]
     details = x[header_type["details"]]
-
     amount_h, credit_h, debit_h = (
         header_type["amount"],
         header_type["credit"],
@@ -72,9 +70,9 @@ def get_db_engine():
     return create_engine(get_db_url())
 
 
-def parse_data(path, catch_phrase):
+def parse_data(path, csv_type):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
-    transaction_date = catch_phrase
+    transaction_date = CSV_TYPES[csv_type]["date"]
     data = (
         pd.read_csv(
             path,
@@ -93,7 +91,7 @@ def parse_data(path, catch_phrase):
         .fillna(0)
         .sort_values(by=[transaction_date], ignore_index=True)
     )
-    data = data.apply(get_transformed_row, axis=1)
+    data = data.apply(get_transformed_row, axis=1, csv_type=csv_type)
 
     engine = get_db_engine()
     data["id"].to_sql("new_ids", engine, if_exists="append", index=False)
@@ -119,9 +117,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Path to the file to be parsed")
     parser.add_argument(
-        "--catch-phrase",
-        default="Transaction Date",
-        help="Phrase in file to identify CSV header",
+        "--csv-type", default="axis", choices=CSV_TYPES.keys(), help="Type of CSV"
     )
 
     args = parser.parse_args()
@@ -131,4 +127,4 @@ if __name__ == "__main__":
         engine.execute("SELECT * FROM new_ids").fetchone()
     except exc.OperationalError:
         sys.exit(f"Run `alembic upgrade head` before running {sys.argv[0]}.")
-    parse_data(args.path, args.catch_phrase)
+    parse_data(args.path, args.csv_type)
