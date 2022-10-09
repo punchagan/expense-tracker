@@ -1,7 +1,13 @@
 import io
-import re
 import pandas as pd
 from pathlib import Path
+import re
+import sys
+
+# HACK: include app module in sys.path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from app.util import extract_csv
 
 
 def read_file(from_filename, to_folderpath):
@@ -14,19 +20,8 @@ def read_file(from_filename, to_folderpath):
     from_filename = here.joinpath(from_filename)
     to_filename = from_filename.with_suffix(".csv").name
     nfilename = Path(to_folderpath).absolute().joinpath(to_filename)
-
-    with open(from_filename) as f:
-        data = f.readlines()
-        for idx, line in enumerate(data):
-            if "Txn Date" in line:
-                n = idx
-                break
-        else:
-            n = 0
-    lines = [line.strip().strip(",") for line in data]
-    text = "\n".join(lines[n:-2])
-
-    df = pd.read_csv(io.StringIO(text), sep="\t")
+    text = extract_csv(from_filename, catch_phrase="Txn Date")
+    df = pd.read_csv(text, sep="\t")
     df.columns = [c.strip() for c in df.columns]
     df.to_csv(nfilename, index=False)
     return nfilename

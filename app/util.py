@@ -47,7 +47,7 @@ def extract_csv(path, catch_phrase="Transaction Date"):
         end_line = num + 1
 
     # Strip leading and trailing commas
-    lines = [line.strip(",") for line in text[start_line:end_line]]
+    lines = [line.strip().strip(",") for line in text[start_line:end_line]]
     return io.StringIO("\n".join(lines))
 
 
