@@ -13,7 +13,7 @@ import pandas as pd
 from sqlalchemy import create_engine, exc
 
 # Local
-from app.util import DB_NAME, extract_csv, extract_csv_from_html, get_db_url
+from app.util import DB_NAME, extract_csv, get_db_url
 
 
 AXIS_COLUMNS = {
@@ -74,12 +74,7 @@ def get_db_engine():
 
 def parse_data(path, catch_phrase):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
-    if path.endswith(".html"):
-        data = extract_csv_from_html(path)
-    else:
-        data = path
-
-    csv = extract_csv(data, catch_phrase)
+    csv = extract_csv(path, catch_phrase)
     transaction_date = catch_phrase
     data = (
         pd.read_csv(

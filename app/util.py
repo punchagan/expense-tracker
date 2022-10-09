@@ -1,11 +1,7 @@
-import csv
 import datetime
 import io
 import os
 from pathlib import Path
-
-from bs4 import BeautifulSoup
-
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
@@ -49,23 +45,6 @@ def extract_csv(path, catch_phrase="Transaction Date"):
     # Strip leading and trailing commas
     lines = [line.strip().strip(",") for line in text[start_line:end_line]]
     return io.StringIO("\n".join(lines))
-
-
-def extract_csv_from_html(htmlfile):
-    """Converts html to a CSV."""
-    with open(htmlfile) as f:
-        soup = BeautifulSoup(f, "html.parser")
-    table = soup.findAll("table")[1]
-    rows = table.findAll("tr")
-    csv_output = io.StringIO()
-    csv_rows = [
-        [cell.get_text().strip() for cell in row.findAll(["td", "th"])][2:-2]
-        for row in rows
-    ]
-    writer = csv.writer(csv_output)
-    writer.writerows(csv_rows)
-    csv_output.seek(0)
-    return csv_output
 
 
 def format_month(month):

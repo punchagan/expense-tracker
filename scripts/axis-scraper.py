@@ -1,8 +1,29 @@
+import csv
 import datetime
 import os
+from pathlib import Path
 import time
 
+from bs4 import BeautifulSoup
+
 TODAY = datetime.date.today()
+
+
+def extract_csv_from_html(htmlfile):
+    """Converts HTML to a CSV."""
+    with open(htmlfile) as f:
+        soup = BeautifulSoup(f, "html.parser")
+    table = soup.findAll("table")[1]
+    rows = table.findAll("tr")
+    csv_rows = [
+        [cell.get_text().strip() for cell in row.findAll(["td", "th"])][2:-2]
+        for row in rows
+    ]
+    to_filename = Path(htmlfile).with_suffix(".csv")
+    with open(to_filename, "w") as f:
+        writer = csv.writer(f)
+        writer.writerows(csv_rows)
+    print(f"Created {to_filename}")
 
 
 def login(sb):
@@ -83,7 +104,10 @@ def download_cc_statement(sb, start_date):
     )
     sb.wait_for_element_absent("div.loading_wrapper")
     time.sleep(1)
-    sb.assert_downloaded_file(f"CC_Statement_{TODAY:%Y_%m_%d}.html")
+    filename = f"CC_Statement_{TODAY:%Y_%m_%d}.html"
+    sb.assert_downloaded_file(filename)
+    path = sb.get_path_of_downloaded_file(filename)
+    extract_csv_from_html(path)
     sb.wait_for_element_absent("div.loading_wrapper")
     time.sleep(1)
     sb.click(".MuiPaper-root svg")
@@ -122,7 +146,10 @@ def download_cc_statement(sb, start_date):
         sb.wait_for_element_absent("div.loading_wrapper")
         time.sleep(3)
         name = f"{TODAY:%Y_%m_%d}({index + 1})"
-        sb.assert_downloaded_file(f"CC_Statement_{name}.html")
+        filename = f"CC_Statement_{name}.html"
+        sb.assert_downloaded_file(filename)
+        path = sb.get_path_of_downloaded_file(filename)
+        extract_csv_from_html(path)
         sb.wait_for_element_absent("div.loading_wrapper")
         time.sleep(3)
         sb.click(".MuiPaper-root svg")
