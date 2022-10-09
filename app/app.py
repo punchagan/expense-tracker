@@ -65,9 +65,7 @@ def load_data(start_date, end_date, db_last_modified):
     engine = get_db_engine()
     sql = f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date < '{end_date}'"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
-    return data.sort_values(
-        by=["date", "amount", "details"], ignore_index=True, ascending=False
-    )
+    return data
 
 
 @st.experimental_memo
@@ -137,10 +135,17 @@ def display_transactions(data, prev_data):
         n = [1, 1, 10, 1]
         data_columns = ["date", "amount", "details", "ignore"]
         hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
+        sort_by_amount = st.checkbox(label="Sort Transactions By Amount")
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
             headers[idx].write(f"**{name.title()}**")
         df = data_clean if hide_ignored_transactions else data
+        sort_by = (
+            ["amount", "date", "details"]
+            if sort_by_amount
+            else ["date", "amount", "details"]
+        )
+        df = df.sort_values(by=sort_by, ignore_index=True, ascending=False)
         df.apply(display_transaction, axis=1, n=n, data_columns=data_columns)
 
 
