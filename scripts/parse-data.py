@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 # Standard libs
-import csv
 from hashlib import sha1
-import io
 from pathlib import Path
 import sys
 
@@ -11,12 +9,11 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
-from bs4 import BeautifulSoup
 import pandas as pd
 from sqlalchemy import create_engine, exc
 
 # Local
-from app.util import DB_NAME, get_db_url
+from app.util import DB_NAME, extract_csv, extract_csv_from_html, get_db_url
 
 
 AXIS_COLUMNS = {
@@ -119,58 +116,6 @@ def parse_data(path, catch_phrase):
     data = data[data["id"].isin(new_ids)]
     rows = data.to_sql("expenses", engine, if_exists="append", index=False)
     print(f"Wrote {rows} rows from {path} to the {engine.url}")
-
-
-def extract_csv(path, catch_phrase="Transaction Date"):
-    """Extact CSV part of a file, based on a catch phrase in the header."""
-
-    if isinstance(path, io.StringIO):
-        text = path.read().strip().splitlines()
-
-    else:
-        with open(path) as f:
-            text = f.read().strip().splitlines()
-
-    if not text:
-        return io.StringIO("")
-
-    start_line = None
-    end_line = None
-
-    for num, line in enumerate(text):
-        # Set beginning of CSV if catch_phrase is found in a line
-        if catch_phrase in line:
-            start_line = num
-        # Set end of CSV as the first empty line after the header
-        elif start_line is not None and not line.strip():
-            end_line = num
-            break
-        else:
-            continue
-    else:
-        # If there's no empty line, continue until the end
-        end_line = num + 1
-
-    # Strip leading and trailing commas
-    lines = [line.strip(",") for line in text[start_line:end_line]]
-    return io.StringIO("\n".join(lines))
-
-
-def extract_csv_from_html(htmlfile):
-    """Converts html to a CSV."""
-    with open(htmlfile) as f:
-        soup = BeautifulSoup(f, "html.parser")
-    table = soup.findAll("table")[1]
-    rows = table.findAll("tr")
-    csv_output = io.StringIO()
-    csv_rows = [
-        [cell.get_text().strip() for cell in row.findAll(["td", "th"])][2:-2]
-        for row in rows
-    ]
-    writer = csv.writer(csv_output)
-    writer.writerows(csv_rows)
-    csv_output.seek(0)
-    return csv_output
 
 
 if __name__ == "__main__":
