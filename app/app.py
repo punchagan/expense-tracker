@@ -141,11 +141,12 @@ def display_transactions(data, prev_data):
             headers[idx].write(f"**{name.title()}**")
         df = data_clean if hide_ignored_transactions else data
         sort_by = (
-            ["amount", "date", "details"]
+            ["ignore", "amount", "date", "details"]
             if sort_by_amount
-            else ["date", "amount", "details"]
+            else ["ignore", "date", "amount", "details"]
         )
-        df = df.sort_values(by=sort_by, ignore_index=True, ascending=False)
+        ascending = [True] + [False] * (len(sort_by) - 1)
+        df = df.sort_values(by=sort_by, ignore_index=True, ascending=ascending)
         df.apply(display_transaction, axis=1, n=n, data_columns=data_columns)
 
 
