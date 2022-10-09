@@ -106,7 +106,7 @@ def extract_csv(path, catch_phrase="Transaction Date"):
             continue
     else:
         # If there's no empty line, continue until the end
-        end_line = num
+        end_line = num + 1
 
     # Strip leading and trailing commas
     lines = [line.strip(",") for line in text[start_line:end_line]]
