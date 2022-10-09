@@ -148,7 +148,7 @@ def display_sidebar(title):
         option = st.selectbox("Select Month to view", months, format_func=format_month)
         start_date = datetime.datetime(*option + (1,))
         _, num_days = calendar.monthrange(*option)
-        end_date = start_date + datetime.timedelta(days=num_days + 1)
+        end_date = start_date + datetime.timedelta(days=num_days)
 
         # Add a note about the last updated date
         updated = last_updated()
