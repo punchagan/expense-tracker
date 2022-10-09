@@ -40,15 +40,16 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("path", help="Path to the sbi account statement .xls file")
     parser.add_argument(
-        "--from-path", help="Path to the sbi account statement .xls file"
-    )
-    parser.add_argument(
-        "--to-folder-path",
+        "--to-folder",
         help="Folder path for the to be sbi account statement output .csv file",
+        default="sample",
     )
 
     args = parser.parse_args()
 
-    csv_path = read_file(str(args.from_path), str(args.to_folder_path).rstrip("/"))
-    print("Successfully converted the sbi account statement file to csv at:", csv_path)
+    csv_path = read_file(args.path, args.to_folder)
+    print(
+        f"Successfully converted the sbi account statement file to csv at: {csv_path}"
+    )
