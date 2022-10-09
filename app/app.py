@@ -18,6 +18,7 @@ import altair as alt
 
 # Local
 from app.model import Expense
+from app.util import DB_NAME, delta_percent, format_month, get_db_url
 
 DATE_FMT = "%d %b '%y"
 WEEKDAYS = [
@@ -29,14 +30,8 @@ WEEKDAYS = [
     "Saturday",
     "Sunday",
 ]
-DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 HERE = Path(__file__).parent
 ROOT = HERE.parent
-
-
-def get_db_url():
-    db_path = ROOT.joinpath(DB_NAME)
-    return f"sqlite:///{db_path}"
 
 
 @st.experimental_singleton
@@ -77,10 +72,6 @@ def get_months():
     return months
 
 
-def format_month(month):
-    return datetime.date(*(month + (1,))).strftime("%b, '%y")
-
-
 def set_ignore_value(row, value):
     session = get_sqlalchemy_session()
     row["ignore"] = value
@@ -110,10 +101,6 @@ def display_transaction(row, n, data_columns):
 
         if not written:
             columns[idx].write(value)
-
-
-def delta_percent(curr, prev):
-    return 100 if prev == 0 else (curr - prev) * 100 / prev
 
 
 def display_transactions(data, prev_data):
