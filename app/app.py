@@ -1,6 +1,7 @@
 # Standard library
 import calendar
 import datetime
+import json
 import os
 from pathlib import Path
 import sys
@@ -17,7 +18,7 @@ import numpy as np
 import altair as alt
 
 # Local
-from app.model import Expense
+from app.model import Category, Expense
 from app.util import DB_NAME, delta_percent, format_month, get_db_url
 
 DATE_FMT = "%d %b '%y"
@@ -49,9 +50,24 @@ def last_updated():
 def load_data(start_date, end_date, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
-    sql = f"SELECT * FROM expense WHERE date >= '{start_date}' AND date < '{end_date}'"
+    sql = f"""
+    SELECT e.*, JSON_GROUP_ARRAY(c.id) AS categories
+    FROM expense e
+    LEFT JOIN expense_category ec ON e.id = ec.expense_id
+    LEFT JOIN category c ON c.id = ec.category_id
+    WHERE e.date >= '{start_date}' AND e.date < '{end_date}'
+    GROUP BY e.id;
+    """
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
+    data.categories = data.categories.apply(lambda x: list(filter(None, json.loads(x))))
     return data
+
+
+@st.experimental_memo
+def get_categories():
+    session = get_sqlalchemy_session()
+    categories = session.query(Category).order_by("id").all()
+    return {cat.id: cat for cat in categories}
 
 
 @st.experimental_memo
@@ -73,7 +89,33 @@ def set_ignore_value(row, value):
     st.experimental_rerun()
 
 
-def display_transaction(row, n, data_columns):
+def set_categories_value(row, categories):
+    session = get_sqlalchemy_session()
+    id_ = row["id"]
+    expense = session.query(Expense).get({"id": id_})
+    all_categories = get_categories()
+
+    old_ids = {cat.id for cat in expense.categories}
+    new_ids = set(categories)
+    removed = old_ids - new_ids
+    for category in expense.categories:
+        if category.id in removed:
+            expense.categories.remove(category)
+
+    added = new_ids - old_ids
+    for category_id in added:
+        expense.categories.append(all_categories[category_id])
+
+    session.commit()
+    st.experimental_rerun()
+
+
+def format_category(category_id):
+    categories = get_categories()
+    return categories[category_id].name
+
+
+def display_transaction(row, n, data_columns, categories):
     columns = st.columns(n)
     id = row["id"]
     for idx, name in enumerate(data_columns):
@@ -84,7 +126,18 @@ def display_transaction(row, n, data_columns):
             written = True
             if ignore_value != value:
                 set_ignore_value(row, ignore_value)
-
+        elif name == "categories":
+            selected = columns[idx].multiselect(
+                label="Categories",
+                options=categories,
+                default=value,
+                key=f"category-{id}",
+                label_visibility="collapsed",
+                format_func=format_category,
+            )
+            if sorted(selected) != sorted(value):
+                set_categories_value(row, selected)
+            written = True
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
@@ -107,8 +160,8 @@ def display_transactions(data, prev_data):
     n = len(data)
 
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 10, 1]
-        data_columns = ["date", "amount", "details", "ignore"]
+        n = [1, 1, 6, 3, 1]
+        data_columns = ["date", "amount", "details", "categories", "ignore"]
         hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
         sort_by_amount = st.checkbox(label="Sort Transactions By Amount")
         headers = st.columns(n)
@@ -122,7 +175,14 @@ def display_transactions(data, prev_data):
         )
         ascending = [True] + [False] * (len(sort_by) - 1)
         df = df.sort_values(by=sort_by, ignore_index=True, ascending=ascending)
-        df.apply(display_transaction, axis=1, n=n, data_columns=data_columns)
+        categories = get_categories()
+        df.apply(
+            display_transaction,
+            axis=1,
+            n=n,
+            data_columns=data_columns,
+            categories=categories,
+        )
 
 
 def display_sidebar(title):
