@@ -43,11 +43,11 @@ arrives. You could then write a parser for this SMS messages file.
 You could use a simple Google Form to track Cash expenses that are not captured
 digitally.  You can make a copy of this [Sample
 form](https://docs.google.com/spreadsheets/d/1LWoj0L-OkYOJXmz8jmxMpUJ0kBIWuDSt_TqUisAXt-I/edit#gid=1684157822)
-from `File > Make a copy` and then use the copied form (accessible from `Tools
-> Manage Form > Go to live form`) to fill in your data. You can set the
-`GSHEET_ID` environment variable to the ID of the spreadsheet after setting the
-permissions to make the sheet viewable by anyone with the link.  The script
-`gdrive-csv.py` can then be used to fetch this data as a CSV.
+from `File > Make a copy` and then use the copied form (`Tools > Manage Form >
+Go to live form`) to fill in your data. You can set the `GSHEET_ID` environment
+variable to the ID of the spreadsheet after setting the permissions to make the
+sheet viewable by anyone with the link.  The script `gdrive-csv.py` can then be
+used to fetch this data as a CSV.
 
 ## Installation
 
