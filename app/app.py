@@ -77,8 +77,10 @@ def get_months():
     engine = get_db_engine()
     sql = f"SELECT date FROM expense"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"])
-    months = sorted(set(data["date"].apply(lambda x: (x.year, x.month))), reverse=True)
-    return months
+    months = set(data["date"].apply(lambda x: (x.year, x.month)))
+    years = {(y, 13) for (y, _) in months}
+    months = sorted(months.union(years), reverse=True)
+    return [(0, 13)] + months
 
 
 def set_ignore_value(row, value):
@@ -189,15 +191,28 @@ def display_transactions(data, prev_data):
         )
 
 
+def date_from_selection(year, month):
+    if year > 0 and 0 < month < 13:
+        start_date = datetime.datetime(year, month, 1)
+        _, num_days = calendar.monthrange(year, month)
+        end_date = start_date + datetime.timedelta(days=num_days)
+    elif year > 0:
+        start_date = datetime.datetime(year, 1, 1)
+        end_date = datetime.datetime(year + 1, 1, 1)
+    else:
+        start_date = datetime.datetime(1900, 1, 1)
+        end_date = datetime.datetime(2100, 1, 1)
+
+    return start_date, end_date
+
+
 def display_sidebar(title):
     with st.sidebar:
         st.title(title)
 
         months = get_months()
-        option = st.selectbox("Month", months, format_func=format_month)
-        start_date = datetime.datetime(*option + (1,))
-        _, num_days = calendar.monthrange(*option)
-        end_date = start_date + datetime.timedelta(days=num_days)
+        option = st.selectbox("Time Period", months, format_func=format_month, index=2)
+        start_date, end_date = date_from_selection(*option)
 
         categories = [0] + sorted(get_categories().keys())
         category = st.selectbox("Category", categories, format_func=format_category)
