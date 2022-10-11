@@ -49,7 +49,7 @@ def get_sqlalchemy_session():
 @st.experimental_memo
 def last_updated():
     engine = get_db_engine()
-    (date,) = engine.execute("SELECT MAX(date) FROM expenses").fetchone()
+    (date,) = engine.execute("SELECT MAX(date) FROM expense").fetchone()
     date, _ = date.split()
     return date
 
@@ -58,7 +58,7 @@ def last_updated():
 def load_data(start_date, end_date, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
-    sql = f"SELECT * FROM expenses WHERE date >= '{start_date}' AND date < '{end_date}'"
+    sql = f"SELECT * FROM expense WHERE date >= '{start_date}' AND date < '{end_date}'"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
     return data
 
@@ -66,7 +66,7 @@ def load_data(start_date, end_date, db_last_modified):
 @st.experimental_memo
 def get_months():
     engine = get_db_engine()
-    sql = f"SELECT date FROM expenses"
+    sql = f"SELECT date FROM expense"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"])
     months = sorted(set(data["date"].apply(lambda x: (x.year, x.month))), reverse=True)
     return months

@@ -64,19 +64,19 @@ def parse_data(path, csv_type):
     data = data.apply(get_transformed_row, axis=1, csv_type=csv_type)
 
     engine = get_db_engine()
-    data["id"].to_sql("new_ids", engine, if_exists="append", index=False)
+    data["id"].to_sql("new_id", engine, if_exists="append", index=False)
     try:
         new_ids = engine.execute(
-            "SELECT id FROM new_ids WHERE id NOT IN (SELECT id FROM expenses)"
+            "SELECT id FROM new_id WHERE id NOT IN (SELECT id FROM expense)"
         ).fetchall()
         new_ids = [id_ for (id_,) in new_ids]
-        engine.execute("DELETE FROM new_ids")
+        engine.execute("DELETE FROM new_id")
     except exc.OperationalError:
         new_ids = list(data["id"])
 
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
-    rows = data.to_sql("expenses", engine, if_exists="append", index=False)
+    rows = data.to_sql("expense", engine, if_exists="append", index=False)
     print(f"Wrote {rows} rows from {path} to the {engine.url}")
 
 
@@ -93,8 +93,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     engine = get_db_engine()
     try:
-        engine.execute("SELECT * FROM expenses").fetchone()
-        engine.execute("SELECT * FROM new_ids").fetchone()
+        engine.execute("SELECT * FROM expense").fetchone()
+        engine.execute("SELECT * FROM new_id").fetchone()
     except exc.OperationalError:
         sys.exit(f"Run `alembic upgrade head` before running {sys.argv[0]}.")
     parse_data(args.path, args.csv_type)

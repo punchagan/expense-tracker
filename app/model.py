@@ -6,7 +6,7 @@ Base = declarative_base()
 
 
 class Expense(Base):
-    __tablename__ = "expenses"
+    __tablename__ = "expense"
     id = sa.Column(sa.String(40), primary_key=True)
     date = sa.Column(sa.DateTime(), nullable=False)
     details = sa.Column(sa.Text(), nullable=False)
@@ -23,7 +23,7 @@ class Expense(Base):
 
 
 class NewID(Base):
-    __tablename__ = "new_ids"
+    __tablename__ = "new_id"
     id = sa.Column(sa.String(40), primary_key=True)
 
     def __repr__(self):
