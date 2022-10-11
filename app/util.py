@@ -9,7 +9,11 @@ DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 
 
 def delta_percent(curr, prev):
-    return 100 if prev == 0 else (curr - prev) * 100 / prev
+    if prev == 0:
+        sign = "-" if curr <= 0 else "+"
+        return f"{sign} unknown"
+    delta = (curr - prev) * 100 / prev
+    return f"{delta:.2f} %"
 
 
 def extract_csv(path, catch_phrase="Transaction Date"):
