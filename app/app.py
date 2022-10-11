@@ -31,7 +31,6 @@ def get_db_engine():
     return create_engine(get_db_url())
 
 
-@st.experimental_singleton
 def get_sqlalchemy_session():
     engine = get_db_engine()
     Session = sessionmaker(bind=engine)
