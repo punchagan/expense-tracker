@@ -21,15 +21,7 @@ from app.model import Expense
 from app.util import DB_NAME, delta_percent, format_month, get_db_url
 
 DATE_FMT = "%d %b '%y"
-WEEKDAYS = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-]
+WEEKDAYS = [datetime.date(2001, 1, i).strftime("%A") for i in range(1, 8)]
 HERE = Path(__file__).parent
 ROOT = HERE.parent
 
