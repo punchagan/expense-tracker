@@ -101,8 +101,8 @@ def display_transactions(data, prev_data):
     prev_data_clean = remove_ignored_rows(prev_data)
     total = data_clean["amount"].sum()
     prev_total = prev_data_clean["amount"].sum()
-    delta = f"{delta_percent(total, prev_total):.2f} %"
-    max_ = data_clean["amount"].max()
+    delta = delta_percent(total, prev_total)
+    max_ = data_clean["amount"].max() if len(data_clean) > 0 else 0
     col1.metric("Total Spend", f"₹ {total:.2f}", delta=delta, delta_color="inverse")
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
     n = len(data)
@@ -156,6 +156,9 @@ def remove_ignored_rows(data):
 def display_barcharts(data):
     # Filter ignored transactions
     data = remove_ignored_rows(data)
+
+    if len(data) == 0:
+        return
 
     # Show bar chart by day of month
     groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
