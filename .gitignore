@@ -4,3 +4,4 @@ __pycache__/
 /archived_files/
 /.envrc
 /*.db
+/conf.py
