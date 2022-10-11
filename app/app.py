@@ -18,6 +18,7 @@ import numpy as np
 import altair as alt
 
 # Local
+from app.data import CATEGORIES, create_categories
 from app.model import Category, Expense
 from app.util import DB_NAME, delta_percent, format_month, get_db_url
 
@@ -45,6 +46,19 @@ def last_updated():
     (date,) = engine.execute("SELECT MAX(date) FROM expense").fetchone()
     date, _ = date.split()
     return date
+
+
+@st.experimental_memo
+def ensure_categories_created():
+    session = get_sqlalchemy_session()
+    try:
+        from conf import EXTRA_CATEGORIES
+
+        categories = CATEGORIES + EXTRA_CATEGORIES
+    except ImportError:
+        categories = CATEGORIES
+    return create_categories(session, categories)
+    return None
 
 
 @st.experimental_memo
@@ -289,6 +303,7 @@ def main():
     # Detect DB changes and invalidate Streamlit memoized data
     db_last_modified = os.path.getmtime(db_path)
 
+    ensure_categories_created()
     categories = get_categories()
 
     start_date, end_date, category = display_sidebar(title, categories)
