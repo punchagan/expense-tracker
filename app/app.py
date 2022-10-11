@@ -25,6 +25,7 @@ DATE_FMT = "%d %b '%y"
 WEEKDAYS = [datetime.date(2001, 1, i).strftime("%A") for i in range(1, 8)]
 HERE = Path(__file__).parent
 ROOT = HERE.parent
+ALL_CATEGORY = 0
 
 
 @st.experimental_singleton
@@ -47,15 +48,16 @@ def last_updated():
 
 
 @st.experimental_memo
-def load_data(start_date, end_date, db_last_modified):
+def load_data(start_date, end_date, category, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
+    category_clause = "" if category == ALL_CATEGORY else f"AND c.id = {category}"
     sql = f"""
     SELECT e.*, JSON_GROUP_ARRAY(c.id) AS categories
     FROM expense e
     LEFT JOIN expense_category ec ON e.id = ec.expense_id
     LEFT JOIN category c ON c.id = ec.category_id
-    WHERE e.date >= '{start_date}' AND e.date < '{end_date}'
+    WHERE e.date >= '{start_date}' AND e.date < '{end_date}' {category_clause}
     GROUP BY e.id;
     """
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
@@ -111,6 +113,8 @@ def set_categories_value(row, categories):
 
 
 def format_category(category_id):
+    if category_id == ALL_CATEGORY:
+        return "All"
     categories = get_categories()
     return categories[category_id].name
 
@@ -188,17 +192,21 @@ def display_transactions(data, prev_data):
 def display_sidebar(title):
     with st.sidebar:
         st.title(title)
+
         months = get_months()
-        option = st.selectbox("Select Month to view", months, format_func=format_month)
+        option = st.selectbox("Month", months, format_func=format_month)
         start_date = datetime.datetime(*option + (1,))
         _, num_days = calendar.monthrange(*option)
         end_date = start_date + datetime.timedelta(days=num_days)
+
+        categories = [0] + sorted(get_categories().keys())
+        category = st.selectbox("Category", categories, format_func=format_category)
 
         # Add a note about the last updated date
         updated = last_updated()
         st.caption(f"Expense data last updated on {updated}")
 
-    return start_date, end_date
+    return start_date, end_date, category
 
 
 def previous_month(start_date):
@@ -265,11 +273,11 @@ def main():
     # Detect DB changes and invalidate Streamlit memoized data
     db_last_modified = os.path.getmtime(db_path)
 
-    start_date, end_date = display_sidebar(title)
-    data = load_data(start_date, end_date, db_last_modified)
+    start_date, end_date, category = display_sidebar(title)
+    data = load_data(start_date, end_date, category, db_last_modified)
 
     prev_start, prev_end = previous_month(start_date)
-    prev_data = load_data(prev_start, prev_end, db_last_modified)
+    prev_data = load_data(prev_start, prev_end, category, db_last_modified)
 
     display_barcharts(data)
     display_transactions(data, prev_data)
