@@ -52,7 +52,12 @@ def extract_csv(path, catch_phrase="Transaction Date"):
 
 
 def format_month(month):
-    return datetime.date(*(month + (1,))).strftime("%b, '%y")
+    year, month = month
+    if year > 0 and month < 13:
+        return datetime.date(year, month, 1).strftime(r"⠀⠀%b, '%y")
+    if year > 0:
+        return datetime.date(year, 1, 1).strftime("⠀%Y")
+    return "All"
 
 
 def get_db_url():
