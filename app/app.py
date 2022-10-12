@@ -93,11 +93,10 @@ def set_ignore_value(row, value):
     st.experimental_rerun()
 
 
-def set_categories_value(row, categories):
+def set_categories_value(row, categories, all_categories):
     session = get_sqlalchemy_session()
     id_ = row["id"]
     expense = session.query(Expense).get({"id": id_})
-    all_categories = get_categories()
 
     old_ids = {cat.id for cat in expense.categories}
     new_ids = set(categories)
@@ -114,10 +113,9 @@ def set_categories_value(row, categories):
     st.experimental_rerun()
 
 
-def format_category(category_id):
+def format_category(category_id, categories):
     if category_id == ALL_CATEGORY:
         return "All"
-    categories = get_categories()
     return categories[category_id].name
 
 
@@ -139,10 +137,10 @@ def display_transaction(row, n, data_columns, categories):
                 default=value,
                 key=f"category-{id}",
                 label_visibility="collapsed",
-                format_func=format_category,
+                format_func=lambda x: format_category(x, categories),
             )
             if sorted(selected) != sorted(value):
-                set_categories_value(row, selected)
+                set_categories_value(row, selected, all_categories=categories)
             written = True
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
@@ -153,7 +151,7 @@ def display_transaction(row, n, data_columns, categories):
             columns[idx].write(value)
 
 
-def display_transactions(data, prev_data):
+def display_transactions(data, prev_data, categories):
     col1, col2 = st.columns(2)
     data_clean = remove_ignored_rows(data)
     prev_data_clean = remove_ignored_rows(prev_data)
@@ -181,7 +179,6 @@ def display_transactions(data, prev_data):
         )
         ascending = [True] + [False] * (len(sort_by) - 1)
         df = df.sort_values(by=sort_by, ignore_index=True, ascending=ascending)
-        categories = get_categories()
         df.apply(
             display_transaction,
             axis=1,
@@ -206,7 +203,7 @@ def date_from_selection(year, month):
     return start_date, end_date
 
 
-def display_sidebar(title):
+def display_sidebar(title, categories):
     with st.sidebar:
         st.title(title)
 
@@ -214,8 +211,12 @@ def display_sidebar(title):
         option = st.selectbox("Time Period", months, format_func=format_month, index=2)
         start_date, end_date = date_from_selection(*option)
 
-        categories = [0] + sorted(get_categories().keys())
-        category = st.selectbox("Category", categories, format_func=format_category)
+        category_ids = [0] + sorted(categories.keys())
+        category = st.selectbox(
+            "Category",
+            category_ids,
+            format_func=lambda x: format_category(x, categories),
+        )
 
         # Add a note about the last updated date
         updated = last_updated()
@@ -288,14 +289,16 @@ def main():
     # Detect DB changes and invalidate Streamlit memoized data
     db_last_modified = os.path.getmtime(db_path)
 
-    start_date, end_date, category = display_sidebar(title)
+    categories = get_categories()
+
+    start_date, end_date, category = display_sidebar(title, categories)
     data = load_data(start_date, end_date, category, db_last_modified)
 
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
 
     display_barcharts(data)
-    display_transactions(data, prev_data)
+    display_transactions(data, prev_data, categories)
 
 
 if __name__ == "__main__":
