@@ -49,6 +49,13 @@ variable to the ID of the spreadsheet after setting the permissions to make the
 sheet viewable by anyone with the link.  The script `gdrive-csv.py` can then be
 used to fetch this data as a CSV.
 
+### User defined Categories
+
+The app itself provides a small list of categories and allows users to define
+their own list of categories. New categories can be added to the list of
+`EXTRA_CATEGORIES` list in `conf.py` placed at the root of the project.  You
+can copy `sample-conf.py` as `conf.py` and edit it.
+
 ## Installation
 
 - If you use `poetry`, you could just run `poetry install`.
