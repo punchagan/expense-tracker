@@ -124,3 +124,8 @@ the scripts described above.
   - Allow adding full names to account/merchants when full name cannot be
     inferred from downloaded transactions.
 - Allow adding comments on transactions, additional notes, etc.
+
+
+### Screenshot
+
+![Latest Screenshot](/latest-screenshot.png "Latest Screenshot with Sample DB")
