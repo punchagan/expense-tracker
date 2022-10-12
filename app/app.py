@@ -165,7 +165,7 @@ def display_transaction(row, n, data_columns, categories):
             columns[idx].write(value)
 
 
-def display_transactions(data, prev_data, categories):
+def display_summary_stats(data, prev_data):
     col1, col2 = st.columns(2)
     data_clean = remove_ignored_rows(data)
     prev_data_clean = remove_ignored_rows(prev_data)
@@ -175,8 +175,11 @@ def display_transactions(data, prev_data, categories):
     max_ = data_clean["amount"].max() if len(data_clean) > 0 else 0
     col1.metric("Total Spend", f"₹ {total:.2f}", delta=delta, delta_color="inverse")
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
-    n = len(data)
 
+
+def display_transactions(data, categories):
+    n = len(data)
+    data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
         n = [1, 1, 6, 3, 1]
         data_columns = ["date", "amount", "details", "categories", "ignore"]
@@ -312,8 +315,9 @@ def main():
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
 
+    display_summary_stats(data, prev_data)
     display_barcharts(data)
-    display_transactions(data, prev_data, categories)
+    display_transactions(data, categories)
 
 
 if __name__ == "__main__":
