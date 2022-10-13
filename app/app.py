@@ -133,7 +133,7 @@ def format_category(category_id, categories):
     return categories[category_id].name
 
 
-def display_transaction(row, n, data_columns, categories):
+def display_transaction(row, n, data_columns, categories, sidebar_container):
     columns = st.columns(n)
     id = row["id"]
     for idx, name in enumerate(data_columns):
@@ -160,6 +160,13 @@ def display_transaction(row, n, data_columns, categories):
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
             value = f"{value:.2f}"
+        elif name == "details":
+            written = True
+            columns[idx].write(value)
+            show_details = columns[idx].button("View Details", key=f"details-{id}")
+            if show_details:
+                sidebar_container.subheader("Expense Details")
+                sidebar_container.dataframe(row)
 
         if not written:
             columns[idx].write(value)
@@ -177,7 +184,7 @@ def display_summary_stats(data, prev_data):
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
 
 
-def display_transactions(data, categories):
+def display_transactions(data, categories, sidebar_container):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
@@ -202,6 +209,7 @@ def display_transactions(data, categories):
             n=n,
             data_columns=data_columns,
             categories=categories,
+            sidebar_container=sidebar_container,
         )
 
 
@@ -222,24 +230,27 @@ def date_from_selection(year, month):
 
 def display_sidebar(title, categories):
     with st.sidebar:
-        st.title(title)
+        sidebar_container = st.container()
 
-        months = get_months()
-        option = st.selectbox("Time Period", months, format_func=format_month, index=2)
-        start_date, end_date = date_from_selection(*option)
+    sidebar_container.title(title)
 
-        category_ids = [0] + sorted(categories.keys())
-        category = st.selectbox(
-            "Category",
-            category_ids,
-            format_func=lambda x: format_category(x, categories),
-        )
+    months = get_months()
+    option = sidebar_container.selectbox(
+        "Time Period", months, format_func=format_month, index=2
+    )
+    start_date, end_date = date_from_selection(*option)
 
-        # Add a note about the last updated date
-        updated = last_updated()
-        st.caption(f"Expense data last updated on {updated}")
+    category_ids = [0] + sorted(categories.keys())
+    category = sidebar_container.selectbox(
+        "Category",
+        category_ids,
+        format_func=lambda x: format_category(x, categories),
+    )
 
-    return start_date, end_date, category
+    # Add a note about the last updated date
+    updated = last_updated()
+    sidebar_container.caption(f"Expense data last updated on {updated}")
+    return start_date, end_date, category, sidebar_container
 
 
 def previous_month(start_date):
@@ -309,7 +320,9 @@ def main():
     ensure_categories_created()
     categories = get_categories()
 
-    start_date, end_date, category = display_sidebar(title, categories)
+    start_date, end_date, category, sidebar_container = display_sidebar(
+        title, categories
+    )
     data = load_data(start_date, end_date, category, db_last_modified)
 
     prev_start, prev_end = previous_month(start_date)
@@ -317,7 +330,7 @@ def main():
 
     display_summary_stats(data, prev_data)
     display_barcharts(data)
-    display_transactions(data, categories)
+    display_transactions(data, categories, sidebar_container)
 
 
 if __name__ == "__main__":
