@@ -76,6 +76,7 @@ def parse_data(path, csv_type):
 
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
+    data["source"] = csv_type
     rows = data.to_sql("expense", engine, if_exists="append", index=False)
     print(f"Wrote {rows} rows from {path} to the {engine.url}")
 

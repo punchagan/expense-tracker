@@ -20,6 +20,9 @@ class Expense(Base):
     categories = relationship(
         "Category", secondary="expense_category", backref="expenses"
     )
+    source = sa.Column(
+        sa.String(10), server_default=sa.sql.expression.literal(""), nullable=False
+    )
 
     def __repr__(self):
         return f"Expense(id={self.id!r}, date={self.date!r}, amount={self.amount!r}, details={self.details!r}, ignore={self.ignore!r})"
