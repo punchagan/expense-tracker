@@ -262,12 +262,12 @@ def display_barcharts(data):
 
     # Show bar chart by day of month
     groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
-    st.bar_chart(groups.sum(["amount"]))
+    st.bar_chart(groups.sum(numeric_only=True)["amount"])
 
     # Show bar chart by weekday
     weekday_amounts = (
         data.groupby(by=lambda idx: data.iloc[idx]["date"].day_name())
-        .sum(["amount"])
+        .sum(numeric_only=True)
         .reset_index(names="weekdays")
         .sort_values(by="weekdays", key=lambda x: [WEEKDAYS.index(e) for e in x])
     )
