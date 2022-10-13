@@ -22,13 +22,13 @@ def get_transformed_row(x, csv_type):
     columns = ["id", "date", "details", "amount"]
     x = x.fillna(0)
 
-    header_type = CSV_TYPES[csv_type]
-    date = x[header_type["date"]]
-    details = x[header_type["details"]]
+    header_columns = CSV_TYPES[csv_type].columns
+    date = x[header_columns["date"]]
+    details = x[header_columns["details"]]
     amount_h, credit_h, debit_h = (
-        header_type["amount"],
-        header_type["credit"],
-        header_type["debit"],
+        header_columns["amount"],
+        header_columns["credit"],
+        header_columns["debit"],
     )
     amount = x[amount_h] if amount_h else x[debit_h] - x[credit_h]
     hash_text = f"{details}-{date}-{amount}"
@@ -42,7 +42,7 @@ def get_db_engine():
 
 def parse_data(path, csv_type):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
-    transaction_date = CSV_TYPES[csv_type]["date"]
+    transaction_date = CSV_TYPES[csv_type].columns["date"]
     data = (
         pd.read_csv(
             path,
