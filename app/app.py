@@ -181,8 +181,8 @@ def display_transactions(data, categories):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 6, 3, 1]
-        data_columns = ["date", "amount", "details", "categories", "ignore"]
+        n = [1, 1, 1, 1, 3, 5]
+        data_columns = ["ignore", "date", "amount", "source", "categories", "details"]
         hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
         sort_by_amount = st.checkbox(label="Sort Transactions By Amount")
         headers = st.columns(n)
