@@ -16,6 +16,7 @@ ROOT = THIS.parent.parent
 def test_capture_screenshot(sb):
     sb.open(f"http://localhost:{sb.data}/")
     time.sleep(2)
+    sb.click(".streamlit-expander button")
     path = str(
         Path(__file__).parent.parent.joinpath("latest-screenshot.png").absolute()
     )
