@@ -1,5 +1,6 @@
 import datetime
 import io
+import json
 import os
 from pathlib import Path
 
@@ -63,3 +64,19 @@ def format_month(month):
 def get_db_url():
     db_path = ROOT.joinpath(DB_NAME)
     return f"sqlite:///{db_path}"
+
+
+def get_country_data(country):
+    if country == "India":
+        cities = ROOT.joinpath("data", "indian-cities.json")
+        countries = ROOT.joinpath("data", "country-codes.json")
+        with open(countries) as f:
+            countries_data = json.load(f)
+            country = [c for c in countries_data if c["name"] == country][0]
+
+        with open(cities) as f:
+            cities_data = json.load(f)
+
+        return country, cities_data
+    else:
+        raise NotImplementedError
