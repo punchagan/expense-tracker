@@ -44,7 +44,7 @@ def get_db_engine():
     return create_engine(get_db_url())
 
 
-def transform_data(data, csv_type):
+def transform_data(data, csv_type, engine):
     source_cls = CSV_TYPES[csv_type]
     data["source"] = csv_type
     country, cities = get_country_data(COUNTRY)
@@ -54,8 +54,24 @@ def transform_data(data, csv_type):
         source_cls.parse_details, axis=1, country=country, cities=cities
     ).apply(lambda x: pd.Series(x.__dict__))
     data = pd.concat([data, transactions], axis=1)
-    data["counterparty_name_p"] = data["counterparty_name"]
     data["counterparty_bank_p"] = data["counterparty_bank"]
+
+    # Modify counterparty_name based on previously manually updated names
+    data["counterparty_name_p"] = data["counterparty_name"]
+    parsed_names = tuple(set(data["counterparty_name_p"]) - set([""]))
+    if parsed_names:
+        query = (
+            "SELECT counterparty_name_p, counterparty_name FROM expense"
+            f" WHERE counterparty_name_p IN {parsed_names} AND source = '{csv_type}'"
+        )
+        names = {
+            parsed_name: name
+            for parsed_name, name in engine.execute(query).fetchall()
+            if parsed_name != name
+        }
+        data["counterparty_name"] = data["counterparty_name"].apply(
+            lambda x: names.get(x, x)
+        )
     return data
 
 
@@ -97,7 +113,7 @@ def parse_data(path, csv_type):
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
     if not data.empty:
-        data = transform_data(data, csv_type)
+        data = transform_data(data, csv_type, engine)
         rows = data.to_sql("expense", engine, if_exists="append", index=False)
     else:
         rows = len(data)
