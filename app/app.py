@@ -97,22 +97,12 @@ def get_months():
     return [(0, 13)] + months
 
 
-def set_ignore_value(row, value):
+def set_column_value(row, column_name, value):
     session = get_sqlalchemy_session()
-    row["ignore"] = value
+    row[column_name] = value
     id_ = row["id"]
     expense = session.query(Expense).get({"id": id_})
-    expense.ignore = value
-    session.commit()
-    st.experimental_rerun()
-
-
-def set_remarks_value(row, value):
-    session = get_sqlalchemy_session()
-    row["remarks"] = value
-    id_ = row["id"]
-    expense = session.query(Expense).get({"id": id_})
-    expense.remarks = value
+    setattr(expense, column_name, value)
     session.commit()
     st.experimental_rerun()
 
@@ -154,7 +144,7 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
             ignore_value = col.checkbox("", value=value, key=f"ignore-{id}")
             written = True
             if ignore_value != value:
-                set_ignore_value(row, ignore_value)
+                set_column_value(row, "ignore", ignore_value)
         elif name == "categories":
             selected = col.multiselect(
                 label="Categories",
@@ -182,7 +172,7 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
                 key=f"remarks-{id}",
             )
             if remarks != value:
-                set_remarks_value(row, remarks)
+                set_column_value(row, "remarks", remarks)
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
