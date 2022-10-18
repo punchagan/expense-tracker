@@ -107,6 +107,18 @@ def set_column_value(row, column_name, value):
     st.experimental_rerun()
 
 
+def update_similar_counterparty_names(row):
+    engine = get_db_engine()
+    parsed_name = row["counterparty_name_p"]
+    name = row["counterparty_name"]
+    source = row["source"]
+    query = (
+        f"UPDATE expense SET counterparty_name = '{name}' "
+        f" WHERE counterparty_name_p = '{parsed_name}' AND source = '{source}'"
+    )
+    engine.execute(query)
+
+
 def set_categories_value(row, categories, all_categories):
     session = get_sqlalchemy_session()
     id_ = row["id"]
@@ -172,7 +184,12 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
                 key=f"{name}-{id}",
             )
             if new_value != value:
-                set_column_value(row, name, new_value)
+                if name == "counterparty_name":
+                    row["counterparty_name"] = new_value
+                    update_similar_counterparty_names(row)
+                    st.experimental_rerun()
+                else:
+                    set_column_value(row, name, new_value)
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
