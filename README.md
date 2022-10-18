@@ -119,20 +119,17 @@ the scripts described above.
     - View barcharts of expenses by day of week
   - Filter by categories for expenses
 - Mark transactions as ignored transactions from the UI
-- Allow assigning one or more categories for transactions from the UI
-- Allow adding remarks on transactions
+- Assign one or more categories for transactions from the UI
+- Add remarks on transactions
+- Edit merchant (counterparty) names from the UI, since data from Banks usually
+  truncates names.
 
 ### To be implemented/ideas
 
 - Automatically add categories for similar transactions
-- Mark some transactions as repayment for another transaction, when spending in a group
-  - Just grouping a bunch of transactions together might be good? May just be a
-    tag? Or treating them as a single transaction in the UI?
-- Filter by transactions made to a particular account/merchant
-  - Allow adding full names to account/merchants when full name cannot be
-    inferred from downloaded transactions.
-
-
+- Mark some transactions as repayment for another transaction. Useful when
+  splitting a bill after you have paid it.
+- Filter by counterparty name
 
 ### Screenshot
 
