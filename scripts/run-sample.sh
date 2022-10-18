@@ -12,6 +12,7 @@ $PARSE ./sample/axis-cc-statement.csv --csv-type axis-cc
 $PARSE ./sample/axis-cc-statement-1.csv --csv-type axis-cc
 $PARSE ./sample/axis-statement.csv
 $PARSE ./sample/sbi-statement.csv --csv-type sbi
+$PARSE ./sample/cash.csv --csv-type cash
 if [ -z "${1:-}" ]; then
     streamlit run app/app.py
 fi
