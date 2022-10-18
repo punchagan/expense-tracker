@@ -44,6 +44,21 @@ def get_db_engine():
     return create_engine(get_db_url())
 
 
+def transform_data(data, csv_type):
+    source_cls = CSV_TYPES[csv_type]
+    data["source"] = csv_type
+    country, cities = get_country_data(COUNTRY)
+    country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
+    cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
+    transactions = data.apply(
+        source_cls.parse_details, axis=1, country=country, cities=cities
+    ).apply(lambda x: pd.Series(x.__dict__))
+    data = pd.concat([data, transactions], axis=1)
+    data["counterparty_name_p"] = data["counterparty_name"]
+    data["counterparty_bank_p"] = data["counterparty_bank"]
+    return data
+
+
 def parse_data(path, csv_type):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
     source_cls = CSV_TYPES[csv_type]
@@ -82,16 +97,7 @@ def parse_data(path, csv_type):
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
     if not data.empty:
-        data["source"] = csv_type
-        country, cities = get_country_data(COUNTRY)
-        country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
-        cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
-        transactions = data.apply(
-            source_cls.parse_details, axis=1, country=country, cities=cities
-        ).apply(lambda x: pd.Series(x.__dict__))
-        data = pd.concat([data, transactions], axis=1)
-        data["counterparty_name_p"] = data["counterparty_name"]
-        data["counterparty_bank_p"] = data["counterparty_bank"]
+        data = transform_data(data, csv_type)
         rows = data.to_sql("expense", engine, if_exists="append", index=False)
     else:
         rows = len(data)
