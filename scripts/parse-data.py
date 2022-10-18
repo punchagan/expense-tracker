@@ -81,17 +81,20 @@ def parse_data(path, csv_type):
 
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
-    country, cities = get_country_data(COUNTRY)
-    country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
-    cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
-    transactions = data.apply(
-        source_cls.parse_details, axis=1, country=country, cities=cities
-    ).apply(lambda x: pd.Series(x.__dict__))
-    data = pd.concat([data, transactions], axis=1)
-    data["counterparty_name_p"] = data["counterparty_name"]
-    data["counterparty_bank_p"] = data["counterparty_bank"]
-    data["source"] = csv_type
-    rows = data.to_sql("expense", engine, if_exists="append", index=False)
+    if not data.empty:
+        data["source"] = csv_type
+        country, cities = get_country_data(COUNTRY)
+        country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
+        cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
+        transactions = data.apply(
+            source_cls.parse_details, axis=1, country=country, cities=cities
+        ).apply(lambda x: pd.Series(x.__dict__))
+        data = pd.concat([data, transactions], axis=1)
+        data["counterparty_name_p"] = data["counterparty_name"]
+        data["counterparty_bank_p"] = data["counterparty_bank"]
+        rows = data.to_sql("expense", engine, if_exists="append", index=False)
+    else:
+        rows = len(data)
     print(f"Wrote {rows} rows from {path} to the {engine.url}")
 
 
