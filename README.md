@@ -27,16 +27,24 @@ The repository currently contains:
 
 But, other scrapers/parsers could be easily written.
 
+### Parsing transactional SMS messages
+
 Another commonly used approach for tools like this is to parse SMS's sent by
 banks to get information about expenses. I considered this approach initially,
 but it turned out that that SMS's sent by my bank don't have enough information
-all the time. If you'd like to use this approach, you could setup a program
-like [Macro
+all the time.
+
+If you'd like to use this approach, you could setup a program like [Macro
 Droid](https://play.google.com/store/search?q=macro%20droid&c=apps&hl=en_IN&gl=US)
 or
 [Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm&hl=en_IN&gl=US)
 to update a text file on your phone, each time a new (transactional) SMS
 arrives. You could then write a parser for this SMS messages file.
+
+Or use something like the [Android Incoming SMS Gateway
+Webhook](https://github.com/bogkonstantin/android_income_sms_gateway_webhook)
+that sends each text message to a Webhook as it arrives. You could write a
+webhook that captures the SMS text, parses it and writes it to the DB.
 
 ### Cash transactions
 
