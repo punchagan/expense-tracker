@@ -107,6 +107,16 @@ def set_ignore_value(row, value):
     st.experimental_rerun()
 
 
+def set_remarks_value(row, value):
+    session = get_sqlalchemy_session()
+    row["remarks"] = value
+    id_ = row["id"]
+    expense = session.query(Expense).get({"id": id_})
+    expense.remarks = value
+    session.commit()
+    st.experimental_rerun()
+
+
 def set_categories_value(row, categories, all_categories):
     session = get_sqlalchemy_session()
     id_ = row["id"]
@@ -163,6 +173,16 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
             if show_details:
                 sidebar_container.subheader("Expense Details")
                 sidebar_container.dataframe(row)
+        elif name == "remarks":
+            written = True
+            remarks = col.text_input(
+                "Remarks",
+                value=value,
+                label_visibility="collapsed",
+                key=f"remarks-{id}",
+            )
+            if remarks != value:
+                set_remarks_value(row, remarks)
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
