@@ -23,6 +23,19 @@ class Expense(Base):
     source = sa.Column(
         sa.String(10), server_default=sa.sql.expression.literal(""), nullable=False
     )
+    transaction_id = sa.Column(sa.String(20), nullable=True)
+    transaction_type = sa.Column(
+        sa.String(10),
+        default="Cash",
+        server_default=sa.sql.expression.literal("Cash"),
+        nullable=False,
+    )
+    counterparty_name = sa.Column(sa.String(100), nullable=True)
+    counterparty_name_p = sa.Column(sa.String(100), nullable=True)
+    counterparty_type = sa.Column(sa.String(20), nullable=True)
+    counterparty_bank = sa.Column(sa.String(100), nullable=True)
+    counterparty_bank_p = sa.Column(sa.String(100), nullable=True)
+    remarks = sa.Column(sa.Text(), nullable=True)
 
     def __repr__(self):
         return f"Expense(id={self.id!r}, date={self.date!r}, amount={self.amount!r}, details={self.details!r}, ignore={self.ignore!r})"
