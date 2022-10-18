@@ -139,13 +139,14 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
     for idx, name in enumerate(data_columns):
         value = row.get(name)
         written = False
+        col = columns[idx]
         if name == "ignore":
-            ignore_value = columns[idx].checkbox("", value=value, key=f"ignore-{id}")
+            ignore_value = col.checkbox("", value=value, key=f"ignore-{id}")
             written = True
             if ignore_value != value:
                 set_ignore_value(row, ignore_value)
         elif name == "categories":
-            selected = columns[idx].multiselect(
+            selected = col.multiselect(
                 label="Categories",
                 options=categories,
                 default=value,
@@ -158,7 +159,7 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
             written = True
         elif name == "details":
             written = True
-            show_details = columns[idx].button("Details", key=f"details-{id}")
+            show_details = col.button("Details", key=f"details-{id}")
             if show_details:
                 sidebar_container.subheader("Expense Details")
                 sidebar_container.dataframe(row)
@@ -168,7 +169,7 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
             value = f"{value:.2f}"
 
         if not written:
-            columns[idx].write(value)
+            col.write(value)
 
 
 def display_summary_stats(data, prev_data):
