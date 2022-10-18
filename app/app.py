@@ -156,17 +156,16 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
             if sorted(selected) != sorted(value):
                 set_categories_value(row, selected, all_categories=categories)
             written = True
+        elif name == "details":
+            written = True
+            show_details = columns[idx].button("Details", key=f"details-{id}")
+            if show_details:
+                sidebar_container.subheader("Expense Details")
+                sidebar_container.dataframe(row)
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
             value = f"{value:.2f}"
-        elif name == "details":
-            written = True
-            columns[idx].write(value)
-            show_details = columns[idx].button("View Details", key=f"details-{id}")
-            if show_details:
-                sidebar_container.subheader("Expense Details")
-                sidebar_container.dataframe(row)
 
         if not written:
             columns[idx].write(value)
@@ -188,12 +187,21 @@ def display_transactions(data, categories, sidebar_container):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 1, 1, 3, 5]
-        data_columns = ["ignore", "date", "amount", "source", "categories", "details"]
+        n = [1, 1, 1, 2, 2, 4, 1]
+        data_columns = [
+            "ignore",
+            "date",
+            "amount",
+            "counterparty_name",
+            "remarks",
+            "categories",
+            "details",
+        ]
         hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
         sort_by_amount = st.checkbox(label="Sort Transactions By Amount")
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
+            name = name.replace("_", " ")
             headers[idx].write(f"**{name.title()}**")
         df = data_clean if hide_ignored_transactions else data
         sort_by = (
