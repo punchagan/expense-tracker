@@ -44,7 +44,7 @@ def main():
         env=env,
     )
     time.sleep(3)
-    pytest.main([str(THIS), "--firefox", "--data", port, "--window-size", "1920,1080"])
+    pytest.main([str(THIS), "--firefox", "--data", port, "--window-size", "1920,1500"])
     p.kill()
 
 
