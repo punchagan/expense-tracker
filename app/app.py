@@ -163,16 +163,16 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
             if show_details:
                 sidebar_container.subheader("Expense Details")
                 sidebar_container.dataframe(row)
-        elif name == "remarks":
+        elif name in {"remarks", "counterparty_name"}:
             written = True
-            remarks = col.text_input(
-                "Remarks",
+            new_value = col.text_input(
+                name.replace("_", " ").title(),
                 value=value,
                 label_visibility="collapsed",
-                key=f"remarks-{id}",
+                key=f"{name}-{id}",
             )
-            if remarks != value:
-                set_column_value(row, "remarks", remarks)
+            if new_value != value:
+                set_column_value(row, name, new_value)
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
         elif name == "amount":
@@ -198,7 +198,7 @@ def display_transactions(data, categories, sidebar_container):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 1, 2, 2, 4, 1]
+        n = [1, 1, 1, 2, 2, 3, 1]
         data_columns = [
             "ignore",
             "date",
