@@ -112,18 +112,18 @@ the scripts described above.
   - Filter by categories for expenses
 - Mark transactions as ignored transactions from the UI
 - Allow assigning one or more categories for transactions from the UI
+- Allow adding remarks on transactions
 
 ### To be implemented/ideas
 
 - Automatically add categories for similar transactions
-- Categorize transactions by type (UPI/CC/AC/etc)
 - Mark some transactions as repayment for another transaction, when spending in a group
   - Just grouping a bunch of transactions together might be good? May just be a
     tag? Or treating them as a single transaction in the UI?
 - Filter by transactions made to a particular account/merchant
   - Allow adding full names to account/merchants when full name cannot be
     inferred from downloaded transactions.
-- Allow adding comments on transactions, additional notes, etc.
+
 
 
 ### Screenshot
