@@ -47,7 +47,7 @@ class AxisStatement(Source):
             transaction = Transaction(
                 transaction_id=transaction_id,
                 transaction_type=transaction_type,
-                counterparty_name=to_name,
+                counterparty_name=to_name.title(),
                 counterparty_type=to_type,
                 counterparty_bank=to_bank,
                 remarks=remarks,
@@ -83,7 +83,7 @@ class AxisCCStatement(Source):
         return Transaction(
             transaction_id=transaction_id,
             transaction_type="CC",
-            counterparty_name=merchant,
+            counterparty_name=merchant.title(),
             counterparty_type="Merchant",
         )
 
