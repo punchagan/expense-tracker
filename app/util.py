@@ -96,3 +96,10 @@ def get_country_data(country):
         return country, cities_data
     else:
         raise NotImplementedError
+
+
+def previous_month(start_date):
+    end = start_date
+    prev = end - datetime.timedelta(days=1)
+    start = datetime.date(prev.year, prev.month, 1)
+    return start, end

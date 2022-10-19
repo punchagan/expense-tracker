@@ -25,6 +25,7 @@ from app.util import (
     delta_percent,
     format_month,
     get_db_url,
+    previous_month,
 )
 
 DATE_FMT = "%d %b '%y"
@@ -283,13 +284,6 @@ def display_sidebar(title, categories):
     )
 
     return start_date, end_date, category, sidebar_container
-
-
-def previous_month(start_date):
-    end = start_date
-    prev = end - datetime.timedelta(days=1)
-    start = datetime.date(prev.year, prev.month, 1)
-    return start, end
 
 
 def remove_ignored_rows(data):
