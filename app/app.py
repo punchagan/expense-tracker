@@ -264,6 +264,15 @@ def date_from_selection(year, month):
     return start_date, end_date
 
 
+def add_counterparty_filter(sidebar_container, data):
+    counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
+    counterparty = sidebar_container.selectbox("Counter Party", counterparties)
+    # Add a note about the last updated date
+    updated = last_updated()
+    sidebar_container.caption(f"Expense data last updated on {updated}")
+    return counterparty
+
+
 def display_sidebar(title, categories):
     with st.sidebar:
         sidebar_container = st.container()
@@ -283,9 +292,6 @@ def display_sidebar(title, categories):
         format_func=lambda x: format_category(x, categories),
     )
 
-    # Add a note about the last updated date
-    updated = last_updated()
-    sidebar_container.caption(f"Expense data last updated on {updated}")
     return start_date, end_date, category, sidebar_container
 
 
@@ -360,9 +366,14 @@ def main():
         title, categories
     )
     data = load_data(start_date, end_date, category, db_last_modified)
-
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
+
+    counterparty = add_counterparty_filter(sidebar_container, data)
+
+    if counterparty != "All":
+        data = data[data["counterparty_name"] == counterparty]
+        prev_data = prev_data[prev_data["counterparty_name"] == counterparty]
 
     display_summary_stats(data, prev_data)
     display_barcharts(data)
