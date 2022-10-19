@@ -42,7 +42,7 @@ class AxisStatement(Source):
                 to_name,
                 to_bank,
                 remarks,
-            ) = details.split("/")
+            ) = [each.strip() for each in details.split("/")]
             to_type = "Merchant" if to_type == "P2M" else "Person"
             transaction = Transaction(
                 transaction_id=transaction_id,
@@ -113,7 +113,7 @@ class Cash(Source):
     def parse_details(row, country, cities):
         details = row["details"]
         assert details.startswith("Cash/")
-        transaction_type, remarks = details.split("/")
+        transaction_type, remarks = [each.strip() for each in details.split("/")]
         return Transaction(transaction_type=transaction_type, remarks=remarks)
 
 
