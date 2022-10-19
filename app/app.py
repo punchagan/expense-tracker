@@ -287,7 +287,7 @@ def display_sidebar(title, categories):
 
 
 def remove_ignored_rows(data):
-    return data[data["ignore"] == False].reset_index(drop=True)
+    return data[~data["ignore"]].reset_index(drop=True)
 
 
 def display_barcharts(data):
