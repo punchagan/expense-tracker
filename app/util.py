@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import io
 import json
@@ -7,6 +8,21 @@ from pathlib import Path
 HERE = Path(__file__).parent
 ROOT = HERE.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
+
+
+def daterange_from_year_month(year, month):
+    if year > 0 and 0 < month < 13:
+        start_date = datetime.datetime(year, month, 1)
+        _, num_days = calendar.monthrange(year, month)
+        end_date = start_date + datetime.timedelta(days=num_days)
+    elif year > 0:
+        start_date = datetime.datetime(year, 1, 1)
+        end_date = datetime.datetime(year + 1, 1, 1)
+    else:
+        start_date = datetime.datetime(1900, 1, 1)
+        end_date = datetime.datetime(2100, 1, 1)
+
+    return start_date, end_date
 
 
 def delta_percent(curr, prev):

@@ -1,5 +1,4 @@
 # Standard library
-import calendar
 import datetime
 import json
 import os
@@ -20,7 +19,13 @@ import altair as alt
 # Local
 from app.data import CATEGORIES, create_categories
 from app.model import Category, Expense
-from app.util import DB_NAME, delta_percent, format_month, get_db_url
+from app.util import (
+    DB_NAME,
+    daterange_from_year_month,
+    delta_percent,
+    format_month,
+    get_db_url,
+)
 
 DATE_FMT = "%d %b '%y"
 WEEKDAYS = [datetime.date(2001, 1, i).strftime("%A") for i in range(1, 8)]
@@ -249,21 +254,6 @@ def display_transactions(data, categories, sidebar_container):
         )
 
 
-def date_from_selection(year, month):
-    if year > 0 and 0 < month < 13:
-        start_date = datetime.datetime(year, month, 1)
-        _, num_days = calendar.monthrange(year, month)
-        end_date = start_date + datetime.timedelta(days=num_days)
-    elif year > 0:
-        start_date = datetime.datetime(year, 1, 1)
-        end_date = datetime.datetime(year + 1, 1, 1)
-    else:
-        start_date = datetime.datetime(1900, 1, 1)
-        end_date = datetime.datetime(2100, 1, 1)
-
-    return start_date, end_date
-
-
 def add_counterparty_filter(sidebar_container, data):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
     counterparty = sidebar_container.selectbox("Counter Party", counterparties)
@@ -283,7 +273,7 @@ def display_sidebar(title, categories):
     option = sidebar_container.selectbox(
         "Time Period", months, format_func=format_month, index=2
     )
-    start_date, end_date = date_from_selection(*option)
+    start_date, end_date = daterange_from_year_month(*option)
 
     category_ids = [0] + sorted(categories.keys())
     category = sidebar_container.selectbox(
