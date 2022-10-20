@@ -33,6 +33,7 @@ WEEKDAYS = [datetime.date(2001, 1, i).strftime("%A") for i in range(1, 8)]
 HERE = Path(__file__).parent
 ROOT = HERE.parent
 ALL_CATEGORY = 0
+NO_CATEGORY = -1
 
 
 @st.experimental_singleton
@@ -71,17 +72,21 @@ def ensure_categories_created():
 def load_data(start_date, end_date, category, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
-    category_clause = "" if category == ALL_CATEGORY else f"AND c.id = {category}"
+    category_clause = (
+        "" if category == ALL_CATEGORY else f"AND e.category_id = {category}"
+    )
     sql = f"""
-    SELECT e.*, JSON_GROUP_ARRAY(c.id) AS categories
+    SELECT e.*
     FROM expense e
-    LEFT JOIN expense_category ec ON e.id = ec.expense_id
-    LEFT JOIN category c ON c.id = ec.category_id
-    WHERE e.date >= '{start_date}' AND e.date < '{end_date}' {category_clause}
-    GROUP BY e.id;
+    WHERE e.date >= '{start_date}' AND e.date < '{end_date}' {category_clause};
     """
-    data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype={"ignore": bool})
-    data.categories = data.categories.apply(lambda x: list(filter(None, json.loads(x))))
+    data = pd.read_sql_query(
+        sql,
+        engine,
+        parse_dates=["date"],
+        dtype={"ignore": bool, "category_id": "Int64"},
+    )
+    data["category_id"].fillna(NO_CATEGORY, inplace=True)
     return data
 
 
@@ -125,28 +130,10 @@ def update_similar_counterparty_names(row):
     engine.execute(query)
 
 
-def set_categories_value(row, categories, all_categories):
-    session = get_sqlalchemy_session()
-    id_ = row["id"]
-    expense = session.query(Expense).get({"id": id_})
-
-    old_ids = {cat.id for cat in expense.categories}
-    new_ids = set(categories)
-    removed = old_ids - new_ids
-    for category in expense.categories:
-        if category.id in removed:
-            expense.categories.remove(category)
-
-    added = new_ids - old_ids
-    for category_id in added:
-        expense.categories.append(all_categories[category_id])
-
-    session.commit()
-    st.experimental_rerun()
-
-
 def format_category(category_id, categories):
-    if category_id == ALL_CATEGORY:
+    if category_id is NO_CATEGORY:
+        return "Uncategorized"
+    elif category_id == ALL_CATEGORY:
         return "All"
     return categories[category_id].name
 
@@ -163,17 +150,20 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
             written = True
             if ignore_value != value:
                 set_column_value(row, "ignore", ignore_value)
-        elif name == "categories":
-            selected = col.multiselect(
-                label="Categories",
-                options=categories,
-                default=value,
+        elif name == "category_id":
+            options = [NO_CATEGORY] + sorted(categories)
+            selected = col.selectbox(
+                label="Category",
+                options=options,
+                index=options.index(value),
                 key=f"category-{id}",
                 label_visibility="collapsed",
                 format_func=lambda x: format_category(x, categories),
             )
-            if sorted(selected) != sorted(value):
-                set_categories_value(row, selected, all_categories=categories)
+            if selected != value:
+                if selected <= 0:
+                    selected = None
+                set_column_value(row, "category_id", selected)
             written = True
         elif name == "details":
             written = True
@@ -221,21 +211,21 @@ def display_transactions(data, categories, sidebar_container):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 1, 2, 2, 3, 1]
+        n = [1, 1, 1, 2, 2, 1.5, 1]
         data_columns = [
             "ignore",
             "date",
             "amount",
             "counterparty_name",
             "remarks",
-            "categories",
+            "category_id",
             "details",
         ]
         hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
         sort_by_amount = st.checkbox(label="Sort Transactions By Amount")
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
-            name = name.replace("_", " ")
+            name = name.replace("_id", "").replace("_", " ")
             headers[idx].write(f"**{name.title()}**")
         df = data_clean if hide_ignored_transactions else data
         sort_by = (

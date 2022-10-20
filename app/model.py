@@ -17,9 +17,8 @@ class Expense(Base):
         default=False,
         server_default=sa.sql.expression.literal(False),
     )
-    categories = relationship(
-        "Category", secondary="expense_category", backref="expenses"
-    )
+    category_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
+    category = relationship("Category", backref="expenses")
     source = sa.Column(
         sa.String(10), server_default=sa.sql.expression.literal(""), nullable=False
     )
@@ -56,11 +55,3 @@ class Category(Base):
 
     def __repr__(self):
         return f"Category(id={self.id!r}, name={self.name!r})"
-
-
-expense_category_table = sa.Table(
-    "expense_category",
-    Base.metadata,
-    sa.Column("expense_id", sa.ForeignKey("expense.id"), primary_key=True),
-    sa.Column("category_id", sa.ForeignKey("category.id"), primary_key=True),
-)
