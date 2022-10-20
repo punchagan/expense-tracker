@@ -298,7 +298,7 @@ def display_barcharts(data):
         return
 
     # Group data by day of month
-    groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
+    day_groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
     # Group data by weekday
     weekday_amounts = (
         data.groupby(by=lambda idx: data.iloc[idx]["date"].day_name())
@@ -308,7 +308,7 @@ def display_barcharts(data):
     )
 
     col1, col2 = st.columns([4, 1])
-    col1.bar_chart(groups.sum(numeric_only=True)["amount"])
+    col1.bar_chart(day_groups.sum(numeric_only=True)["amount"])
     # Weird code for turning off x-axis sorting based on
     # https://discuss.streamlit.io/t/sort-the-bar-chart-in-descending-order/1037/2
     col2.altair_chart(
