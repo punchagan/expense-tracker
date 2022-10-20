@@ -314,18 +314,17 @@ def display_transactions(data, categories, tags, sidebar_container):
         )
 
 
-def display_extra_filters(data, tags):
+def display_extra_filters(sidebar, data, tags):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
     tag_ids = sorted({tag for tags in data.tags for tag in tags})
-    with st.sidebar:
-        counterparty = st.selectbox("Counter Party", counterparties)
-        selected_tags = st.multiselect(
-            label="Tags",
-            options=tag_ids,
-            default=[],
-            key=f"tag-{id}",
-            format_func=lambda x: format_tag(x, tags),
-        )
+    counterparty = sidebar.selectbox("Counter Party", counterparties)
+    selected_tags = sidebar.multiselect(
+        label="Tags",
+        options=tag_ids,
+        default=[],
+        key=f"tag-{id}",
+        format_func=lambda x: format_tag(x, tags),
+    )
 
     return counterparty, selected_tags
 
@@ -458,7 +457,7 @@ def main():
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
 
-    counterparty, selected_tags = display_extra_filters(data, tags)
+    counterparty, selected_tags = display_extra_filters(sidebar_container, data, tags)
 
     if counterparty != "All":
         data = data[data["counterparty_name"] == counterparty]
