@@ -360,7 +360,7 @@ def remove_ignored_rows(data):
     return data[~data["ignore"]].reset_index(drop=True)
 
 
-def display_barcharts(data):
+def display_barcharts(data, categories, tags):
     # Filter ignored transactions
     data = remove_ignored_rows(data)
 
@@ -387,6 +387,30 @@ def display_barcharts(data):
         .encode(x=alt.X("weekdays", sort=None), y="amount"),
         use_container_width=True,
     )
+
+    # Group data by category
+    category_groups = data.groupby(by="category_id")
+    data_by_categories = category_groups.sum(numeric_only=True)["amount"]
+    data_by_categories.index = [
+        format_category(idx, categories) for idx in data_by_categories.index
+    ]
+
+    tag_groups = data.explode("tags").groupby(by="tags")
+    data_by_tags = tag_groups.sum(numeric_only=True)["amount"]
+    data_by_tags.index = [format_tag(idx, tags) for idx in data_by_tags.index]
+
+    n_cat = len(data_by_tags.index)
+    n_tag = len(data_by_tags.index)
+    if n_tag + n_cat < 40 and n_tag > 0 and n_cat > 0:
+        col1, col2 = st.columns([n_cat, n_tag])
+    else:
+        col1, col2 = st, st
+
+    if n_cat > 1:
+        col1.bar_chart(data_by_categories)
+
+    if n_tag > 1:
+        col2.bar_chart(data_by_tags)
 
 
 def local_css(file_name):
@@ -440,7 +464,7 @@ def main():
         prev_data = prev_data[prev_data.tags.apply(tag_filter)]
 
     display_summary_stats(data, prev_data)
-    display_barcharts(data)
+    display_barcharts(data, categories, tags)
     display_transactions(data, categories, tags, sidebar_container)
 
 

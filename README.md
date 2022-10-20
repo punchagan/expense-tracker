@@ -122,6 +122,8 @@ the scripts described above.
 - View barcharts of expenses
   - by day of month
   - by day of week
+  - by category
+  - by tag
 
 ### Data entry features
 
@@ -144,8 +146,6 @@ the scripts described above.
 ### Ideas to be implemented
 
 - Automatically add categories for similar transactions
-
-- Add charts to view data by tags/categories/counterparty names
 
 - Change time/day bar-charts to also display category information - stacked or
   grouped bar-charts.
