@@ -113,21 +113,38 @@ the scripts described above.
 
 ## Features
 
-- Visualize expenses
-  - Filter expenses by time duration (month, year or complete duration)
-    - View barcharts of expenses by day of month
-    - View barcharts of expenses by day of week
-  - Filter expenses by categories, tags and counterparty name
-- Mark transactions as ignored transactions from the UI
-- Assign a category for transactions from the UI
-- Assign one or more tags to transactions from the UI
-- Add remarks on transactions
+### Visualization/analysis features
+
+- Filter expenses by time duration (month, year or complete duration)
+
+- Filter expenses by categories, tags and counterparty name
+
+- View barcharts of expenses
+  - by day of month
+  - by day of week
+
+### Data entry features
+
+- Mark transactions as ignored transactions
+
+- Assign a category for transactions
+
+- Assign one or more tags to transactions
+
+- Add/Edit remarks
+
 - Edit merchant (counterparty) names from the UI, since data from Banks usually
   truncates names.
 
-### To be implemented/ideas
+### Ideas to be implemented
 
 - Automatically add categories for similar transactions
+
+- Add charts to view data by tags/categories/counterparty names
+
+- Change time/day bar-charts to also display category information - stacked or
+  grouped bar-charts.
+
 - Mark some transactions as repayment for another transaction. Useful when
   splitting a bill after you have paid it.
 
