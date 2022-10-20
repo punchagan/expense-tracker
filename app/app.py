@@ -312,15 +312,16 @@ def display_transactions(data, categories, tags, sidebar_container):
 def add_counterparty_filter(sidebar_container, data):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
     counterparty = sidebar_container.selectbox("Counter Party", counterparties)
-    # Add a note about the last updated date
-    updated = last_updated()
-    sidebar_container.caption(f"Expense data last updated on {updated}")
     return counterparty
 
 
 def display_sidebar(title, categories):
     with st.sidebar:
         sidebar_container = st.container()
+
+    # Add a note about the last updated date
+    updated = last_updated()
+    sidebar_container.caption(f"Expense data last updated on {updated}")
 
     sidebar_container.title(title)
 
