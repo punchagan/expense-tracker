@@ -17,8 +17,8 @@ import numpy as np
 import altair as alt
 
 # Local
-from app.data import CATEGORIES, create_categories
-from app.model import Category, Expense
+from app.data import CATEGORIES, create_categories, create_tags
+from app.model import Category, Expense, Tag
 from app.util import (
     DB_NAME,
     daterange_from_year_month,
@@ -32,8 +32,8 @@ DATE_FMT = "%d %b '%y"
 WEEKDAYS = [datetime.date(2001, 1, i).strftime("%A") for i in range(1, 8)]
 HERE = Path(__file__).parent
 ROOT = HERE.parent
-ALL_CATEGORY = 0
-NO_CATEGORY = -1
+ALL_TAG = ALL_CATEGORY = 0
+NO_TAG = NO_CATEGORY = -1
 
 
 @st.experimental_singleton
@@ -65,7 +65,16 @@ def ensure_categories_created():
     except ImportError:
         categories = CATEGORIES
     return create_categories(session, categories)
-    return None
+
+
+@st.experimental_memo
+def ensure_tags_created():
+    session = get_sqlalchemy_session()
+    try:
+        from conf import TAGS as tags
+    except ImportError:
+        tags = []
+    return create_tags(session, tags)
 
 
 @st.experimental_memo
@@ -76,9 +85,11 @@ def load_data(start_date, end_date, category, db_last_modified):
         "" if category == ALL_CATEGORY else f"AND e.category_id = {category}"
     )
     sql = f"""
-    SELECT e.*
+    SELECT e.*, JSON_GROUP_ARRAY(et.tag_id) AS tags
     FROM expense e
-    WHERE e.date >= '{start_date}' AND e.date < '{end_date}' {category_clause};
+    LEFT JOIN expense_tag et ON e.id = et.expense_id
+    WHERE e.date >= '{start_date}' AND e.date < '{end_date}' {category_clause}
+    GROUP BY e.id;
     """
     data = pd.read_sql_query(
         sql,
@@ -87,6 +98,7 @@ def load_data(start_date, end_date, category, db_last_modified):
         dtype={"ignore": bool, "category_id": "Int64"},
     )
     data["category_id"].fillna(NO_CATEGORY, inplace=True)
+    data.tags = data.tags.apply(lambda x: list(filter(None, json.loads(x))))
     return data
 
 
@@ -95,6 +107,13 @@ def get_categories():
     session = get_sqlalchemy_session()
     categories = session.query(Category).order_by("id").all()
     return {cat.id: cat for cat in categories}
+
+
+@st.experimental_memo
+def get_tags():
+    session = get_sqlalchemy_session()
+    tags = session.query(Tag).order_by("id").all()
+    return {tag.id: tag for tag in tags}
 
 
 @st.experimental_memo
@@ -130,6 +149,28 @@ def update_similar_counterparty_names(row):
     engine.execute(query)
 
 
+def set_tags_value(row, tags, all_tags):
+    session = get_sqlalchemy_session()
+    id_ = row["id"]
+    expense = session.query(Expense).get({"id": id_})
+
+    old_tags = {tag.id: tag for tag in expense.tags}
+    old_ids = set(old_tags)
+    new_ids = set(tags)
+
+    removed = old_ids - new_ids
+    for old_id, tag in old_tags.items():
+        if old_id in removed:
+            expense.tags.remove(tag)
+
+    added = new_ids - old_ids
+    for tag_id in added:
+        expense.tags.append(all_tags[tag_id])
+
+    session.commit()
+    st.experimental_rerun()
+
+
 def format_category(category_id, categories):
     if category_id is NO_CATEGORY:
         return "Uncategorized"
@@ -138,7 +179,15 @@ def format_category(category_id, categories):
     return categories[category_id].name
 
 
-def display_transaction(row, n, data_columns, categories, sidebar_container):
+def format_tag(tag_id, tags):
+    if tag_id is NO_TAG:
+        return "Untagged"
+    elif tag_id == ALL_TAG:
+        return "All"
+    return tags[tag_id].name
+
+
+def display_transaction(row, n, data_columns, categories, tags, sidebar_container):
     columns = st.columns(n)
     id = row["id"]
     for idx, name in enumerate(data_columns):
@@ -164,6 +213,19 @@ def display_transaction(row, n, data_columns, categories, sidebar_container):
                 if selected <= 0:
                     selected = None
                 set_column_value(row, "category_id", selected)
+            written = True
+        elif name == "tags":
+            options = sorted(tags)
+            selected = col.multiselect(
+                label="Tags",
+                options=options,
+                default=value,
+                key=f"tag-{id}",
+                label_visibility="collapsed",
+                format_func=lambda x: format_tag(x, tags),
+            )
+            if selected != value:
+                set_tags_value(row, selected, all_tags=tags)
             written = True
         elif name == "details":
             written = True
@@ -207,17 +269,18 @@ def display_summary_stats(data, prev_data):
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
 
 
-def display_transactions(data, categories, sidebar_container):
+def display_transactions(data, categories, tags, sidebar_container):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 1, 4, 2, 4, 1]
+        n = [1, 1, 1, 3, 2, 3, 3, 1]
         data_columns = [
             "ignore",
             "date",
             "amount",
             "counterparty_name",
             "category_id",
+            "tags",
             "remarks",
             "details",
         ]
@@ -241,6 +304,7 @@ def display_transactions(data, categories, sidebar_container):
             n=n,
             data_columns=data_columns,
             categories=categories,
+            tags=tags,
             sidebar_container=sidebar_container,
         )
 
@@ -338,6 +402,8 @@ def main():
 
     ensure_categories_created()
     categories = get_categories()
+    ensure_tags_created()
+    tags = get_tags()
 
     start_date, end_date, category, sidebar_container = display_sidebar(
         title, categories
@@ -354,7 +420,7 @@ def main():
 
     display_summary_stats(data, prev_data)
     display_barcharts(data)
-    display_transactions(data, categories, sidebar_container)
+    display_transactions(data, categories, tags, sidebar_container)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.model import Category
+from app.model import Category, Tag
 from app.util import DB_NAME, delta_percent, format_month, get_db_url
 
 CATEGORIES = [
@@ -44,4 +44,18 @@ def create_categories(session, categories):
     for category in all_categories:
         if category.name not in categories:
             session.delete(category)
+    session.commit()
+
+
+def create_tags(session, tags):
+    tags = sorted(set(tags))
+    all_tags = session.query(Tag).all()
+    all_names = {tag.name for tag in all_tags}
+    # Add new tags
+    objects = [Tag(name=name) for name in tags if name not in all_names]
+    session.bulk_save_objects(objects)
+    # Delete removed tags
+    for tag in all_tags:
+        if tag.name not in tags:
+            session.delete(tag)
     session.commit()
