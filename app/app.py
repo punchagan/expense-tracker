@@ -211,14 +211,14 @@ def display_transactions(data, categories, sidebar_container):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 1, 2, 2, 1.5, 1]
+        n = [1, 1, 1, 4, 2, 4, 1]
         data_columns = [
             "ignore",
             "date",
             "amount",
             "counterparty_name",
-            "remarks",
             "category_id",
+            "remarks",
             "details",
         ]
         hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
