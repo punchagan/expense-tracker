@@ -297,20 +297,21 @@ def display_barcharts(data):
     if len(data) == 0:
         return
 
-    # Show bar chart by day of month
+    # Group data by day of month
     groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
-    st.bar_chart(groups.sum(numeric_only=True)["amount"])
-
-    # Show bar chart by weekday
+    # Group data by weekday
     weekday_amounts = (
         data.groupby(by=lambda idx: data.iloc[idx]["date"].day_name())
         .sum(numeric_only=True)
         .reset_index(names="weekdays")
         .sort_values(by="weekdays", key=lambda x: [WEEKDAYS.index(e) for e in x])
     )
+
+    col1, col2 = st.columns([4, 1])
+    col1.bar_chart(groups.sum(numeric_only=True)["amount"])
     # Weird code for turning off x-axis sorting based on
     # https://discuss.streamlit.io/t/sort-the-bar-chart-in-descending-order/1037/2
-    st.altair_chart(
+    col2.altair_chart(
         alt.Chart(weekday_amounts)
         .mark_bar()
         .encode(x=alt.X("weekdays", sort=None), y="amount"),
