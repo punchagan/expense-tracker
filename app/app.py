@@ -181,7 +181,7 @@ def set_tags_value(row, tags, all_tags):
 
 
 def format_category(category_id, categories):
-    if category_id is NO_CATEGORY:
+    if category_id == NO_CATEGORY:
         return "Uncategorized"
     elif category_id == ALL_CATEGORY:
         return "All"
@@ -189,7 +189,7 @@ def format_category(category_id, categories):
 
 
 def format_tag(tag_id, tags):
-    if tag_id is NO_TAG:
+    if tag_id == NO_TAG:
         return "Untagged"
     elif tag_id == ALL_TAG:
         return "All"
