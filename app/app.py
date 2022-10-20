@@ -137,16 +137,16 @@ def set_column_value(row, column_name, value):
     st.experimental_rerun()
 
 
-def update_similar_counterparty_names(row):
+def update_similar_counterparty_names(row, name):
     engine = get_db_engine()
     parsed_name = row["counterparty_name_p"]
-    name = row["counterparty_name"]
     source = row["source"]
     query = (
         f"UPDATE expense SET counterparty_name = '{name}' "
         f" WHERE counterparty_name_p = '{parsed_name}' AND source = '{source}'"
     )
     engine.execute(query)
+    st.experimental_rerun()
 
 
 def set_tags_value(row, tags, all_tags):
@@ -243,9 +243,7 @@ def display_transaction(row, n, data_columns, categories, tags, sidebar_containe
             )
             if new_value != value:
                 if name == "counterparty_name":
-                    row["counterparty_name"] = new_value
-                    update_similar_counterparty_names(row)
-                    st.experimental_rerun()
+                    update_similar_counterparty_names(row, new_value)
                 else:
                     set_column_value(row, name, new_value)
         elif name == "date":
