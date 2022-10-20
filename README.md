@@ -129,12 +129,17 @@ the scripts described above.
 
 - Assign a category for transactions
 
+  - Similar transactions with the same counterparty are categoriesed under the
+    same category automatically
+
 - Assign one or more tags to transactions
 
 - Add/Edit remarks
 
 - Edit merchant (counterparty) names from the UI, since data from Banks usually
   truncates names.
+
+  - Similar names from the same data source are automatically updated
 
 ### Ideas to be implemented
 
