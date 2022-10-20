@@ -120,7 +120,7 @@ the scripts described above.
   - Filter by categories for expenses
   - Filter by counterparty name
 - Mark transactions as ignored transactions from the UI
-- Assign one or more categories for transactions from the UI
+- Assign a category for transactions from the UI
 - Add remarks on transactions
 - Edit merchant (counterparty) names from the UI, since data from Banks usually
   truncates names.
@@ -130,6 +130,8 @@ the scripts described above.
 - Automatically add categories for similar transactions
 - Mark some transactions as repayment for another transaction. Useful when
   splitting a bill after you have paid it.
+- Assign one or more tags from the UI
+  - Allow filtering transactions/viz by tags
 
 ### Screenshot
 
