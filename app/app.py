@@ -309,10 +309,20 @@ def display_transactions(data, categories, tags, sidebar_container):
         )
 
 
-def add_counterparty_filter(sidebar_container, data):
+def display_extra_filters(data, tags):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
-    counterparty = sidebar_container.selectbox("Counter Party", counterparties)
-    return counterparty
+    tag_ids = sorted({tag for tags in data.tags for tag in tags})
+    with st.sidebar:
+        counterparty = st.selectbox("Counter Party", counterparties)
+        selected_tags = st.multiselect(
+            label="Tags",
+            options=tag_ids,
+            default=[],
+            key=f"tag-{id}",
+            format_func=lambda x: format_tag(x, tags),
+        )
+
+    return counterparty, selected_tags
 
 
 def display_sidebar(title, categories):
@@ -413,11 +423,16 @@ def main():
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
 
-    counterparty = add_counterparty_filter(sidebar_container, data)
+    counterparty, selected_tags = display_extra_filters(data, tags)
 
     if counterparty != "All":
         data = data[data["counterparty_name"] == counterparty]
         prev_data = prev_data[prev_data["counterparty_name"] == counterparty]
+
+    if selected_tags:
+        tag_filter = lambda x: bool(set(x).intersection(selected_tags))
+        data = data[data.tags.apply(tag_filter)]
+        prev_data = prev_data[prev_data.tags.apply(tag_filter)]
 
     display_summary_stats(data, prev_data)
     display_barcharts(data)
