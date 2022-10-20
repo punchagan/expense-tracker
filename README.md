@@ -147,9 +147,6 @@ the scripts described above.
 
 - Automatically add categories for similar transactions
 
-- Change time/day bar-charts to also display category information - stacked or
-  grouped bar-charts.
-
 - Mark some transactions as repayment for another transaction. Useful when
   splitting a bill after you have paid it.
 

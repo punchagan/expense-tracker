@@ -367,50 +367,56 @@ def display_barcharts(data, categories, tags):
     if len(data) == 0:
         return
 
-    # Group data by day of month
-    day_groups = data.groupby(by=lambda idx: data.iloc[idx]["date"].day)
-    # Group data by weekday
-    weekday_amounts = (
-        data.groupby(by=lambda idx: data.iloc[idx]["date"].day_name())
-        .sum(numeric_only=True)
-        .reset_index(names="weekdays")
-        .sort_values(by="weekdays", key=lambda x: [WEEKDAYS.index(e) for e in x])
-    )
-
     col1, col2 = st.columns([4, 1])
-    col1.bar_chart(day_groups.sum(numeric_only=True)["amount"])
-    # Weird code for turning off x-axis sorting based on
-    # https://discuss.streamlit.io/t/sort-the-bar-chart-in-descending-order/1037/2
-    col2.altair_chart(
-        alt.Chart(weekday_amounts)
-        .mark_bar()
-        .encode(x=alt.X("weekdays", sort=None), y="amount"),
-        use_container_width=True,
+
+    # Add additional columns for day, weekday and category
+    data[["day", "weekday", "category"]] = data.apply(
+        lambda row: (
+            row["date"].day,
+            row["date"].day_name(),
+            format_category(row["category_id"], categories),
+        ),
+        axis=1,
+        result_type="expand",
     )
+    day_data = data.pivot_table(
+        index="day", columns="category", values="amount", aggfunc="sum"
+    )
+    col1.bar_chart(day_data)
+
+    # Group data by weekday
+    weekday_data = data.pivot_table(
+        index="weekday", columns="category", values="amount", aggfunc="sum"
+    )
+    col2.bar_chart(weekday_data)
 
     # Group data by category
-    category_groups = data.groupby(by="category_id")
-    data_by_categories = category_groups.sum(numeric_only=True)["amount"]
-    data_by_categories.index = [
-        format_category(idx, categories) for idx in data_by_categories.index
+    category_data = data.pivot_table(
+        index="category_id", columns="category", values="amount", aggfunc="sum"
+    )
+    category_data.index = [
+        format_category(idx, categories) for idx in category_data.index
     ]
 
-    tag_groups = data.explode("tags").groupby(by="tags")
-    data_by_tags = tag_groups.sum(numeric_only=True)["amount"]
-    data_by_tags.index = [format_tag(idx, tags) for idx in data_by_tags.index]
+    tag_data = data.explode("tags").pivot_table(
+        index="tags", columns="category", values="amount", aggfunc="sum"
+    )
+    tag_data.index = [format_tag(idx, tags) for idx in tag_data.index]
 
-    n_cat = len(data_by_tags.index)
-    n_tag = len(data_by_tags.index)
+    n_cat = len(category_data.index)
+    n_tag = len(tag_data.index)
     if n_tag + n_cat < 40 and n_tag > 0 and n_cat > 0:
         col1, col2 = st.columns([n_cat, n_tag])
     else:
         col1, col2 = st, st
 
     if n_cat > 1:
-        col1.bar_chart(data_by_categories)
+        col1.bar_chart(category_data)
 
     if n_tag > 1:
-        col2.bar_chart(data_by_tags)
+        col2.bar_chart(tag_data)
+        # FIXME: The colors for categories may be different from the other charts!
+        col2.caption("**Note**: colors may be different from the other charts!")
 
 
 def local_css(file_name):
