@@ -149,6 +149,15 @@ def update_similar_counterparty_names(row, name):
     st.experimental_rerun()
 
 
+def update_similar_counterparty_categories(row, category_id):
+    engine = get_db_engine()
+    name = row["counterparty_name"]
+    category_id = "NULL" if category_id == NO_CATEGORY else str(category_id)
+    query = f"UPDATE expense SET category_id = {category_id} WHERE counterparty_name = '{name}'"
+    engine.execute(query)
+    st.experimental_rerun()
+
+
 def set_tags_value(row, tags, all_tags):
     session = get_sqlalchemy_session()
     id_ = row["id"]
@@ -201,7 +210,7 @@ def display_transaction(row, n, data_columns, categories, tags, sidebar_containe
                 set_column_value(row, "ignore", ignore_value)
         elif name == "category_id":
             options = [NO_CATEGORY] + sorted(categories)
-            selected = col.selectbox(
+            category_id = col.selectbox(
                 label="Category",
                 options=options,
                 index=options.index(value),
@@ -209,10 +218,8 @@ def display_transaction(row, n, data_columns, categories, tags, sidebar_containe
                 label_visibility="collapsed",
                 format_func=lambda x: format_category(x, categories),
             )
-            if selected != value:
-                if selected <= 0:
-                    selected = None
-                set_column_value(row, "category_id", selected)
+            if category_id != value:
+                update_similar_counterparty_categories(row, category_id)
             written = True
         elif name == "tags":
             options = sorted(tags)
