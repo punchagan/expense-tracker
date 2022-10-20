@@ -338,6 +338,8 @@ def main():
     )
 
     local_css("style.css")
+    # Enable Streamlit theme for Altair
+    alt.themes.enable("streamlit")
 
     _, db_path = get_db_url().split("///")
     # Detect DB changes and invalidate Streamlit memoized data
