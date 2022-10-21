@@ -296,12 +296,13 @@ def display_transactions(data, categories, tags, sidebar_container):
             name = name.replace("_id", "").replace("_", " ")
             headers[idx].write(f"**{name.title()}**")
         df = data_clean if hide_ignored_transactions else data
+        sort_orders = {"ignore": True, "amount": False, "date": False, "details": False}
         sort_by = (
             ["ignore", "amount", "date", "details"]
             if sort_by_amount
             else ["ignore", "date", "amount", "details"]
         )
-        ascending = [True] + [False] * (len(sort_by) - 1)
+        ascending = [sort_orders[name] for name in sort_by]
         df = df.sort_values(by=sort_by, ignore_index=True, ascending=ascending)
         df.apply(
             display_transaction,
