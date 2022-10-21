@@ -103,3 +103,15 @@ EXTRA_CATEGORIES = [
     "Retirement",
     "Investment",
 ]
+
+# Define TAGS to be added
+TAGS = [
+    "Nationals 2022",
+    "Trip to Paris 2022",
+    "Birthday 2022",
+    "Trip to Bali 2021",
+    "Orissa Trip 2022",
+    "Love",
+    "Ultimate Frisbee",
+    "B-boying",
+]
