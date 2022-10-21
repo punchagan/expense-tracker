@@ -62,7 +62,7 @@ used to fetch this data as a CSV.
 The app itself provides a small list of categories and allows users to define
 their own list of categories. New categories can be added to the list of
 `EXTRA_CATEGORIES` list in `conf.py` placed at the root of the project.  You
-can copy `sample-conf.py` as `conf.py` and edit it.
+can copy `sample/conf.py` as `conf.py` and edit it.
 
 ## Installation
 
