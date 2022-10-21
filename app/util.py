@@ -4,10 +4,15 @@ import io
 import json
 import os
 from pathlib import Path
+import sys
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
+USE_SAMPLE_CONF = "USE_SAMPLE_CONF" in os.environ
+
+if USE_SAMPLE_CONF:
+    sys.path.insert(0, str(ROOT.joinpath("sample")))
 
 
 def daterange_from_year_month(year, month):

@@ -2,6 +2,7 @@
 set -xeuo pipefail
 
 export EXPENSES_DB='sample-expenses.db'
+export USE_SAMPLE_CONF=1
 
 HERE=$(dirname "${0}")
 PARSE="${HERE}/parse-data.py"
