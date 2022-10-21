@@ -231,7 +231,7 @@ def display_transaction(row, n, data_columns, categories, tags, sidebar_containe
                 label_visibility="collapsed",
                 format_func=lambda x: format_tag(x, tags),
             )
-            if selected != value:
+            if sorted(selected) != sorted(value):
                 set_tags_value(row, selected, all_tags=tags)
             written = True
         elif name == "details":
