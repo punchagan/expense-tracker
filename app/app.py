@@ -82,7 +82,9 @@ def load_data(start_date, end_date, category, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
     category_clause = (
-        "" if category == ALL_CATEGORY else f"AND e.category_id = {category}"
+        f"AND e.category_id = {category}"
+        if category not in {NO_CATEGORY, ALL_CATEGORY}
+        else ("AND e.category_id IS NULL" if category == NO_CATEGORY else "")
     )
     sql = f"""
     SELECT e.*, JSON_GROUP_ARRAY(et.tag_id) AS tags
@@ -365,7 +367,7 @@ def display_sidebar(title, categories):
     )
     start_date, end_date = daterange_from_year_month(*option)
 
-    category_ids = [0] + sorted(categories.keys())
+    category_ids = [ALL_CATEGORY, NO_CATEGORY] + sorted(categories.keys())
     category = sidebar_container.selectbox(
         "Category",
         category_ids,
