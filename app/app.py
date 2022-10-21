@@ -290,19 +290,37 @@ def display_transactions(data, categories, tags, sidebar_container):
             "details",
         ]
         hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
-        sort_by_amount = st.checkbox(label="Sort Transactions By Amount")
+        sort_column = st.radio(
+            label="Sort Transactions By ...",
+            options=["date", "amount", "num. of transactions"],
+            horizontal=True,
+        )
+
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
             name = name.replace("_id", "").replace("_", " ")
             headers[idx].write(f"**{name.title()}**")
         df = data_clean if hide_ignored_transactions else data
-        sort_orders = {"ignore": True, "amount": False, "date": False, "details": False}
-        sort_by = (
-            ["ignore", "amount", "date", "details"]
-            if sort_by_amount
-            else ["ignore", "date", "amount", "details"]
-        )
-        ascending = [sort_orders[name] for name in sort_by]
+        sort_orders = {"ignore": True}
+        if sort_column == "date":
+            sort_by = ["ignore", "date", "amount", "details"]
+        elif sort_column == "amount":
+            sort_by = ["ignore", "amount", "date", "details"]
+        else:
+            # number of transactions
+            counts = data.counterparty_name.value_counts()
+            data["counts"] = data.apply(
+                lambda row: counts[row.counterparty_name], axis=1
+            )
+            sort_by = [
+                "ignore",
+                "counts",
+                "counterparty_name",
+                "amount",
+                "date",
+                "details",
+            ]
+        ascending = [sort_orders.get(name, False) for name in sort_by]
         df = df.sort_values(by=sort_by, ignore_index=True, ascending=ascending)
         df.apply(
             display_transaction,
