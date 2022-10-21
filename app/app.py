@@ -289,12 +289,13 @@ def display_transactions(data, categories, tags, sidebar_container):
             "remarks",
             "details",
         ]
-        hide_ignored_transactions = st.checkbox(label="Hide Ignored Transactions")
-        sort_column = st.radio(
-            label="Sort Transactions By ...",
+        knob1, knob2 = st.columns(2)
+        sort_column = knob1.radio(
+            label="Sort Transactions by ...",
             options=["date", "amount", "num. of transactions"],
             horizontal=True,
         )
+        hide_ignored_transactions = knob2.checkbox(label="Hide Ignored Transactions")
 
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
