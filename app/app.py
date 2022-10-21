@@ -403,11 +403,15 @@ def display_barcharts(data, categories, tags):
     )
     col1.bar_chart(day_data)
 
-    # Group data by weekday
-    weekday_data = data.pivot_table(
-        index="weekday", columns="category", values="amount", aggfunc="sum"
+    weekday_data = data.sort_values(
+        by="weekday", key=lambda x: [WEEKDAYS.index(e) for e in x]
     )
-    col2.bar_chart(weekday_data)
+    col2.altair_chart(
+        alt.Chart(weekday_data)
+        .mark_bar()
+        .encode(x=alt.X("weekday", sort=None), y="sum(amount)", color="category"),
+        use_container_width=True,
+    )
 
     # Group data by category
     category_data = data.pivot_table(
