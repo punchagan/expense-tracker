@@ -11,6 +11,7 @@ import pytest
 THIS = Path(__file__)
 HERE = THIS.parent
 ROOT = THIS.parent.parent
+DB_NAME = "sample-expenses.db"
 
 
 def test_capture_screenshot(sb):
@@ -25,9 +26,14 @@ def test_capture_screenshot(sb):
 
 def main():
     port = str(random.randint(10000, 20000))
+
+    db_path = ROOT.joinpath(DB_NAME)
+    if db_path.exists():
+        db_path.unlink()
+
     subprocess.check_call(["bash", HERE.joinpath("run-sample.sh"), "--no-server"])
     env = os.environ.copy()
-    env["EXPENSES_DB"] = "sample-expenses.db"
+    env["EXPENSES_DB"] = DB_NAME
     p = subprocess.Popen(
         [
             "streamlit",
@@ -44,7 +50,17 @@ def main():
         env=env,
     )
     time.sleep(3)
-    pytest.main([str(THIS), "--firefox", "--data", port, "--window-size", "1920,1080"])
+    pytest.main(
+        [
+            str(THIS),
+            "--browser",
+            "firefox",
+            "--data",
+            port,
+            "--window-size",
+            "1920,1080",
+        ]
+    )
     p.kill()
 
 
