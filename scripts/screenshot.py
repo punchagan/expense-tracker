@@ -17,9 +17,10 @@ DB_NAME = "sample-expenses.db"
 def test_capture_screenshot(sb):
     screenshot_dir = ROOT.joinpath("screenshots").absolute()
     os.makedirs(screenshot_dir, exist_ok=True)
+
     sb.open(f"http://localhost:{sb.data}/")
     time.sleep(2)
-    path = screenshot_dir.joinpath("latest-screenshot.png")
+    path = screenshot_dir.joinpath("latest.png")
     sb.save_screenshot(str(path))
     sb.click(".streamlit-expander button")
 

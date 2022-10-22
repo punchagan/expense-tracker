@@ -155,4 +155,4 @@ the scripts described above.
 
 ### Screenshot
 
-![Latest Screenshot](/screenshots/latest-screenshot.png "Latest Screenshot with Sample DB")
+![Latest Screenshot](/screenshots/latest.png "Latest Screenshot with Sample DB")
