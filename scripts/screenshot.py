@@ -10,15 +10,16 @@ import pytest
 
 THIS = Path(__file__)
 HERE = THIS.parent
-ROOT = THIS.parent.parent
+ROOT = HERE.parent
 DB_NAME = "sample-expenses.db"
 
 
 def test_capture_screenshot(sb):
+    screenshot_dir = ROOT.joinpath("screenshots").absolute()
+    os.makedirs(screenshot_dir, exist_ok=True)
     sb.open(f"http://localhost:{sb.data}/")
-    root = Path(__file__).parent.parent
     time.sleep(2)
-    path = root.joinpath("latest-screenshot.png").absolute()
+    path = screenshot_dir.joinpath("latest-screenshot.png")
     sb.save_screenshot(str(path))
     sb.click(".streamlit-expander button")
 
