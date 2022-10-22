@@ -96,19 +96,25 @@ def load_data(start_date, end_date, category, db_last_modified):
         if category not in {NO_CATEGORY, ALL_CATEGORY}
         else ("AND e.category_id IS NULL" if category == NO_CATEGORY else "")
     )
-    sql = f"""
+    base_sql = f"""
     SELECT e.*, JSON_GROUP_ARRAY(et.tag_id) AS tags
     FROM expense e
     LEFT JOIN expense_tag et ON e.id = et.expense_id
-    WHERE e.date >= '{start_date}' AND e.date < '{end_date}' {category_clause}
+    """
+    filter_sql = f"""WHERE e.date >= '{start_date}' AND e.date < '{end_date}'
+    AND e.parent IS NULL OR e.parent = ''
+    {category_clause}
     GROUP BY e.id;
     """
-    data = pd.read_sql_query(
-        sql,
-        engine,
-        parse_dates=["date"],
-        dtype={"ignore": bool, "category_id": "Int64"},
-    )
+    sql = f"{base_sql} {filter_sql}"
+    dtype = {"ignore": bool, "category_id": "Int64"}
+    data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype=dtype)
+    parents = tuple(set(data["id"]))
+    child_sql = f"""{base_sql} WHERE e.parent IN {parents} GROUP BY e.id"""
+    children = pd.read_sql_query(child_sql, engine, parse_dates=["date"], dtype=dtype)
+    children = children[~children.id.isna()]
+    if not children.empty:
+        data = pd.concat([data, children])
     data["category_id"].fillna(NO_CATEGORY, inplace=True)
     data.tags = data.tags.apply(lambda x: list(filter(None, json.loads(x))))
     return data
