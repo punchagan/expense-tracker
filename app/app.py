@@ -342,23 +342,24 @@ def display_transactions(data, categories, tags):
         )
 
 
-def display_extra_filters(data, tags):
+def display_extra_filters(data, tags, disabled):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
     tag_ids = sorted({tag for tags in data.tags for tag in tags})
     with st.sidebar:
-        counterparty = st.selectbox("Counter Party", counterparties)
+        counterparty = st.selectbox("Counter Party", counterparties, disabled=disabled)
         selected_tags = st.multiselect(
             label="Tags",
             options=tag_ids,
             default=[],
             key=f"tag-{id}",
             format_func=lambda x: format_tag(x, tags),
+            disabled=disabled,
         )
 
     return counterparty, selected_tags
 
 
-def display_sidebar(title, categories):
+def display_sidebar(title, categories, disabled):
     with st.sidebar:
         # Add a note about the last updated date
         updated = last_updated()
@@ -367,7 +368,9 @@ def display_sidebar(title, categories):
         st.title(title)
 
         months = get_months()
-        option = st.selectbox("Time Period", months, format_func=format_month, index=2)
+        option = st.selectbox(
+            "Time Period", months, format_func=format_month, index=2, disabled=disabled
+        )
         start_date, end_date = daterange_from_year_month(*option)
 
         category_ids = [ALL_CATEGORY, NO_CATEGORY] + sorted(categories.keys())
@@ -375,6 +378,7 @@ def display_sidebar(title, categories):
             "Category",
             category_ids,
             format_func=lambda x: format_category(x, categories),
+            disabled=disabled,
         )
 
     return start_date, end_date, category
@@ -502,12 +506,13 @@ def main():
     ensure_tags_created()
     tags = get_tags()
 
-    start_date, end_date, category = display_sidebar(title, categories)
+    row_id = st.session_state.get("transaction_id")
+    display_info = bool(row_id)
+    start_date, end_date, category = display_sidebar(title, categories, display_info)
     data = load_data(start_date, end_date, category, db_last_modified)
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
-
-    counterparty, selected_tags = display_extra_filters(data, tags)
+    counterparty, selected_tags = display_extra_filters(data, tags, display_info)
 
     if counterparty != "All":
         data = data[data["counterparty_name"] == counterparty]
@@ -518,8 +523,7 @@ def main():
         data = data[data.tags.apply(tag_filter)]
         prev_data = prev_data[prev_data.tags.apply(tag_filter)]
 
-    row_id = st.session_state.get("transaction_id")
-    if not row_id:
+    if not display_info:
         display_summary_stats(data, prev_data)
         display_barcharts(data, categories, tags)
         display_transactions(data, categories, tags)
