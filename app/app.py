@@ -165,7 +165,12 @@ def update_similar_counterparty_categories(row, category_id):
     engine = get_db_engine()
     name = row["counterparty_name"]
     category_id = "NULL" if category_id == NO_CATEGORY else str(category_id)
-    query = f"UPDATE expense SET category_id = {category_id} WHERE counterparty_name = '{name}'"
+    parent_id = row["parent"]
+    row_id = row["id"]
+    query = f"""
+    UPDATE expense SET category_id = {category_id}
+    WHERE counterparty_name = '{name}' OR parent = '{row_id}' OR id = '{parent_id}'
+    """
     engine.execute(query)
     st.experimental_rerun()
 
