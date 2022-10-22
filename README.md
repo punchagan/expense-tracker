@@ -7,6 +7,12 @@ bank/credit-card statements and dump them into a local SQLite DB.  There's a
 simple UI that interacts with this local DB that lets the user explore and
 analyse their spending patterns.
 
+## Screenshots
+
+![Latest Screenshot](/screenshots/latest.png "Latest Screenshot using Sample data")
+
+![Info Screenshot](/screenshots/info.png "Info Screenshot using Sample data")
+
 ## Why build one yourself?
 
 We use a lot of Internet Banking these days, but I still don't feel comfortable
@@ -152,7 +158,3 @@ the scripts described above.
 
 - Mark some transactions as repayment for another transaction. Useful when
   splitting a bill after you have paid it.
-
-### Screenshot
-
-![Latest Screenshot](/screenshots/latest.png "Latest Screenshot with Sample DB")
