@@ -22,7 +22,11 @@ def test_capture_screenshot(sb):
     time.sleep(2)
     path = screenshot_dir.joinpath("latest.png")
     sb.save_screenshot(str(path))
+
     sb.click(".streamlit-expander button")
+    time.sleep(2)
+    path = screenshot_dir.joinpath("info.png")
+    sb.save_screenshot(str(path))
 
 
 def main():
