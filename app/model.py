@@ -36,6 +36,7 @@ class Expense(Base):
     counterparty_bank = sa.Column(sa.String(100), nullable=True)
     counterparty_bank_p = sa.Column(sa.String(100), nullable=True)
     remarks = sa.Column(sa.Text(), nullable=True)
+    parent = sa.Column(sa.String(40), sa.ForeignKey("expense.id"))
 
     def __repr__(self):
         return f"Expense(id={self.id!r}, date={self.date!r}, amount={self.amount!r}, details={self.details!r}, ignore={self.ignore!r})"
