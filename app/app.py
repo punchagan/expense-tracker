@@ -466,9 +466,10 @@ def show_transaction_info(row_id, data, categories, tags):
         if key == "category_id":
             value = format_category(value, categories)
         elif key == "tags":
-            value = ", ".join([format_tag(t, tags) for t in value]) or " -- "
+            value = ", ".join([format_tag(t, tags) for t in value])
+        value = "--" if value == "" else value
         col2.write(value)
-    hide_details = st.button("Hide", key=f"details-{id}")
+    hide_details = col2.button("Close", key=f"details-{id}")
     if hide_details:
         st.session_state.transaction_id = None
         st.experimental_rerun()
