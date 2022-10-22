@@ -198,7 +198,7 @@ def format_tag(tag_id, tags):
     return tags[tag_id].name
 
 
-def display_transaction(row, n, data_columns, categories, tags, sidebar_container):
+def display_transaction(row, n, data_columns, categories, tags):
     columns = st.columns(n)
     id = row["id"]
     for idx, name in enumerate(data_columns):
@@ -240,8 +240,8 @@ def display_transaction(row, n, data_columns, categories, tags, sidebar_containe
             written = True
             show_details = col.button("Details", key=f"details-{id}")
             if show_details:
-                sidebar_container.subheader("Expense Details")
-                sidebar_container.dataframe(row)
+                st.session_state.transaction_id = row["id"]
+                st.experimental_rerun()
         elif name in {"remarks", "counterparty_name"}:
             written = True
             new_value = col.text_input(
@@ -263,6 +263,8 @@ def display_transaction(row, n, data_columns, categories, tags, sidebar_containe
         if not written:
             col.write(value)
 
+    return show_details
+
 
 def display_summary_stats(data, prev_data):
     col1, col2 = st.columns(2)
@@ -276,7 +278,7 @@ def display_summary_stats(data, prev_data):
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
 
 
-def display_transactions(data, categories, tags, sidebar_container):
+def display_transactions(data, categories, tags):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
@@ -332,49 +334,45 @@ def display_transactions(data, categories, tags, sidebar_container):
             data_columns=data_columns,
             categories=categories,
             tags=tags,
-            sidebar_container=sidebar_container,
         )
 
 
-def display_extra_filters(sidebar, data, tags):
+def display_extra_filters(data, tags):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
     tag_ids = sorted({tag for tags in data.tags for tag in tags})
-    counterparty = sidebar.selectbox("Counter Party", counterparties)
-    selected_tags = sidebar.multiselect(
-        label="Tags",
-        options=tag_ids,
-        default=[],
-        key=f"tag-{id}",
-        format_func=lambda x: format_tag(x, tags),
-    )
+    with st.sidebar:
+        counterparty = st.selectbox("Counter Party", counterparties)
+        selected_tags = st.multiselect(
+            label="Tags",
+            options=tag_ids,
+            default=[],
+            key=f"tag-{id}",
+            format_func=lambda x: format_tag(x, tags),
+        )
 
     return counterparty, selected_tags
 
 
 def display_sidebar(title, categories):
     with st.sidebar:
-        sidebar_container = st.container()
+        # Add a note about the last updated date
+        updated = last_updated()
+        st.caption(f"Expense data last updated on {updated}")
 
-    # Add a note about the last updated date
-    updated = last_updated()
-    sidebar_container.caption(f"Expense data last updated on {updated}")
+        st.title(title)
 
-    sidebar_container.title(title)
+        months = get_months()
+        option = st.selectbox("Time Period", months, format_func=format_month, index=2)
+        start_date, end_date = daterange_from_year_month(*option)
 
-    months = get_months()
-    option = sidebar_container.selectbox(
-        "Time Period", months, format_func=format_month, index=2
-    )
-    start_date, end_date = daterange_from_year_month(*option)
+        category_ids = [ALL_CATEGORY, NO_CATEGORY] + sorted(categories.keys())
+        category = st.selectbox(
+            "Category",
+            category_ids,
+            format_func=lambda x: format_category(x, categories),
+        )
 
-    category_ids = [ALL_CATEGORY, NO_CATEGORY] + sorted(categories.keys())
-    category = sidebar_container.selectbox(
-        "Category",
-        category_ids,
-        format_func=lambda x: format_category(x, categories),
-    )
-
-    return start_date, end_date, category, sidebar_container
+    return start_date, end_date, category
 
 
 def remove_ignored_rows(data):
@@ -444,6 +442,15 @@ def display_barcharts(data, categories, tags):
         col2.caption("**Note**: colors may be different from the other charts!")
 
 
+def show_transaction_info(row_id, data):
+    hide_details = st.button("Hide", key=f"details-{id}")
+    row = data[data["id"] == row_id].reset_index(drop=True).squeeze()
+    st.dataframe(row)
+    if hide_details:
+        st.session_state.transaction_id = None
+        st.experimental_rerun()
+
+
 def local_css(file_name):
     with open(HERE.joinpath(file_name)) as f:
         st.markdown("<style>{}</style>".format(f.read()), unsafe_allow_html=True)
@@ -476,14 +483,12 @@ def main():
     ensure_tags_created()
     tags = get_tags()
 
-    start_date, end_date, category, sidebar_container = display_sidebar(
-        title, categories
-    )
+    start_date, end_date, category = display_sidebar(title, categories)
     data = load_data(start_date, end_date, category, db_last_modified)
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
 
-    counterparty, selected_tags = display_extra_filters(sidebar_container, data, tags)
+    counterparty, selected_tags = display_extra_filters(data, tags)
 
     if counterparty != "All":
         data = data[data["counterparty_name"] == counterparty]
@@ -494,9 +499,13 @@ def main():
         data = data[data.tags.apply(tag_filter)]
         prev_data = prev_data[prev_data.tags.apply(tag_filter)]
 
-    display_summary_stats(data, prev_data)
-    display_barcharts(data, categories, tags)
-    display_transactions(data, categories, tags, sidebar_container)
+    row_id = st.session_state.get("transaction_id")
+    if not row_id:
+        display_summary_stats(data, prev_data)
+        display_barcharts(data, categories, tags)
+        display_transactions(data, categories, tags)
+    else:
+        show_transaction_info(row_id, data)
 
 
 if __name__ == "__main__":
