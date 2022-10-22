@@ -451,6 +451,12 @@ def display_barcharts(data, categories, tags):
         col2.caption("**Note**: colors may be different from the other charts!")
 
 
+def format_row(row):
+    if not row["id"]:
+        return "<No Parent>"
+    return f"{row['date']} — {row['amount']} — {row['details']}"
+
+
 def show_transaction_info(row_id, data, categories, tags):
     row = data[data["id"] == row_id].reset_index(drop=True).squeeze()
     col1, col2 = st.columns(2)
@@ -459,16 +465,34 @@ def show_transaction_info(row_id, data, categories, tags):
         "transaction_id",
         "source",
         "counterparty_bank",
+        "parent",
     ]
     for key in DATA_COLUMNS + additional_columns:
         value = row[key]
-        col1.write(format_column_name(key))
         if key == "category_id":
             value = format_category(value, categories)
         elif key == "tags":
             value = ", ".join([format_tag(t, tags) for t in value])
         value = "--" if value == "" else value
-        col2.write(value)
+        col1.write(format_column_name(key))
+        if key == "parent":
+            old_parent_id = row["parent"]
+            df = data[data["amount"] >= np.abs(row["amount"])]
+            options = [{"id": ""}] + df.to_dict(orient="records")
+            index = (
+                int(df[df["id"] == old_parent_id].index[0]) + 1 if old_parent_id else 0
+            )
+            parent = col2.selectbox(
+                "Select Parent",
+                options=options,
+                index=index,
+                label_visibility="collapsed",
+                format_func=format_row,
+            )
+            if old_parent_id != parent["id"]:
+                set_column_value(row, "parent", parent["id"])
+        else:
+            col2.write(value)
     hide_details = col2.button("Close", key=f"details-{id}")
     if hide_details:
         st.session_state.transaction_id = None
