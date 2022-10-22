@@ -34,6 +34,16 @@ HERE = Path(__file__).parent
 ROOT = HERE.parent
 ALL_TAG = ALL_CATEGORY = 0
 NO_TAG = NO_CATEGORY = -1
+DATA_COLUMNS = [
+    "ignore",
+    "date",
+    "amount",
+    "counterparty_name",
+    "category_id",
+    "tags",
+    "remarks",
+    "details",
+]
 
 
 @st.experimental_singleton
@@ -278,21 +288,17 @@ def display_summary_stats(data, prev_data):
     col2.metric("Maximum Spend", f"₹ {max_:.2f}")
 
 
+def format_column_name(name):
+    name = name.replace("_id", "").replace("_", " ")
+    return f"**{name.title()}**"
+
+
 def display_transactions(data, categories, tags):
     n = len(data)
     data_clean = remove_ignored_rows(data)
     with st.expander(f"Total {n} transactions", expanded=True):
         n = [1, 1, 1, 3, 2, 3, 3, 1]
-        data_columns = [
-            "ignore",
-            "date",
-            "amount",
-            "counterparty_name",
-            "category_id",
-            "tags",
-            "remarks",
-            "details",
-        ]
+        data_columns = DATA_COLUMNS
         knob1, knob2 = st.columns(2)
         sort_column = knob1.radio(
             label="Sort Transactions by ...",
@@ -303,8 +309,7 @@ def display_transactions(data, categories, tags):
 
         headers = st.columns(n)
         for idx, name in enumerate(data_columns):
-            name = name.replace("_id", "").replace("_", " ")
-            headers[idx].write(f"**{name.title()}**")
+            headers[idx].write(format_column_name(name))
         df = data_clean if hide_ignored_transactions else data
         sort_orders = {"ignore": True}
         if sort_column == "date":
@@ -442,10 +447,24 @@ def display_barcharts(data, categories, tags):
         col2.caption("**Note**: colors may be different from the other charts!")
 
 
-def show_transaction_info(row_id, data):
-    hide_details = st.button("Hide", key=f"details-{id}")
+def show_transaction_info(row_id, data, categories, tags):
     row = data[data["id"] == row_id].reset_index(drop=True).squeeze()
-    st.dataframe(row)
+    col1, col2 = st.columns(2)
+    additional_columns = [
+        "transaction_type",
+        "transaction_id",
+        "source",
+        "counterparty_bank",
+    ]
+    for key in DATA_COLUMNS + additional_columns:
+        value = row[key]
+        col1.write(format_column_name(key))
+        if key == "category_id":
+            value = format_category(value, categories)
+        elif key == "tags":
+            value = ", ".join([format_tag(t, tags) for t in value]) or " -- "
+        col2.write(value)
+    hide_details = st.button("Hide", key=f"details-{id}")
     if hide_details:
         st.session_state.transaction_id = None
         st.experimental_rerun()
@@ -505,7 +524,7 @@ def main():
         display_barcharts(data, categories, tags)
         display_transactions(data, categories, tags)
     else:
-        show_transaction_info(row_id, data)
+        show_transaction_info(row_id, data, categories, tags)
 
 
 if __name__ == "__main__":
