@@ -152,9 +152,10 @@ the scripts described above.
 
   - Similar names from the same data source are automatically updated
 
+- Mark transactions as children of another transaction. Useful when splitting a
+  bill after it's been paid, etc.
+
+
 ### Ideas to be implemented
 
 - Automatically add categories for similar transactions
-
-- Mark some transactions as repayment for another transaction. Useful when
-  splitting a bill after you have paid it.
