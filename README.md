@@ -158,4 +158,5 @@ the scripts described above.
 
 ### Ideas to be implemented
 
-- Automatically add categories for similar transactions
+- Automatically add or suggest categories for transactions based on history and
+  some NLP/ML on the details available for a transaction.
