@@ -112,10 +112,9 @@ def load_data(start_date, end_date, category, db_last_modified):
     parents = tuple(set(data["id"]))
     child_sql = f"""{base_sql} WHERE e.parent IN {parents} GROUP BY e.id"""
     children = pd.read_sql_query(child_sql, engine, parse_dates=["date"], dtype=dtype)
-    children = children[~children.id.isna()]
-    if not children.empty:
-        data = pd.concat([data, children])
-    data["category_id"].fillna(NO_CATEGORY, inplace=True)
+    data = pd.concat([data, children])
+    data.category_id.fillna(NO_CATEGORY, inplace=True)
+    data.parent.fillna("", inplace=True)
     data.tags = data.tags.apply(lambda x: list(filter(None, json.loads(x))))
     return data
 
@@ -278,8 +277,12 @@ def display_transaction(row, n, data_columns, categories, tags):
                     set_column_value(row, name, new_value)
         elif name == "date":
             value = f"{value.strftime(DATE_FMT)}"
+            if row["parent"]:
+                value = f"*{value}*"
         elif name == "amount":
             value = f"{value:.2f}"
+            if row["parent"]:
+                value = f"*{value}*"
 
         if not written:
             col.write(value)
@@ -343,7 +346,12 @@ def display_transactions(data, categories, tags):
             ]
         ascending = [sort_orders.get(name, False) for name in sort_by]
         df = df.sort_values(by=sort_by, ignore_index=True, ascending=ascending)
-        df.apply(
+        child_rows = df["parent"].str.len() > 0
+        pdf = df[~child_rows].reset_index(drop=True)
+        cdf = df[child_rows]
+        ids = pdf.id.to_list()
+        cdf.index = cdf.apply(lambda row: ids.index(row["parent"]) + 0.1, axis=1)
+        pd.concat([pdf, cdf]).sort_index().reset_index(drop=True).apply(
             display_transaction,
             axis=1,
             n=n,
