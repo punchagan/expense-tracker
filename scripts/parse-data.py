@@ -15,7 +15,7 @@ from sqlalchemy import create_engine, exc
 
 # Local
 from app.util import DB_NAME, get_country_data, get_db_url
-from app.csv_types import CSV_TYPES
+from app.source import CSV_TYPES
 
 # NOTE: Currently, hard-code India as the country of purchases
 COUNTRY = "India"
