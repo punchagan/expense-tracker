@@ -506,7 +506,7 @@ def show_transaction_info(row_id, data, categories, tags):
         col1.write(format_column_name(key))
         if key == "parent":
             old_parent_id = row["parent"]
-            df = data[data["amount"] >= np.abs(row["amount"])]
+            df = data[data["amount"] >= np.abs(row["amount"])].reset_index(drop=True)
             options = [{"id": ""}] + df.to_dict(orient="records")
             index = (
                 int(df[df["id"] == old_parent_id].index[0]) + 1 if old_parent_id else 0
