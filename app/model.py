@@ -39,7 +39,13 @@ class Expense(Base):
     parent = sa.Column(sa.String(40), sa.ForeignKey("expense.id"))
 
     def __repr__(self):
-        return f"Expense(id={self.id!r}, date={self.date!r}, amount={self.amount!r}, details={self.details!r}, ignore={self.ignore!r})"
+        return (
+            f"Expense(id={self.id!r}, date={self.date!r}, amount={self.amount!r}, "
+            f"details={self.details!r}, ignore={self.ignore!r}, source={self.source!r}, "
+            f"transaction_id={self.transaction_id!r}, transaction_type={self.transaction_type!r}, "
+            f"counterparty_name={self.counterparty_name!r}, "
+            f"counterparty_type={self.counterparty_type!r})"
+        )
 
 
 class NewID(Base):
