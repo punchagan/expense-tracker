@@ -115,6 +115,16 @@ def load_data(start_date, end_date, category, db_last_modified):
     data = pd.concat([data, children])
     data.category_id.fillna(NO_CATEGORY, inplace=True)
     data.parent.fillna("", inplace=True)
+    data.counterparty_name = (
+        data.counterparty_name.replace("None", "")
+        .fillna("")
+        .apply(lambda x: x if x is not None else "")
+    )
+    data.remarks = (
+        data.remarks.replace("None", "")
+        .fillna("")
+        .apply(lambda x: x if x is not None else "")
+    )
     data.tags = data.tags.apply(lambda x: list(filter(None, json.loads(x))))
     return data
 
