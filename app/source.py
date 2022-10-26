@@ -10,6 +10,7 @@ class Transaction:
     counterparty_type: str = ""
     counterparty_bank: str = ""
     remarks: str = ""
+    ignore: bool = False
 
 
 class Source:
