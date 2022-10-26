@@ -156,11 +156,13 @@ class AxisCCStatement(Source):
         merchant_place, transaction_id = m.groups()
         merchant_place = country.sub("", merchant_place)
         merchant = cities.sub("", merchant_place)
+        ignore = details.startswith("MB PAYMENT")
         return Transaction(
             transaction_id=transaction_id,
             transaction_type="CC",
             counterparty_name=merchant.title(),
             counterparty_type="Merchant",
+            ignore=ignore,
         )
 
 
