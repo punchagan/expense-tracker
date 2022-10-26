@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import os
 import re
 
 
@@ -35,15 +36,33 @@ class AxisStatement(Source):
     @staticmethod
     def parse_details(row, country, cities):
         details = row["details"]
-        if details.startswith("UPI"):
-            (
-                transaction_type,
-                to_type,
-                transaction_id,
-                to_name,
-                to_bank,
-                remarks,
-            ) = [each.strip() for each in details.split("/")]
+        axis_id = os.getenv("AXIS_CUSTOMID", "")
+        if details.startswith("UPIRECONP2PM/"):
+            _, transaction_id, _ = [each.strip() for each in details.split("/", 2)]
+            transaction = Transaction(
+                transaction_type="UPI",
+                counterparty_type="Merchant",
+                remarks=details,
+            )
+        elif details.startswith("UPI/CRADJ/"):
+            _, _, transaction_id, _ = [each.strip() for each in details.split("/", 3)]
+            transaction = Transaction(
+                transaction_type="UPI",
+                transaction_id=transaction_id,
+                counterparty_type="Merchant",
+                remarks=details,
+            )
+        elif details.startswith(("UPI/", "IMPS/")):
+            transaction_type, to_type, transaction_id, to_name, extra = [
+                each.strip() for each in details.split("/", 4)
+            ]
+            if to_name == axis_id:
+                to_name = ""
+                to_bank = ""
+                remarks = extra
+            else:
+                to_bank, remarks = extra.split("/")
+
             to_type = "Merchant" if to_type == "P2M" else "Person"
             transaction = Transaction(
                 transaction_id=transaction_id,
@@ -53,14 +72,70 @@ class AxisStatement(Source):
                 counterparty_bank=to_bank,
                 remarks=remarks,
             )
+        elif details.startswith("ECOM PUR/"):
+            transaction_type, to_name, _ = [
+                each.strip() for each in details.split("/", 2)
+            ]
+            transaction = Transaction(
+                transaction_type="ECOM",
+                counterparty_name=to_name.title(),
+                counterparty_type="Merchant",
+            )
+        elif details.startswith("POS/"):
+            transaction_type, to_name, transaction_id, _ = [
+                each.strip() for each in details.split("/", 3)
+            ]
+            transaction = Transaction(
+                transaction_type="POS",
+                counterparty_name=to_name.title(),
+                counterparty_type="Merchant",
+            )
+        elif details.startswith("ATM-CASH"):
+            _, remarks = [each.strip() for each in details.split("/", 1)]
+            transaction = Transaction(
+                transaction_type="ATM",
+                counterparty_name="ATM",
+                remarks=remarks,
+            )
+        elif details.startswith("BRN-CLG-CHQ"):
+            _, counterparty_name = [
+                each.strip() for each in details.split("PAID TO", 1)
+            ]
+            transaction = Transaction(
+                transaction_type="CHQ", counterparty_name=counterparty_name
+            )
+        elif (
+            re.search(
+                "(Consolidated|GST|Dr Card|Excess).*Charge",
+                details,
+                flags=re.IGNORECASE,
+            )
+            is not None
+        ):
+            transaction = Transaction(
+                transaction_type="AC",
+                counterparty_name="Axis Bank",
+                counterparty_type="Merchant",
+                remarks=details,
+            )
+        elif details.startswith("CreditCard Payment"):
+            transaction = Transaction(
+                transaction_type="AC",
+                transaction_id=details.rsplit("#", 1)[-1],
+                counterparty_name="CreditCard Payment",
+                counterparty_type="Merchant",
+                ignore=True,
+            )
+        elif axis_id and details.startswith(f"{axis_id}:"):
+            transaction = Transaction(
+                transaction_type="AC",
+                counterparty_name="Axis Bank",
+                counterparty_type="Merchant",
+                remarks=details[len(axis_id) + 1 :],
+            )
         else:
-            if re.search("(Consolidated|GST).*Charge", details) is not None:
-                transaction = Transaction(
-                    transaction_type="AC",
-                    counterparty_name="Axis Bank",
-                    counterparty_type="Merchant",
-                    remarks=details,
-                )
+            raise RuntimeError(f"Unknown Transaction Type: {details}")
+
         return transaction
 
 
