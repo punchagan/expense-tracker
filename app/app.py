@@ -318,8 +318,14 @@ def format_column_name(name):
 
 
 def display_transactions(data, categories, tags):
-    n = len(data)
     data_clean = remove_ignored_rows(data)
+    n = len(data)
+    nc = len(data_clean)
+    if len(data_clean) > 150:
+        # FIXME: paginate instead
+        st.caption(f"Found {nc} transactions. Not displaying full details ...")
+        return
+
     with st.expander(f"Total {n} transactions", expanded=True):
         n = [1, 1, 1, 3, 2, 3, 3, 1]
         data_columns = DATA_COLUMNS
