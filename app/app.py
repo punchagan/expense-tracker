@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, bindparam
 from sqlalchemy.orm import sessionmaker
 import streamlit as st
 import pandas as pd
@@ -92,7 +92,7 @@ def load_data(start_date, end_date, category, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
     category_clause = (
-        f"AND e.category_id = {category}"
+        "AND e.category_id=:category"
         if category not in {NO_CATEGORY, ALL_CATEGORY}
         else ("AND e.category_id IS NULL" if category == NO_CATEGORY else "")
     )
@@ -101,18 +101,26 @@ def load_data(start_date, end_date, category, db_last_modified):
     FROM expense e
     LEFT JOIN expense_tag et ON e.id = et.expense_id
     """
-    filter_sql = f"""WHERE e.date >= '{start_date}' AND e.date < '{end_date}'
+    filter_sql = f"""WHERE e.date >= :start_date AND e.date < :end_date
     AND (e.parent IS NULL OR e.parent = '')
     {category_clause}
     GROUP BY e.id;
     """
-    sql = f"{base_sql} {filter_sql}"
+    params = dict(start_date=start_date, end_date=end_date)
+    if category not in {NO_CATEGORY, ALL_CATEGORY}:
+        params["category"] = category
+    sql = text(f"{base_sql} {filter_sql}").bindparams(**params)
     dtype = {"ignore": bool, "category_id": "Int64"}
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype=dtype)
-    parents = ",".join(f"'{i}'" for i in set(data["id"]))
-    child_sql = f"""{base_sql} WHERE e.parent IN ({parents}) GROUP BY e.id"""
-    children = pd.read_sql_query(child_sql, engine, parse_dates=["date"], dtype=dtype)
-    data = pd.concat([data, children])
+    parents = tuple(set(data["id"]))
+    if parents:
+        child_sql = text(
+            f"{base_sql} WHERE e.parent IN :parents GROUP BY e.id"
+        ).bindparams(bindparam("parents", value=parents, expanding=True))
+        children = pd.read_sql_query(
+            child_sql, engine, parse_dates=["date"], dtype=dtype
+        )
+        data = pd.concat([data, children])
     data.category_id.fillna(NO_CATEGORY, inplace=True)
     data.parent.fillna("", inplace=True)
     data.counterparty_name = (
@@ -166,27 +174,29 @@ def set_column_value(row, column_name, value):
 
 def update_similar_counterparty_names(row, name):
     engine = get_db_engine()
-    parsed_name = row["counterparty_name_p"]
+    name_p = row["counterparty_name_p"]
     source = row["source"]
-    query = (
-        f"UPDATE expense SET counterparty_name = '{name}' "
-        f" WHERE counterparty_name_p = '{parsed_name}' AND source = '{source}'"
+    query = text(
+        "UPDATE expense SET counterparty_name=:name "
+        "WHERE counterparty_name_p=:name_p AND source=:source"
     )
-    engine.execute(query)
+    engine.execute(query, name=name, name_p=name_p, source=source)
     st.experimental_rerun()
 
 
 def update_similar_counterparty_categories(row, category_id):
     engine = get_db_engine()
     name = row["counterparty_name"]
-    category_id = "NULL" if category_id == NO_CATEGORY else str(category_id)
+    category_id = None if category_id == NO_CATEGORY else category_id
     parent_id = row["parent"]
     row_id = row["id"]
-    query = f"""
-    UPDATE expense SET category_id = {category_id}
-    WHERE counterparty_name = '{name}' OR parent = '{row_id}' OR id = '{parent_id}'
-    """
-    engine.execute(query)
+    query = text(
+        "UPDATE expense SET category_id=:category_id "
+        "WHERE counterparty_name=:name OR parent=:row_id OR id=:parent_id"
+    )
+    engine.execute(
+        query, name=name, category_id=category_id, row_id=row_id, parent_id=parent_id
+    )
     st.experimental_rerun()
 
 
