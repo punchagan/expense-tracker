@@ -35,7 +35,6 @@ ROOT = HERE.parent
 ALL_TAG = ALL_CATEGORY = 0
 NO_TAG = NO_CATEGORY = -1
 DATA_COLUMNS = [
-    "ignore",
     "date",
     "amount",
     "counterparty_name",
@@ -43,6 +42,7 @@ DATA_COLUMNS = [
     "tags",
     "remarks",
     "details",
+    "ignore",
 ]
 
 
@@ -335,7 +335,7 @@ def display_transactions(data, categories, tags):
     paginate = len(data_clean) > 2 * page_size
 
     with st.expander(f"Total {n} transactions", expanded=True):
-        cols = [1, 1, 1, 3, 2, 3, 3, 1]
+        cols = [1, 1, 3, 2, 3, 3, 1, 1]
         data_columns = DATA_COLUMNS
         knob1, knob2, knob3 = st.columns([2, 2, 1])
         sort_column = knob1.radio(
