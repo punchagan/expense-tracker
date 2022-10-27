@@ -330,6 +330,7 @@ def display_transactions(data, categories, tags):
         knob1, knob2, knob3 = st.columns([2, 2, 1])
         sort_column = knob1.radio(
             label="Sort Transactions by ...",
+            index=1,
             options=["date", "amount", "num. of transactions"],
             horizontal=True,
         )
