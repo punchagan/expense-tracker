@@ -74,7 +74,10 @@ def parse_old_data(commit=False, num_examples=10):
         for source, parsed_name, name in names
         if parsed_name and parsed_name != name
     }
-    # FIXME: The filter query expression could be a CLI argument?
+    # NOTE: The filter query expression could be a CLI argument? It's possible
+    # to do this by implementing an API like the QuerySet Filter API in Django
+    # and accepting the query as JSON argument. But, maynot be worth the
+    # effort, as of now.
     expenses = session.query(Expense).filter(Expense.transaction_id == None)
     country, cities = get_country_data(COUNTRY)
     country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
