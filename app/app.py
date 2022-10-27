@@ -102,7 +102,7 @@ def load_data(start_date, end_date, category, db_last_modified):
     LEFT JOIN expense_tag et ON e.id = et.expense_id
     """
     filter_sql = f"""WHERE e.date >= '{start_date}' AND e.date < '{end_date}'
-    AND e.parent IS NULL OR e.parent = ''
+    AND (e.parent IS NULL OR e.parent = '')
     {category_clause}
     GROUP BY e.id;
     """
