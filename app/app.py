@@ -228,8 +228,8 @@ def format_tag(tag_id, tags):
     return tags[tag_id].name
 
 
-def display_transaction(row, n, data_columns, categories, tags):
-    columns = st.columns(n)
+def display_transaction(row, cols, data_columns, categories, tags):
+    columns = st.columns(cols)
     id = row["id"]
     for idx, name in enumerate(data_columns):
         value = row.get(name)
@@ -327,7 +327,7 @@ def display_transactions(data, categories, tags):
         return
 
     with st.expander(f"Total {n} transactions", expanded=True):
-        n = [1, 1, 1, 3, 2, 3, 3, 1]
+        cols = [1, 1, 1, 3, 2, 3, 3, 1]
         data_columns = DATA_COLUMNS
         knob1, knob2 = st.columns(2)
         sort_column = knob1.radio(
@@ -337,7 +337,7 @@ def display_transactions(data, categories, tags):
         )
         hide_ignored_transactions = knob2.checkbox(label="Hide Ignored Transactions")
 
-        headers = st.columns(n)
+        headers = st.columns(cols)
         for idx, name in enumerate(data_columns):
             headers[idx].write(format_column_name(name))
         df = data_clean if hide_ignored_transactions else data
@@ -370,7 +370,7 @@ def display_transactions(data, categories, tags):
         pd.concat([pdf, cdf]).sort_index().reset_index(drop=True).apply(
             display_transaction,
             axis=1,
-            n=n,
+            cols=cols,
             data_columns=data_columns,
             categories=categories,
             tags=tags,
