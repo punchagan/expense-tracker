@@ -321,21 +321,26 @@ def display_transactions(data, categories, tags):
     data_clean = remove_ignored_rows(data)
     n = len(data)
     nc = len(data_clean)
-    if len(data_clean) > 150:
-        # FIXME: paginate instead
-        st.caption(f"Found {nc} transactions. Not displaying full details ...")
-        return
+    page_size = 20
+    paginate = len(data_clean) > 2 * page_size
 
     with st.expander(f"Total {n} transactions", expanded=True):
         cols = [1, 1, 1, 3, 2, 3, 3, 1]
         data_columns = DATA_COLUMNS
-        knob1, knob2 = st.columns(2)
+        knob1, knob2, knob3 = st.columns([2, 2, 1])
         sort_column = knob1.radio(
             label="Sort Transactions by ...",
             options=["date", "amount", "num. of transactions"],
             horizontal=True,
         )
         hide_ignored_transactions = knob2.checkbox(label="Hide Ignored Transactions")
+        show_all = not paginate or knob3.checkbox(label="Turn off pagination")
+        if paginate:
+            count = n if not hide_ignored_transactions else nc
+            max_value = count // page_size + 1
+            page_number = knob3.number_input(
+                "Page number", min_value=1, max_value=max_value, disabled=show_all
+            )
 
         headers = st.columns(cols)
         for idx, name in enumerate(data_columns):
@@ -362,12 +367,19 @@ def display_transactions(data, categories, tags):
             ]
         ascending = [sort_orders.get(name, False) for name in sort_by]
         df = df.sort_values(by=sort_by, ignore_index=True, ascending=ascending)
-        child_rows = df["parent"].str.len() > 0
-        pdf = df[~child_rows].reset_index(drop=True)
-        cdf = df[child_rows]
-        ids = pdf.id.to_list()
-        cdf.index = cdf.apply(lambda row: ids.index(row["parent"]) + 0.1, axis=1)
-        pd.concat([pdf, cdf]).sort_index().reset_index(drop=True).apply(
+        no_parent_rows = df["parent"].str.len() > 0
+        parent_df = df[~no_parent_rows].reset_index(drop=True)
+        page_df = (
+            parent_df
+            if show_all
+            else parent_df[page_size * (page_number - 1) : page_size * page_number]
+        )
+        child_df = df[df.parent.isin(page_df.id)]
+        ids = parent_df.id.to_list()
+        child_df.index = child_df.apply(
+            lambda row: ids.index(row["parent"]) + 0.1, axis=1
+        )
+        pd.concat([page_df, child_df]).sort_index().reset_index(drop=True).apply(
             display_transaction,
             axis=1,
             cols=cols,
