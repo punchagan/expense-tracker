@@ -109,8 +109,8 @@ def load_data(start_date, end_date, category, db_last_modified):
     sql = f"{base_sql} {filter_sql}"
     dtype = {"ignore": bool, "category_id": "Int64"}
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype=dtype)
-    parents = tuple(set(data["id"]))
-    child_sql = f"""{base_sql} WHERE e.parent IN {parents} GROUP BY e.id"""
+    parents = ",".join(f"'{i}'" for i in set(data["id"]))
+    child_sql = f"""{base_sql} WHERE e.parent IN ({parents}) GROUP BY e.id"""
     children = pd.read_sql_query(child_sql, engine, parse_dates=["date"], dtype=dtype)
     data = pd.concat([data, children])
     data.category_id.fillna(NO_CATEGORY, inplace=True)
