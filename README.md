@@ -160,3 +160,7 @@ the scripts described above.
 
 - Automatically add or suggest categories for transactions based on history and
   some NLP/ML on the details available for a transaction.
+
+- Add a slider to filter transactions by amount
+
+- Full text search in details/remarks/name/bank/etc
