@@ -36,7 +36,7 @@ def main(commit=False):
     if db_path.exists():
         db_path.unlink()
 
-    # subprocess.check_call(["bash", HERE.joinpath("run-sample.sh"), "--no-server"])
+    subprocess.check_call(["bash", HERE.joinpath("run-sample.sh"), "--no-server"])
     env = os.environ.copy()
     env["EXPENSES_DB"] = DB_NAME
     p = subprocess.Popen(
