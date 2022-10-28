@@ -174,14 +174,14 @@ def set_column_value(row, column_name, value):
 
 
 def update_similar_counterparty_names(row, name):
-    engine = get_db_engine()
     name_p = row["counterparty_name_p"]
     source = row["source"]
-    query = text(
-        "UPDATE expense SET counterparty_name=:name "
-        "WHERE counterparty_name_p=:name_p AND source=:source"
+    session = get_sqlalchemy_session()
+    expenses = session.query(Expense).filter(
+        Expense.counterparty_name_p == name_p, Expense.source == source
     )
-    engine.execute(query, name=name, name_p=name_p, source=source)
+    expenses.update({"counterparty_name": name}, synchronize_session=False)
+    session.commit()
     st.experimental_rerun()
 
 
