@@ -165,3 +165,16 @@ the scripts described above.
   some NLP/ML on the details available for a transaction.
 
 - Full text search in details/remarks/name/bank/etc
+
+- Back-up the DB each time you start. Keep a copy or two. May be use something
+  like fabric to SCP the DB somewhere?
+
+- Add Category to Cash sheet. Add a script to print out the categories in the
+  DB and open the form.  It should be easy to manually edit it, then.
+
+- If remarks match a category name, use that!
+
+- Highlight newly scraped entries in the UI. We could mark edits instead of
+  newly scraped, may be? Newly scraped might go away if we run the scrapers
+  multiple times. Instead, we mark an entry as modified when it was manually
+  touched. Is it possible to add custom CSS to rows/columns? :thinking:
