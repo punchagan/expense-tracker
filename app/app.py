@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
-from sqlalchemy import create_engine, text, bindparam
+from sqlalchemy import create_engine, text, bindparam, or_
 from sqlalchemy.orm import sessionmaker
 import streamlit as st
 import pandas as pd
@@ -186,18 +186,20 @@ def update_similar_counterparty_names(row, name):
 
 
 def update_similar_counterparty_categories(row, category_id):
-    engine = get_db_engine()
     name = row["counterparty_name"]
     category_id = None if category_id == NO_CATEGORY else category_id
     parent_id = row["parent"]
     row_id = row["id"]
-    query = text(
-        "UPDATE expense SET category_id=:category_id "
-        "WHERE counterparty_name=:name OR parent=:row_id OR id=:parent_id"
+    session = get_sqlalchemy_session()
+    expenses = session.query(Expense).where(
+        or_(
+            Expense.counterparty_name == name,
+            Expense.parent == row_id,
+            Expense.id == parent_id,
+        )
     )
-    engine.execute(
-        query, name=name, category_id=category_id, row_id=row_id, parent_id=parent_id
-    )
+    expenses.update({"category_id": category_id}, synchronize_session=False)
+    session.commit()
     st.experimental_rerun()
 
 
