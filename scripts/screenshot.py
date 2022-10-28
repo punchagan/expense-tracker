@@ -29,14 +29,14 @@ def test_capture_screenshot(sb):
     sb.save_screenshot(str(path))
 
 
-def main():
+def main(commit=False):
     port = str(random.randint(10000, 20000))
 
     db_path = ROOT.joinpath(DB_NAME)
     if db_path.exists():
         db_path.unlink()
 
-    subprocess.check_call(["bash", HERE.joinpath("run-sample.sh"), "--no-server"])
+    # subprocess.check_call(["bash", HERE.joinpath("run-sample.sh"), "--no-server"])
     env = os.environ.copy()
     env["EXPENSES_DB"] = DB_NAME
     p = subprocess.Popen(
@@ -68,6 +68,26 @@ def main():
     )
     p.kill()
 
+    if commit:
+        subprocess.check_call(["git", "add", ROOT.joinpath("screenshots")])
+        try:
+            subprocess.check_output(
+                ["git", "commit", "-m", "screenshot: Update screenshots"]
+            )
+        except subprocess.CalledProcessError as e:
+            print(e.output.decode("utf8").strip().splitlines()[-1])
+
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c",
+        "--commit",
+        help="Commit changes to screenshots.",
+        default=False,
+        action="store_true",
+    )
+    args = parser.parse_args()
+    main(args.commit)
