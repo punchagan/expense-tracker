@@ -29,6 +29,17 @@ def test_capture_screenshot(sb):
     sb.save_screenshot(str(path))
 
 
+def set_env_vars(env, script_path):
+    """Set env vars from run-sample.sh in our subprocess environment variables."""
+    with open(script_path) as f:
+        exports = [line for line in f.read().splitlines() if line.startswith("export")]
+        for export in exports:
+            var, val = export.split(" ")[-1].split("=")
+            env[var] = val.strip('"').strip("'")
+            print(env[var], var)
+        print()
+
+
 def main(commit=False, use_existing_db=False):
     port = str(random.randint(10000, 20000))
 
@@ -36,9 +47,10 @@ def main(commit=False, use_existing_db=False):
     if db_path.exists() and not use_existing_db:
         db_path.unlink()
 
-    subprocess.check_call(["bash", HERE.joinpath("run-sample.sh"), "--no-server"])
+    sample_script = HERE.joinpath("run-sample.sh")
     env = os.environ.copy()
-    env["EXPENSES_DB"] = DB_NAME
+    set_env_vars(env, sample_script)
+    subprocess.check_call(["bash", sample_script, "--no-server"], env=env)
     p = subprocess.Popen(
         [
             "streamlit",
