@@ -29,11 +29,11 @@ def test_capture_screenshot(sb):
     sb.save_screenshot(str(path))
 
 
-def main(commit=False):
+def main(commit=False, use_existing_db=False):
     port = str(random.randint(10000, 20000))
 
     db_path = ROOT.joinpath(DB_NAME)
-    if db_path.exists():
+    if db_path.exists() and not use_existing_db:
         db_path.unlink()
 
     subprocess.check_call(["bash", HERE.joinpath("run-sample.sh"), "--no-server"])
@@ -89,5 +89,12 @@ if __name__ == "__main__":
         default=False,
         action="store_true",
     )
+    parser.add_argument(
+        "-u",
+        "--use-existing-db",
+        help="Use existing DB.",
+        default=False,
+        action="store_true",
+    )
     args = parser.parse_args()
-    main(args.commit)
+    main(args.commit, args.use_existing_db)
