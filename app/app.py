@@ -634,13 +634,19 @@ def main():
         data = data[data.tags.apply(tag_filter)]
         prev_data = prev_data[prev_data.tags.apply(tag_filter)]
 
+    def amount_filter_low(data, low):
+        return data[(data.amount >= low) | (data.parent.str.len() > 0)]
+
+    def amount_filter_high(data, high):
+        return data[(data.amount <= high) | (data.parent.str.len() > 0)]
+
     if not np.isneginf(low):
-        data = data[data.amount >= low]
-        prev_data = prev_data[prev_data.amount >= low]
+        data = amount_filter_low(data, low)
+        prev_data = amount_filter_low(prev_data, low)
 
     if not np.isposinf(high):
-        data = data[data.amount <= high]
-        prev_data = prev_data[prev_data.amount <= high]
+        data = amount_filter_high(data, high)
+        prev_data = amount_filter_high(prev_data, high)
 
     if not display_info:
         display_summary_stats(data, prev_data)
