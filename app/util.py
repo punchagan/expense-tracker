@@ -1,4 +1,5 @@
 import calendar
+from collections import Counter
 import datetime
 import io
 import json
@@ -114,9 +115,12 @@ def lookup_counterparty_names(engine):
     names = engine.execute(
         "SELECT source, counterparty_name_p, counterparty_name FROM expense"
     ).fetchall()
-    lookup = {
-        (source, parsed_name): name
-        for source, parsed_name, name in names
-        if parsed_name and parsed_name != name
-    }
-    return lookup
+    lookup = {}
+    for source, parsed_name, name in names:
+        if not (parsed_name and parsed_name != name):
+            continue
+        key = (source, parsed_name)
+        value = lookup.setdefault(key, [])
+        value.append(name)
+
+    return {key: Counter(value).most_common(1)[0][0] for key, value in lookup.items()}
