@@ -174,13 +174,21 @@ def set_column_value(row, column_name, value):
 
 
 def update_similar_counterparty_names(row, name):
+    bulk_update = name.endswith("**")
+    name = name.strip("*")
     name_p = row["counterparty_name_p"]
     source = row["source"]
     session = get_sqlalchemy_session()
-    expenses = session.query(Expense).filter(
-        Expense.counterparty_name_p == name_p, Expense.source == source
-    )
-    expenses.update({"counterparty_name": name}, synchronize_session=False)
+    if bulk_update:
+        expenses = session.query(Expense).filter(
+            Expense.counterparty_name_p == name_p,
+            Expense.counterparty_name == name,
+            Expense.source == source,
+        )
+        expenses.update({"counterparty_name": name}, synchronize_session=False)
+    else:
+        expense = session.query(Expense).get({"id": row["id"]})
+        expense.counterparty_name = name
     session.commit()
     st.experimental_rerun()
 

@@ -151,7 +151,9 @@ the scripts described above.
 - Edit merchant (counterparty) names from the UI, since data from Banks usually
   truncates names.
 
-  - Similar names from the same data source are automatically updated
+  - Similar names from the same data source are automatically updated, when the
+    name ends with double asterisks `**`.  If name doesn't end with `**`, only
+    that transaction is updated.
 
 - Mark transactions as children of another transaction. Useful when splitting a
   bill after it's been paid, etc.
