@@ -18,7 +18,7 @@ from sqlalchemy.orm import sessionmaker
 # Local
 from app.model import Expense
 from app.source import CSV_TYPES
-from app.util import DB_NAME, get_country_data, get_db_url
+from app.util import DB_NAME, get_country_data, get_db_url, lookup_counterparty_names
 
 # NOTE: Currently, hard-code India as the country of purchases
 COUNTRY = "India"
@@ -38,14 +38,7 @@ def parse_old_data(commit=False, num_examples=10):
     """Parses "old" data in the DB using the appropriate parser."""
     session = get_sqlalchemy_session()
     engine = get_db_engine()
-    names = engine.execute(
-        "SELECT source, counterparty_name_p, counterparty_name FROM expense"
-    ).fetchall()
-    lookup = {
-        (source, parsed_name): name
-        for source, parsed_name, name in names
-        if parsed_name and parsed_name != name
-    }
+    lookup = lookup_counterparty_names(engine)
     # NOTE: The filter query expression could be a CLI argument? It's possible
     # to do this by implementing an API like the QuerySet Filter API in Django
     # and accepting the query as JSON argument. But, maynot be worth the

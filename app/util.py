@@ -108,3 +108,15 @@ def previous_month(start_date):
     prev = end - datetime.timedelta(days=1)
     start = datetime.date(prev.year, prev.month, 1)
     return start, end
+
+
+def lookup_counterparty_names(engine):
+    names = engine.execute(
+        "SELECT source, counterparty_name_p, counterparty_name FROM expense"
+    ).fetchall()
+    lookup = {
+        (source, parsed_name): name
+        for source, parsed_name, name in names
+        if parsed_name and parsed_name != name
+    }
+    return lookup

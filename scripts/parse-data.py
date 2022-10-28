@@ -14,7 +14,7 @@ import pandas as pd
 from sqlalchemy import create_engine, exc
 
 # Local
-from app.util import DB_NAME, get_country_data, get_db_url
+from app.util import DB_NAME, get_country_data, get_db_url, lookup_counterparty_names
 from app.source import CSV_TYPES
 
 # NOTE: Currently, hard-code India as the country of purchases
@@ -60,15 +60,7 @@ def transform_data(data, csv_type, engine):
     data["counterparty_name_p"] = data["counterparty_name"]
     parsed_names = tuple(set(data["counterparty_name_p"]) - set([""]))
     if parsed_names:
-        query = (
-            "SELECT counterparty_name_p, counterparty_name FROM expense"
-            f" WHERE counterparty_name_p IN {parsed_names} AND source = '{csv_type}'"
-        )
-        names = {
-            parsed_name: name
-            for parsed_name, name in engine.execute(query).fetchall()
-            if parsed_name != name
-        }
+        names = lookup_counterparty_names(engine)
         data["counterparty_name"] = data["counterparty_name"].apply(
             lambda x: names.get(x, x)
         )
