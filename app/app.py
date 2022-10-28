@@ -44,6 +44,7 @@ DATA_COLUMNS = [
     "details",
     "ignore",
 ]
+CURRENCY_SYMBOL = "₹"
 
 
 @st.experimental_singleton
@@ -318,8 +319,13 @@ def display_summary_stats(data, prev_data):
     prev_total = prev_data_clean["amount"].sum()
     delta = delta_percent(total, prev_total)
     max_ = data_clean["amount"].max() if len(data_clean) > 0 else 0
-    col1.metric("Total Spend", f"₹ {total:.2f}", delta=delta, delta_color="inverse")
-    col2.metric("Maximum Spend", f"₹ {max_:.2f}")
+    col1.metric(
+        "Total Spend",
+        f"{CURRENCY_SYMBOL} {total:.2f}",
+        delta=delta,
+        delta_color="inverse",
+    )
+    col2.metric("Maximum Spend", f"{CURRENCY_SYMBOL} {max_:.2f}")
 
 
 def format_column_name(name):
