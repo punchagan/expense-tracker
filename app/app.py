@@ -404,16 +404,17 @@ def display_extra_filters(data, tags, disabled):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
     tag_ids = sorted({tag for tags in data.tags for tag in tags})
     with st.sidebar:
-        counterparty = st.selectbox("Counter Party", counterparties, disabled=disabled)
+        counterparty = st.selectbox(
+            "Counter Party", counterparties, disabled=disabled, key=f"cp-filter"
+        )
         selected_tags = st.multiselect(
             label="Tags",
             options=tag_ids,
             default=[],
-            key=f"tag-{id}",
+            key=f"tag-filter",
             format_func=lambda x: format_tag(x, tags),
             disabled=disabled,
         )
-
     return counterparty, selected_tags
 
 
