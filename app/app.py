@@ -406,9 +406,21 @@ def display_transactions(data, categories, tags):
         )
 
 
+def format_amount(amount):
+    amount = (
+        "-∞"
+        if np.isneginf(amount)
+        else "∞"
+        if np.isposinf(amount)
+        else f"{CURRENCY_SYMBOL} {amount}"
+    )
+    return amount
+
+
 def display_extra_filters(data, tags, disabled):
     counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
     tag_ids = sorted({tag for tags in data.tags for tag in tags})
+    options = (-np.inf, 0, 1000, 5000, 10000, 20000, np.inf)
     with st.sidebar:
         counterparty = st.selectbox(
             "Counter Party", counterparties, disabled=disabled, key=f"cp-filter"
@@ -421,7 +433,14 @@ def display_extra_filters(data, tags, disabled):
             format_func=lambda x: format_tag(x, tags),
             disabled=disabled,
         )
-    return counterparty, selected_tags
+        start, end = st.select_slider(
+            label="Amount",
+            options=options,
+            value=(options[0], options[-1]),
+            format_func=format_amount,
+            key="amount-filter",
+        )
+    return counterparty, selected_tags, (start, end)
 
 
 def display_sidebar(title, categories, disabled):
@@ -602,7 +621,9 @@ def main():
     data = load_data(start_date, end_date, category, db_last_modified)
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
-    counterparty, selected_tags = display_extra_filters(data, tags, display_info)
+    counterparty, selected_tags, (low, high) = display_extra_filters(
+        data, tags, display_info
+    )
 
     if counterparty != "All":
         data = data[data["counterparty_name"] == counterparty]
@@ -612,6 +633,14 @@ def main():
         tag_filter = lambda x: bool(set(x).intersection(selected_tags))
         data = data[data.tags.apply(tag_filter)]
         prev_data = prev_data[prev_data.tags.apply(tag_filter)]
+
+    if not np.isneginf(low):
+        data = data[data.amount >= low]
+        prev_data = prev_data[prev_data.amount >= low]
+
+    if not np.isposinf(high):
+        data = data[data.amount <= high]
+        prev_data = prev_data[prev_data.amount <= high]
 
     if not display_info:
         display_summary_stats(data, prev_data)

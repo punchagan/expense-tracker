@@ -124,15 +124,16 @@ the scripts described above.
 
 ### Visualization/analysis features
 
-- Filter expenses by time duration (month, year or complete duration)
+- Filter expenses by:
+  - time duration (month, year or complete duration)
+  - categories, tags and counterparty name
+  - transaction amount
 
-- Filter expenses by categories, tags and counterparty name
-
-- View barcharts of expenses
-  - by day of month
-  - by day of week
-  - by category
-  - by tag
+- View barcharts of expenses by:
+  - day of month
+  - day of week
+  - category
+  - tag
 
 ### Data entry features
 
@@ -160,7 +161,5 @@ the scripts described above.
 
 - Automatically add or suggest categories for transactions based on history and
   some NLP/ML on the details available for a transaction.
-
-- Add a slider to filter transactions by amount
 
 - Full text search in details/remarks/name/bank/etc
