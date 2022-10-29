@@ -36,8 +36,6 @@ def set_env_vars(env, script_path):
         for export in exports:
             var, val = export.split(" ")[-1].split("=")
             env[var] = val.strip('"').strip("'")
-            print(env[var], var)
-        print()
 
 
 def main(commit=False, use_existing_db=False):
