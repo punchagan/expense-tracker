@@ -19,36 +19,6 @@ DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
 DB_PATH = ROOT.joinpath(DB_NAME)
 
 
-def get_db_url():
-    return f"sqlite:///{DB_PATH}"
-
-
-def get_db_engine():
-    return create_engine(get_db_url())
-
-
-def get_sqlalchemy_session():
-    engine = get_db_engine()
-    Session = sessionmaker(bind=engine)
-    return Session()
-
-
-def lookup_counterparty_names():
-    engine = get_db_engine()
-    names = engine.execute(
-        "SELECT source, counterparty_name_p, counterparty_name FROM expense"
-    ).fetchall()
-    lookup = {}
-    for source, parsed_name, name in names:
-        if not (parsed_name and parsed_name != name):
-            continue
-        key = (source, parsed_name)
-        value = lookup.setdefault(key, [])
-        value.append(name)
-
-    return {key: Counter(value).most_common(1)[0][0] for key, value in lookup.items()}
-
-
 def backup_db(path=DB_PATH):
     """Make a copy of the DB if it is older than specified time.
 
@@ -86,11 +56,41 @@ def backup_db(path=DB_PATH):
     return True
 
 
+def counterparty_names_lookup():
+    engine = get_db_engine()
+    names = engine.execute(
+        "SELECT source, counterparty_name_p, counterparty_name FROM expense"
+    ).fetchall()
+    lookup = {}
+    for source, parsed_name, name in names:
+        if not (parsed_name and parsed_name != name):
+            continue
+        key = (source, parsed_name)
+        value = lookup.setdefault(key, [])
+        value.append(name)
+
+    return {key: Counter(value).most_common(1)[0][0] for key, value in lookup.items()}
+
+
+def get_db_url():
+    return f"sqlite:///{DB_PATH}"
+
+
+def get_db_engine():
+    return create_engine(get_db_url())
+
+
+def get_sqlalchemy_session():
+    engine = get_db_engine()
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+
 def parse_details_for_expenses(expenses, n_debug=0):
     country, cities = get_country_data()
     country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
     cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
-    counterparty_lookup = lookup_counterparty_names()
+    counterparty_lookup = counterparty_names_lookup()
     examples = []
     for i, expense in enumerate(expenses):
         source_cls = CSV_TYPES[expense.source]
