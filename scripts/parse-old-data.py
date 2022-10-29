@@ -12,26 +12,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
 import pandas as pd
-from sqlalchemy import create_engine, exc
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import exc
 
 # Local
+from app.db_util import get_db_engine, get_sqlalchemy_session, lookup_counterparty_names
 from app.model import Expense
 from app.source import CSV_TYPES
-from app.util import DB_NAME, get_country_data, get_db_url, lookup_counterparty_names
+from app.util import get_country_data
 
 # NOTE: Currently, hard-code India as the country of purchases
 COUNTRY = "India"
-
-
-def get_db_engine():
-    return create_engine(get_db_url())
-
-
-def get_sqlalchemy_session():
-    engine = get_db_engine()
-    Session = sessionmaker(bind=engine)
-    return Session()
 
 
 def parse_old_data(commit=False, num_examples=10):

@@ -17,14 +17,13 @@ import numpy as np
 import altair as alt
 
 # Local
+from app.db_util import DB_NAME, get_db_url
 from app.data import CATEGORIES, create_categories, create_tags
 from app.model import Category, Expense, Tag
 from app.util import (
-    DB_NAME,
     daterange_from_year_month,
     delta_percent,
     format_month,
-    get_db_url,
     previous_month,
 )
 
