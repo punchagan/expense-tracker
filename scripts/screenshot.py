@@ -40,14 +40,13 @@ def set_env_vars(env, script_path):
 
 def main(commit=False, use_existing_db=False):
     port = str(random.randint(10000, 20000))
-
-    db_path = ROOT.joinpath(DB_NAME)
-    if db_path.exists() and not use_existing_db:
-        db_path.unlink()
-
     sample_script = HERE.joinpath("run-sample.sh")
     env = os.environ.copy()
     set_env_vars(env, sample_script)
+    db_name = env["EXPENSES_DB"]
+    db_path = ROOT.joinpath(db_name)
+    if db_path.exists() and not use_existing_db:
+        db_path.unlink()
     subprocess.check_call(["bash", sample_script, "--no-server"], env=env)
     p = subprocess.Popen(
         [
