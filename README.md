@@ -1,6 +1,7 @@
 # Expense Tracker
 
-Expense tracker aims to build a simple UI to track monthly expenses.
+A collection of scrapers, parsers and a GUI to collect, annotate and visualize
+personal expenses.
 
 It is a collection of scripts to scrape and parse transaction data from
 bank/credit-card statements and dump them into a local SQLite DB.  There's a

@@ -451,6 +451,9 @@ def display_extra_filters(data, tags, disabled):
 def display_sidebar(title, categories, disabled):
     with st.sidebar:
         st.title(title)
+        st.caption(
+            "A UI to annotate and visualize personal expenses captured from different sources."
+        )
 
         # Add a note about the last updated date
         updated = last_updated()
