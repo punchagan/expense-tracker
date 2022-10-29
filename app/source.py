@@ -19,7 +19,7 @@ class Source:
     columns = {}
 
     @staticmethod
-    def parse_details(row, country, cities):
+    def parse_details(expense, country, cities):
         return Transaction()
 
 
@@ -34,8 +34,8 @@ class AxisStatement(Source):
     }
 
     @staticmethod
-    def parse_details(row, country, cities):
-        details = row["details"]
+    def parse_details(expense, country, cities):
+        details = expense.details
         axis_id = os.getenv("AXIS_CUSTOMID", "")
         if details.startswith("UPIRECONP2PM/"):
             _, transaction_id, _ = [each.strip() for each in details.split("/", 2)]
@@ -150,8 +150,8 @@ class AxisCCStatement(Source):
     }
 
     @staticmethod
-    def parse_details(row, country, cities):
-        details = row["details"]
+    def parse_details(expense, country, cities):
+        details = expense.details
         m = re.match("(.*?)(?: #\w+)* #(\d+)", details)
         merchant_place, transaction_id = m.groups()
         merchant_place = country.sub("", merchant_place)
@@ -188,8 +188,8 @@ class Cash(Source):
     }
 
     @staticmethod
-    def parse_details(row, country, cities):
-        details = row["details"]
+    def parse_details(expense, country, cities):
+        details = expense.details
         assert details.startswith("Cash/")
         transaction_type, remarks = [each.strip() for each in details.split("/")]
         return Transaction(transaction_type=transaction_type, remarks=remarks)

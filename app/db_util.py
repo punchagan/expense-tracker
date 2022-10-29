@@ -94,8 +94,7 @@ def parse_details_for_expenses(expenses, n_debug=0):
     examples = []
     for i, expense in enumerate(expenses):
         source_cls = CSV_TYPES[expense.source]
-        row = dict(details=expense.details)
-        transaction = source_cls.parse_details(row, country, cities)
+        transaction = source_cls.parse_details(expense, country, cities)
         attrs = {f.name: f.name for f in fields(transaction)}
         attrs["counterparty_name_p"] = "counterparty_name"
         attrs["counterparty_bank_p"] = "counterparty_bank"
