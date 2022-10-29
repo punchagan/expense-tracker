@@ -35,7 +35,7 @@ def get_transformed_row(x, csv_type):
 
     header_columns = CSV_TYPES[csv_type].columns
     date = x[header_columns["date"]]
-    details = x[header_columns["details"]]
+    details = x[header_columns["details"]].strip()
     amount_h, credit_h, debit_h = (
         header_columns["amount"],
         header_columns["credit"],

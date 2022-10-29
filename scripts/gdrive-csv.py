@@ -24,7 +24,7 @@ def download_sheet():
         f.write(response.text)
 
     df = pd.read_csv(csv_path)
-    df["Details"] = "Cash/" + df["Details"]
+    df["Details"] = "Cash/" + df["Details"].strip()
     df.to_csv(csv_path, index=False)
 
 
