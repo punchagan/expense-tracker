@@ -57,7 +57,7 @@ def get_sqlalchemy_session():
 def last_updated():
     engine = get_db_engine()
     (date,) = engine.execute("SELECT MAX(date) FROM expense").fetchone()
-    date, _ = date.split()
+    date, _ = date.split() if date else (None, None)
     return date
 
 
@@ -462,7 +462,11 @@ def display_sidebar(title, categories, disabled):
 
         months = get_months()
         option = st.selectbox(
-            "Time Period", months, format_func=format_month, index=2, disabled=disabled
+            "Time Period",
+            months,
+            format_func=format_month,
+            index=min(2, len(months) - 1),
+            disabled=disabled,
         )
         start_date, end_date = daterange_from_year_month(*option)
 
