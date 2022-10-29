@@ -167,9 +167,6 @@ the scripts described above.
 
 - Full text search in details/remarks/name/bank/etc
 
-- Back-up the DB each time you start. Keep a copy or two. May be use something
-  like fabric to SCP the DB somewhere?
-
 - Add Category to Cash sheet. Add a script to print out the categories in the
   DB and open the form.  It should be easy to manually edit it, then.
 

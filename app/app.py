@@ -17,7 +17,7 @@ import numpy as np
 import altair as alt
 
 # Local
-from app.db_util import DB_PATH, get_db_engine
+from app.db_util import DB_PATH, get_db_engine, backup_db
 from app.data import CATEGORIES, create_categories, create_tags
 from app.model import Category, Expense, Tag
 from app.util import (
@@ -598,6 +598,10 @@ def local_css(file_name):
 
 
 def main():
+    db_changed = backup_db()
+    if db_changed:
+        st.experimental_singleton.clear()
+
     title = "Personal Expense Tracker"
 
     st.set_page_config(

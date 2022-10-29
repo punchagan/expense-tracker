@@ -1,6 +1,10 @@
 from collections import Counter
+import datetime
+from logging.handlers import TimedRotatingFileHandler
 import os
 from pathlib import Path
+import shutil
+from stat import ST_CTIME
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -37,3 +41,40 @@ def lookup_counterparty_names(engine):
         value.append(name)
 
     return {key: Counter(value).most_common(1)[0][0] for key, value in lookup.items()}
+
+
+def backup_db(path=DB_PATH):
+    """Make a copy of the DB if it is older than specified time.
+
+    NOTE: TimedRotatingFileHandler uses the file's mtime to decide when to
+    rollover. If a file is kept editing before the rollover interval expires,
+    no backups would be created. We could try to use the ctime instead, but on
+    Unix ctime is the same as mtime!!!
+
+    """
+    if not path.exists():
+        return
+
+    trfh = TimedRotatingFileHandler(
+        path, delay=True, backupCount=30, when="d", interval=1
+    )
+    t = os.stat(path)[ST_CTIME]  # NOTE: ST_CTIME is the same as ST_MTIME on Unix
+    trfh.rolloverAt = trfh.computeRollover(t)
+    if not trfh.shouldRollover(record=None):
+        return
+
+    def namer(name):
+        trfh._rotation_filename = name
+        return name
+
+    trfh.namer = namer
+
+    trfh.doRollover()
+
+    if not path.exists():
+        # Copy the rolled over file with new created date
+        dest = trfh._rotation_filename
+        shutil.copy(dest, path)
+        print(f"Backed up the DB to {dest}")
+
+    return True
