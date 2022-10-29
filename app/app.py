@@ -444,6 +444,7 @@ def display_extra_filters(data, tags, disabled):
             value=(options[0], options[-1]),
             format_func=format_amount,
             key="amount-filter",
+            disabled=disabled,
         )
     return counterparty, selected_tags, (start, end)
 
