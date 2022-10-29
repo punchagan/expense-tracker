@@ -18,7 +18,6 @@ import altair as alt
 
 # Local
 from app.db_util import DB_PATH, get_db_engine, backup_db
-from app.data import CATEGORIES, create_categories, create_tags
 from app.model import Category, Expense, Tag
 from app.util import (
     daterange_from_year_month,
@@ -59,28 +58,6 @@ def last_updated():
     (date,) = engine.execute("SELECT MAX(date) FROM expense").fetchone()
     date, _ = date.split() if date else (None, None)
     return date
-
-
-@st.experimental_memo
-def ensure_categories_created():
-    session = get_sqlalchemy_session()
-    try:
-        from conf import EXTRA_CATEGORIES
-
-        categories = CATEGORIES + EXTRA_CATEGORIES
-    except ImportError:
-        categories = CATEGORIES
-    return create_categories(session, categories)
-
-
-@st.experimental_memo
-def ensure_tags_created():
-    session = get_sqlalchemy_session()
-    try:
-        from conf import TAGS as tags
-    except ImportError:
-        tags = []
-    return create_tags(session, tags)
 
 
 @st.experimental_memo
@@ -626,11 +603,8 @@ def main():
     # Detect DB changes and invalidate Streamlit memoized data
     db_last_modified = os.path.getmtime(DB_PATH)
 
-    ensure_categories_created()
     categories = get_categories()
-    ensure_tags_created()
     tags = get_tags()
-
     row_id = st.session_state.get("transaction_id")
     display_info = bool(row_id)
     start_date, end_date, category = display_sidebar(title, categories, display_info)

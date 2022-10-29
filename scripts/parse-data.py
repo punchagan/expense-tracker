@@ -18,6 +18,8 @@ from app.db_util import (
     get_db_engine,
     parse_details_for_expenses,
     get_sqlalchemy_session,
+    ensure_categories_created,
+    ensure_tags_created,
 )
 from app.model import Expense
 from app.source import CSV_TYPES
@@ -131,4 +133,7 @@ if __name__ == "__main__":
         engine.execute("SELECT * FROM new_id").fetchone()
     except exc.OperationalError:
         sys.exit(f"Run `alembic upgrade head` before running {sys.argv[0]}.")
+
+    ensure_categories_created()
+    ensure_tags_created()
     parse_data(args.path, args.csv_type)
