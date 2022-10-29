@@ -450,11 +450,11 @@ def display_extra_filters(data, tags, disabled):
 
 def display_sidebar(title, categories, disabled):
     with st.sidebar:
+        st.title(title)
+
         # Add a note about the last updated date
         updated = last_updated()
         st.caption(f"Expense data last updated on {updated}")
-
-        st.title(title)
 
         months = get_months()
         option = st.selectbox(
