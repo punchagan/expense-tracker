@@ -457,7 +457,7 @@ def display_sidebar(title, categories, disabled):
 
         # Add a note about the last updated date
         updated = last_updated()
-        st.caption(f"Expense data last updated on {updated}")
+        st.caption(f"*Expense data last updated on {updated}*")
 
         months = get_months()
         option = st.selectbox(
