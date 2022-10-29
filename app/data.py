@@ -1,8 +1,4 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from app.model import Category, Tag
-from app.util import DB_NAME, delta_percent, format_month, get_db_url
 
 CATEGORIES = [
     "Automobile",
