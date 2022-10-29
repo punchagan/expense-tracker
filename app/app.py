@@ -17,7 +17,7 @@ import numpy as np
 import altair as alt
 
 # Local
-from app.db_util import get_db_engine, get_db_url
+from app.db_util import DB_PATH, get_db_engine
 from app.data import CATEGORIES, create_categories, create_tags
 from app.model import Category, Expense, Tag
 from app.util import (
@@ -615,9 +615,8 @@ def main():
     # Enable Streamlit theme for Altair
     alt.themes.enable("streamlit")
 
-    _, db_path = get_db_url().split("///")
     # Detect DB changes and invalidate Streamlit memoized data
-    db_last_modified = os.path.getmtime(db_path)
+    db_last_modified = os.path.getmtime(DB_PATH)
 
     ensure_categories_created()
     categories = get_categories()

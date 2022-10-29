@@ -7,11 +7,11 @@ from sqlalchemy.orm import sessionmaker
 
 ROOT = Path(__file__).parent.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
+DB_PATH = ROOT.joinpath(DB_NAME)
 
 
 def get_db_url():
-    db_path = ROOT.joinpath(DB_NAME)
-    return f"sqlite:///{db_path}"
+    return f"sqlite:///{DB_PATH}"
 
 
 def get_db_engine():
