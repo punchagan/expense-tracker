@@ -3,7 +3,6 @@
 # Standard libs
 from hashlib import sha1
 from pathlib import Path
-import re
 import sys
 
 # HACK: include app module in sys.path
@@ -14,8 +13,13 @@ import pandas as pd
 from sqlalchemy import exc
 
 # Local
-from app.db_util import DB_NAME, get_db_engine, lookup_counterparty_names
-from app.util import get_country_data
+from app.db_util import (
+    DB_NAME,
+    get_db_engine,
+    parse_details_for_expenses,
+    get_sqlalchemy_session,
+)
+from app.model import Expense
 from app.source import CSV_TYPES
 
 # NOTE: Currently, hard-code India as the country of purchases
@@ -43,10 +47,6 @@ def get_transformed_row(x, csv_type):
 
 def transform_data(data, csv_type, engine):
     source_cls = CSV_TYPES[csv_type]
-    data["source"] = csv_type
-    country, cities = get_country_data(COUNTRY)
-    country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
-    cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
     transactions = data.apply(
         source_cls.parse_details, axis=1, country=country, cities=cities
     ).apply(lambda x: pd.Series(x.__dict__))
@@ -102,8 +102,13 @@ def parse_data(path, csv_type):
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
     if not data.empty:
-        data = transform_data(data, csv_type, engine)
-        rows = data.to_sql("expense", engine, if_exists="append", index=False)
+        data["source"] = csv_type
+        expenses = [Expense(**d) for d in data.to_dict("records")]
+        parse_details_for_expenses(expenses)
+        session = get_sqlalchemy_session()
+        session.add_all(expenses)
+        session.commit()
+        rows = len(expenses)
     else:
         rows = len(data)
     print(f"Wrote {rows} rows from {path} to the {engine.url}")

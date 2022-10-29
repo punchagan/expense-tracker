@@ -1,5 +1,9 @@
+import json
+from pathlib import Path
+
 from app.model import Category, Tag
 
+ROOT = Path(__file__).parent.parent
 CATEGORIES = [
     "Automobile",
     "Charity",
@@ -27,6 +31,8 @@ CATEGORIES = [
     "Travel",
     "Utilities",
 ]
+# NOTE: Currently, hard-code India as the country of purchases
+COUNTRY = "India"
 
 
 def create_categories(session, categories):
@@ -55,3 +61,19 @@ def create_tags(session, tags):
         if tag.name not in tags:
             session.delete(tag)
     session.commit()
+
+
+def get_country_data(country=COUNTRY):
+    if country == "India":
+        cities = ROOT.joinpath("data", "indian-cities.json")
+        countries = ROOT.joinpath("data", "country-codes.json")
+        with open(countries) as f:
+            countries_data = json.load(f)
+            country = [c for c in countries_data if c["name"] == country][0]
+
+        with open(cities) as f:
+            cities_data = json.load(f)
+
+        return country, cities_data
+    else:
+        raise NotImplementedError

@@ -1,13 +1,18 @@
 from collections import Counter
+from dataclasses import fields
 import datetime
 from logging.handlers import TimedRotatingFileHandler
 import os
 from pathlib import Path
+import re
 import shutil
 from stat import ST_CTIME
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from app.data import get_country_data
+from app.source import CSV_TYPES
 
 ROOT = Path(__file__).parent.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
@@ -28,7 +33,8 @@ def get_sqlalchemy_session():
     return Session()
 
 
-def lookup_counterparty_names(engine):
+def lookup_counterparty_names():
+    engine = get_db_engine()
     names = engine.execute(
         "SELECT source, counterparty_name_p, counterparty_name FROM expense"
     ).fetchall()
@@ -78,3 +84,33 @@ def backup_db(path=DB_PATH):
         print(f"Backed up the DB to {dest}")
 
     return True
+
+
+def parse_details_for_expenses(expenses, n_debug=0):
+    country, cities = get_country_data()
+    country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
+    cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
+    counterparty_lookup = lookup_counterparty_names()
+    examples = []
+    for i, expense in enumerate(expenses):
+        source_cls = CSV_TYPES[expense.source]
+        row = dict(details=expense.details)
+        transaction = source_cls.parse_details(row, country, cities)
+        attrs = {f.name: f.name for f in fields(transaction)}
+        attrs["counterparty_name_p"] = "counterparty_name"
+        attrs["counterparty_bank_p"] = "counterparty_bank"
+        for expense_attr, transaction_attr in attrs.items():
+            setattr(expense, expense_attr, getattr(transaction, transaction_attr))
+
+        name_p = expense.counterparty_name_p
+        lookup_key = (expense.source, name_p)
+        lookup_value = counterparty_lookup.get(lookup_key)
+        if name_p and lookup_value:
+            expense.counterparty_name = lookup_value
+
+        if i < n_debug:
+            examples.append(expense)
+
+    for expense in examples:
+        print(expense)
+        print("#" * 40)

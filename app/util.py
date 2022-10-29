@@ -2,7 +2,6 @@ import calendar
 from collections import Counter
 import datetime
 import io
-import json
 import os
 from pathlib import Path
 import sys
@@ -80,22 +79,6 @@ def format_month(month):
     if year > 0:
         return datetime.date(year, 1, 1).strftime("⠀%Y")
     return "All"
-
-
-def get_country_data(country):
-    if country == "India":
-        cities = ROOT.joinpath("data", "indian-cities.json")
-        countries = ROOT.joinpath("data", "country-codes.json")
-        with open(countries) as f:
-            countries_data = json.load(f)
-            country = [c for c in countries_data if c["name"] == country][0]
-
-        with open(cities) as f:
-            cities_data = json.load(f)
-
-        return country, cities_data
-    else:
-        raise NotImplementedError
 
 
 def previous_month(start_date):
