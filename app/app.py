@@ -17,7 +17,7 @@ import numpy as np
 import altair as alt
 
 # Local
-from app.db_util import DB_NAME, get_db_url
+from app.db_util import get_db_engine, get_db_url
 from app.data import CATEGORIES, create_categories, create_tags
 from app.model import Category, Expense, Tag
 from app.util import (
@@ -47,10 +47,6 @@ CURRENCY_SYMBOL = "₹"
 
 
 @st.experimental_singleton
-def get_db_engine():
-    return create_engine(get_db_url())
-
-
 def get_sqlalchemy_session():
     engine = get_db_engine()
     Session = sessionmaker(bind=engine)
