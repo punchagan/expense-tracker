@@ -1,8 +1,7 @@
-import io
-import pandas as pd
-from pathlib import Path
-import re
 import sys
+from pathlib import Path
+
+import pandas as pd
 
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))

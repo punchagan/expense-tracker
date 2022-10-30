@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import os
-from pathlib import Path
 import random
 import subprocess
 import time
+from pathlib import Path
 
 import pytest
-
 
 THIS = Path(__file__)
 HERE = THIS.parent

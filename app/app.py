@@ -2,22 +2,22 @@
 import datetime
 import json
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
-from sqlalchemy import create_engine, text, bindparam, or_
-from sqlalchemy.orm import sessionmaker
-import streamlit as st
-import pandas as pd
-import numpy as np
 import altair as alt
+import numpy as np
+import pandas as pd
+import streamlit as st
+from sqlalchemy import bindparam, or_, text
+from sqlalchemy.orm import sessionmaker
 
 # Local
-from app.db_util import DB_PATH, get_db_engine, backup_db
+from app.db_util import DB_PATH, backup_db, get_db_engine
 from app.model import Category, Expense, Tag
 from app.util import (
     daterange_from_year_month,

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 # Standard libs
+import sys
 from hashlib import sha1
 from pathlib import Path
-import sys
 
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -14,12 +14,11 @@ from sqlalchemy import exc
 
 # Local
 from app.db_util import (
-    DB_NAME,
-    get_db_engine,
-    parse_details_for_expenses,
-    get_sqlalchemy_session,
     ensure_categories_created,
     ensure_tags_created,
+    get_db_engine,
+    get_sqlalchemy_session,
+    parse_details_for_expenses,
 )
 from app.model import Expense
 from app.source import CSV_TYPES

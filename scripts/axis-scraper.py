@@ -2,9 +2,9 @@ import csv
 import datetime
 import io
 import os
-from pathlib import Path
-import time
 import sys
+import time
+from pathlib import Path
 
 from bs4 import BeautifulSoup
 

@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 # Standard libs
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
-import pandas as pd
 from sqlalchemy import exc
 
 # Local

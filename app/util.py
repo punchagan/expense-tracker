@@ -1,10 +1,9 @@
 import calendar
-from collections import Counter
 import datetime
 import io
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
