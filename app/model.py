@@ -1,5 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.sql.expression import literal
 
 Base = declarative_base()
 
@@ -11,23 +12,15 @@ class Expense(Base):
     details = sa.Column(sa.Text(), nullable=False)
     amount = sa.Column(sa.Float(asdecimal=True, decimal_return_scale=2), nullable=False)
     ignore = sa.Column(
-        sa.Boolean(),
-        nullable=False,
-        default=False,
-        server_default=sa.sql.expression.literal(False),
+        sa.Boolean(), nullable=False, default=False, server_default=literal(False)
     )
     category_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
     category = relationship("Category", backref="expenses")
     tags = relationship("Tag", secondary="expense_tag", backref="expenses")
-    source = sa.Column(
-        sa.String(10), server_default=sa.sql.expression.literal(""), nullable=False
-    )
+    source = sa.Column(sa.String(10), server_default=literal(""), nullable=False)
     transaction_id = sa.Column(sa.String(20), nullable=True)
     transaction_type = sa.Column(
-        sa.String(10),
-        default="Cash",
-        server_default=sa.sql.expression.literal("Cash"),
-        nullable=False,
+        sa.String(10), default="Cash", server_default=literal("Cash"), nullable=False
     )
     counterparty_name = sa.Column(sa.String(100), nullable=True)
     counterparty_name_p = sa.Column(sa.String(100), nullable=True)
