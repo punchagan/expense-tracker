@@ -410,6 +410,15 @@ def display_transactions(data, categories, tags):
             ids = list(page_df.id)
             mark_expenses_as_reviewed(ids)
 
+        mark_filter_reviewed = st.button(
+            "Mark Filtered Reviewed",
+            key=f"mark-filtered-reviewed",
+            help="Mark all transactions in the currently filtered view as reviewed",
+        )
+        if mark_filter_reviewed:
+            ids = list(df.id)
+            mark_expenses_as_reviewed(ids)
+
 
 def format_amount(amount):
     amount = (
