@@ -29,6 +29,9 @@ class Expense(Base):
     counterparty_bank_p = sa.Column(sa.String(100), nullable=True)
     remarks = sa.Column(sa.Text(), nullable=True)
     parent = sa.Column(sa.String(40), sa.ForeignKey("expense.id"))
+    reviewed = sa.Column(
+        sa.Boolean(), nullable=False, default=False, server_default=literal(False)
+    )
 
     def __repr__(self):
         return (
