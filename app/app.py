@@ -141,6 +141,7 @@ def set_column_value(row, column_name, value):
     id_ = row["id"]
     expense = session.query(Expense).get({"id": id_})
     setattr(expense, column_name, value)
+    expense.reviewed = True
     session.commit()
     st.experimental_rerun()
 
@@ -161,6 +162,7 @@ def update_similar_counterparty_names(row, name):
     else:
         expense = session.query(Expense).get({"id": row["id"]})
         expense.counterparty_name = name
+        expense.reviewed = True
     session.commit()
     st.experimental_rerun()
 
@@ -179,6 +181,8 @@ def update_similar_counterparty_categories(row, category_id):
         )
     )
     expenses.update({"category_id": category_id}, synchronize_session=False)
+    expense = session.query(Expense).get({"id": row_id})
+    expense.reviewed = True
     session.commit()
     st.experimental_rerun()
 
@@ -187,6 +191,7 @@ def set_tags_value(row, tags, all_tags):
     session = get_sqlalchemy_session()
     id_ = row["id"]
     expense = session.query(Expense).get({"id": id_})
+    expense.reviewed = True
 
     old_tags = {tag.id: tag for tag in expense.tags}
     old_ids = set(old_tags)
@@ -569,6 +574,10 @@ def show_transaction_info(row_id, data, categories, tags):
             col2.write(value)
     hide_details = col2.button("Close", key=f"details-{id}")
     if hide_details:
+        session = get_sqlalchemy_session()
+        expense = session.query(Expense).get({"id": row_id})
+        expense.reviewed = True
+        session.commit()
         st.session_state.transaction_id = None
         st.experimental_rerun()
 
