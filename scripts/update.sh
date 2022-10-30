@@ -2,7 +2,11 @@
 set -xeuo pipefail
 
 HERE=$(dirname "$0")
-LAST_DATE=$(sqlite3 "${HERE}/../expenses.db" 'SELECT MAX(date) FROM expense;' | cut -d " " -f 1) || true
+
+pushd "${HERE}/.."
+LAST_DATE=$(sqlite3 "${EXPENSES_DB}" 'SELECT MAX(date) FROM expense;' | cut -d " " -f 1) || true
+popd
+
 TODAY=$(date +%Y_%m_%d)
 
 # Make sure DB has the latest structure
