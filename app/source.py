@@ -145,8 +145,8 @@ class AxisCCStatement(Source):
     columns = {
         "date": "Transaction Date",
         "details": "Transaction Details",
-        "credit": "CR",
-        "debit": "DR",
+        "credit": None,
+        "debit": None,
         "amount": "Amount in INR",
     }
 
