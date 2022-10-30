@@ -11,7 +11,6 @@ import pytest
 THIS = Path(__file__)
 HERE = THIS.parent
 ROOT = HERE.parent
-DB_NAME = "sample-expenses.db"
 
 
 def test_capture_screenshot(sb):
