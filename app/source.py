@@ -11,6 +11,7 @@ class Transaction:
     counterparty_type: str = ""
     counterparty_bank: str = ""
     remarks: str = ""
+    category_name: str = ""
     ignore: bool = False
 
 
@@ -190,9 +191,12 @@ class Cash(Source):
     @staticmethod
     def parse_details(expense, country, cities):
         details = expense.details
-        assert details.startswith("Cash/")
-        transaction_type, remarks = [each.strip() for each in details.split("/")]
-        return Transaction(transaction_type=transaction_type, remarks=remarks)
+        remarks, category_name = [each.strip() for each in details.split("/")]
+        return Transaction(
+            transaction_type="Cash",
+            remarks=remarks,
+            category_name=category_name,
+        )
 
 
 CSV_TYPES = {kls.name: kls for kls in Source.__subclasses__()}

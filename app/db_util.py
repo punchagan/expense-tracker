@@ -146,9 +146,9 @@ def parse_details_for_expenses(expenses, n_debug=0):
         if name_p and lookup_value:
             expense.counterparty_name = lookup_value
 
-        # Set category id if remarks exactly match a category id.
-        remarks = expense.remarks.strip().lower()
-        expense.category_id = categories.get(remarks, expense.category_id)
+        # Set category id if category_name or remarks exactly match a category id.
+        key = expense.category_name.strip().lower() or expense.remarks.strip().lower()
+        expense.category_id = categories.get(key, expense.category_id)
 
         if i < n_debug:
             examples.append(expense)
