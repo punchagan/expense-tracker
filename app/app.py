@@ -83,7 +83,7 @@ def load_data(start_date, end_date, category, db_last_modified):
     if category not in {NO_CATEGORY, ALL_CATEGORY}:
         params["category"] = category
     sql = text(f"{base_sql} {filter_sql}").bindparams(**params)
-    dtype = {"ignore": bool, "category_id": "Int64"}
+    dtype = {"ignore": bool, "category_id": "Int64", "reviewed": bool}
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype=dtype)
     parents = tuple(set(data["id"]))
     if parents:
@@ -266,7 +266,8 @@ def display_transaction(row, cols, data_columns, categories, tags):
             written = True
         elif name == "details":
             written = True
-            show_details = col.button("Details", key=f"details-{id}")
+            type_ = "primary" if not row["reviewed"] else "secondary"
+            show_details = col.button("Details", key=f"details-{id}", type=type_)
             if show_details:
                 st.session_state.transaction_id = row["id"]
                 st.experimental_rerun()
