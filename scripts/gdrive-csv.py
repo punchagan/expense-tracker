@@ -7,9 +7,6 @@ import sys
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import pandas as pd
-import requests
-
 from app.util import ROOT
 
 
@@ -22,10 +19,6 @@ def download_sheet():
     csv_path = downloads.joinpath(f"{sheet_id}.csv")
     with open(csv_path, "w") as f:
         f.write(response.text)
-
-    df = pd.read_csv(csv_path)
-    df["Details"] = "Cash/" + df["Details"].str.strip()
-    df.to_csv(csv_path, index=False)
 
 
 if __name__ == "__main__":
