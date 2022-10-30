@@ -181,7 +181,7 @@ class Cash(Source):
     name = "cash"
     columns = {
         "date": "Timestamp",
-        "details": "Details",
+        "details": ["Details", "Category"],
         "credit": None,
         "debit": None,
         "amount": "Amount",
