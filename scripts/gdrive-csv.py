@@ -7,6 +7,7 @@ from pathlib import Path
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import requests
 from app.util import ROOT
 
 
