@@ -33,6 +33,7 @@ class AxisStatement(Source):
         "debit": "DR",
         "amount": None,
     }
+    dtypes = {"DR": "float64", "CR": "float64"}
 
     @staticmethod
     def parse_details(expense, country, cities):
@@ -149,6 +150,7 @@ class AxisCCStatement(Source):
         "debit": None,
         "amount": "Amount in INR",
     }
+    dtypes = {"Amount in INR": "float64"}
 
     @staticmethod
     def parse_details(expense, country, cities):
@@ -176,6 +178,7 @@ class SBIStatement(Source):
         "debit": "Debit",
         "amount": None,
     }
+    dtypes = {"Debit": "float64", "Credit": "float64"}
 
 
 class Cash(Source):
@@ -187,6 +190,7 @@ class Cash(Source):
         "debit": None,
         "amount": "Amount",
     }
+    dtypes = {"Amount": "float64"}
 
     @staticmethod
     def parse_details(expense, country, cities):

@@ -76,13 +76,7 @@ def parse_data(path, csv_type):
         path,
         parse_dates=[transaction_date],
         dayfirst=True,
-        dtype={
-            "Amount in INR": "float64",
-            "DR": "float64",
-            "CR": "float64",
-            "Debit": "float64",
-            "Credit": "float64",
-        },
+        dtype=source_cls.dtypes,
         thousands=",",
         na_values=[" "],
     ).sort_values(by=[transaction_date], ignore_index=True)
