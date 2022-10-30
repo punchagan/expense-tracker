@@ -30,20 +30,20 @@ COUNTRY = "India"
 def get_transformed_row(x, csv_type):
     """Transform a parsed row into a row to be saved in the DB."""
     columns = ["id", "date", "details", "amount"]
-    x = x.fillna(0)
 
     header_columns = CSV_TYPES[csv_type].columns
     date = x[header_columns["date"]]
     details = x[header_columns["details"]]
     if isinstance(details, pd.Series):
-        details = "/".join(details.str.strip())
+        details = "/".join(details.fillna("").str.strip())
     details = details.strip()
-    amount_h, credit_h, debit_h = (
+    amount_columns = amount_h, credit_h, debit_h = (
         header_columns["amount"],
         header_columns["credit"],
         header_columns["debit"],
     )
-    amount = x[amount_h] if amount_h else x[debit_h] - x[credit_h]
+    v = x[filter(None, amount_columns)].fillna(0)
+    amount = v[amount_h] if amount_h else v[debit_h] - v[credit_h]
     hash_text = f"{details}-{date}-{amount}"
     sha = sha1(hash_text.encode("utf8")).hexdigest()
     return pd.Series([sha, date, details, amount], index=columns)
@@ -72,24 +72,20 @@ def parse_data(path, csv_type):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
     source_cls = CSV_TYPES[csv_type]
     transaction_date = source_cls.columns["date"]
-    data = (
-        pd.read_csv(
-            path,
-            parse_dates=[transaction_date],
-            dayfirst=True,
-            dtype={
-                "Amount in INR": "float64",
-                "DR": "float64",
-                "CR": "float64",
-                "Debit": "float64",
-                "Credit": "float64",
-            },
-            thousands=",",
-            na_values=[" "],
-        )
-        .fillna(0)
-        .sort_values(by=[transaction_date], ignore_index=True)
-    )
+    data = pd.read_csv(
+        path,
+        parse_dates=[transaction_date],
+        dayfirst=True,
+        dtype={
+            "Amount in INR": "float64",
+            "DR": "float64",
+            "CR": "float64",
+            "Debit": "float64",
+            "Credit": "float64",
+        },
+        thousands=",",
+        na_values=[" "],
+    ).sort_values(by=[transaction_date], ignore_index=True)
     data = data.apply(get_transformed_row, axis=1, csv_type=csv_type)
 
     engine = get_db_engine()
