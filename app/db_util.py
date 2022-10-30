@@ -81,13 +81,7 @@ def counterparty_names_lookup():
 
 def ensure_categories_created():
     session = get_sqlalchemy_session()
-    try:
-        from conf import EXTRA_CATEGORIES
-
-        categories = CATEGORIES + EXTRA_CATEGORIES
-    except ImportError:
-        categories = CATEGORIES
-    return create_categories(session, categories)
+    return create_categories(session, get_config_categories())
 
 
 def ensure_tags_created():
@@ -97,6 +91,16 @@ def ensure_tags_created():
     except ImportError:
         tags = []
     return create_tags(session, tags)
+
+
+def get_config_categories():
+    try:
+        from conf import EXTRA_CATEGORIES
+
+        categories = CATEGORIES + EXTRA_CATEGORIES
+    except ImportError:
+        categories = CATEGORIES
+    return categories
 
 
 def get_db_url():
