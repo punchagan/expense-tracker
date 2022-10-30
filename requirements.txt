@@ -69,6 +69,7 @@ pymysql==1.0.2; python_version >= "3.6" and python_full_version < "3.0.0" or pyt
 pyopenssl==22.1.0; python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.7"
 pyotp==2.7.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.6"
 pyparsing==3.0.9; python_full_version >= "3.6.8" and python_version >= "3.7" and (python_full_version >= "3.6.8" and python_version >= "3.7" and python_full_version < "3.9.7" or python_full_version > "3.9.7" and python_version >= "3.7")
+pyperclip==1.8.2
 pyrsistent==0.18.1; python_version >= "3.7" and python_full_version < "3.9.7" or python_full_version > "3.9.7" and python_version >= "3.7"
 pysocks==1.7.1; python_version >= "3.7" and python_full_version < "3.0.0" and python_version < "4" and (python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.7") and (python_version >= "3.7" and python_full_version < "3.9.7" or python_full_version > "3.9.7") or python_full_version >= "3.6.0" and python_version < "4" and python_version >= "3.7" and (python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.7") and (python_version >= "3.7" and python_full_version < "3.9.7" or python_full_version > "3.9.7")
 pytest-forked==1.4.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.6"

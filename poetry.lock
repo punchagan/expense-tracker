@@ -810,6 +810,14 @@ python-versions = ">=3.6.8"
 diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
+name = "pyperclip"
+version = "1.8.2"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pyrsistent"
 version = "0.18.1"
 description = "Persistent/Functional/Immutable data structures"
@@ -1453,7 +1461,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "flake8 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.9.7 || >3.9.7,<4.0"  # Streamlit doesn't work on 3.9.7?!
-content-hash = "d80ce816f5233f70afb71770ca51eb7094803d66070d7797f3599a9deee03ded"
+content-hash = "e473658be7b3135d9bb15ccedc75db5530bc4d693b1ef7b3db13adee191a5f72"
 
 [metadata.files]
 alembic = []
@@ -1527,6 +1535,7 @@ pymysql = []
 pyopenssl = []
 pyotp = []
 pyparsing = []
+pyperclip = []
 pyrsistent = []
 pysocks = []
 pytest = []
