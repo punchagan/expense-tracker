@@ -146,6 +146,14 @@ def set_column_value(row, column_name, value):
     st.experimental_rerun()
 
 
+def mark_expenses_as_reviewed(expense_ids):
+    session = get_sqlalchemy_session()
+    expenses = session.query(Expense).filter(Expense.id.in_(expense_ids))
+    expenses.update({"reviewed": True}, synchronize_session=False)
+    session.commit()
+    st.experimental_rerun()
+
+
 def update_similar_counterparty_names(row, name):
     bulk_update = name.endswith("**")
     name = name.strip("*")
@@ -331,14 +339,14 @@ def display_transactions(data, categories, tags):
     with st.expander(f"Total {n} transactions", expanded=True):
         cols = [1, 1, 3, 2, 3, 3, 1, 1]
         data_columns = DATA_COLUMNS
-        knob1, knob2, knob3 = st.columns([2, 2, 1])
+        knob1, _, knob3 = st.columns([2, 2, 1])
         sort_column = knob1.radio(
             label="Sort Transactions by ...",
             index=1,
             options=["date", "amount", "num. of transactions"],
             horizontal=True,
         )
-        hide_ignored_transactions = knob2.checkbox(label="Hide Ignored Transactions")
+        hide_ignored_transactions = knob1.checkbox(label="Hide Ignored Transactions")
         show_all = not paginate or knob3.checkbox(label="Turn off pagination")
         if paginate:
             count = n if not hide_ignored_transactions else nc
@@ -384,7 +392,8 @@ def display_transactions(data, categories, tags):
         child_df.index = child_df.apply(
             lambda row: ids.index(row["parent"]) + 0.1, axis=1
         )
-        pd.concat([page_df, child_df]).sort_index().reset_index(drop=True).apply(
+        page_df = pd.concat([page_df, child_df])
+        page_df.sort_index().reset_index(drop=True).apply(
             display_transaction,
             axis=1,
             cols=cols,
@@ -392,6 +401,14 @@ def display_transactions(data, categories, tags):
             categories=categories,
             tags=tags,
         )
+        mark_page_reviewed = st.button(
+            "Mark Page Reviewed",
+            key=f"mark-page-reviewed",
+            help="Mark all transactions in the current page as reviewed",
+        )
+        if mark_page_reviewed:
+            ids = list(page_df.id)
+            mark_expenses_as_reviewed(ids)
 
 
 def format_amount(amount):
