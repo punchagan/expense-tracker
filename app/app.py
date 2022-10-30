@@ -148,7 +148,9 @@ def set_column_value(row, column_name, value):
 
 def mark_expenses_as_reviewed(expense_ids):
     session = get_sqlalchemy_session()
-    expenses = session.query(Expense).filter(Expense.id.in_(expense_ids))
+    expenses = session.query(Expense)
+    if expense_ids:
+        expenses = expenses.filter(Expense.id.in_(expense_ids))
     expenses.update({"reviewed": True}, synchronize_session=False)
     session.commit()
     st.experimental_rerun()
@@ -401,16 +403,19 @@ def display_transactions(data, categories, tags):
             categories=categories,
             tags=tags,
         )
-        mark_page_reviewed = st.button(
+
+        _, r3, r2, r1 = st.columns([3, 1, 1, 1])
+        mark_page_reviewed = r1.button(
             "Mark Page Reviewed",
             key=f"mark-page-reviewed",
             help="Mark all transactions in the current page as reviewed",
+            disabled=show_all,
         )
         if mark_page_reviewed:
             ids = list(page_df.id)
             mark_expenses_as_reviewed(ids)
 
-        mark_filter_reviewed = st.button(
+        mark_filter_reviewed = r2.button(
             "Mark Filtered Reviewed",
             key=f"mark-filtered-reviewed",
             help="Mark all transactions in the currently filtered view as reviewed",
@@ -418,6 +423,14 @@ def display_transactions(data, categories, tags):
         if mark_filter_reviewed:
             ids = list(df.id)
             mark_expenses_as_reviewed(ids)
+
+        mark_all_reviewed = r3.button(
+            "Mark *All* Reviewed",
+            key=f"mark-all-reviewed",
+            help="Mark all transactions in the DB as reviewed",
+        )
+        if mark_all_reviewed:
+            mark_expenses_as_reviewed([])
 
 
 def format_amount(amount):
