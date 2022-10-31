@@ -478,6 +478,8 @@ def display_sidebar(title, categories, disabled):
             "A UI to annotate and visualize personal expenses captured from different sources."
         )
 
+        st.caption(st.secrets.get("cloud_note", ""))
+
         # Add a note about the last updated date
         updated = last_updated()
         st.caption(f"*Expense data last updated on {updated}*")
