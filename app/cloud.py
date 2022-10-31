@@ -2,7 +2,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
+SAMPLE = ROOT.joinpath("sample")
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(SAMPLE))
 
 from alembic.config import main as alembic_main
 
@@ -17,8 +19,7 @@ def prepare_on_cloud():
     alembic_main(["upgrade", "head"])
     ensure_categories_created()
     ensure_tags_created()
-    sample_dir = ROOT.joinpath("sample")
-    files = sample_dir.glob("*.csv")
+    files = SAMPLE.glob("*.csv")
 
     for path in files:
         csv_type = path.stem.split("-statement", 1)[0]
