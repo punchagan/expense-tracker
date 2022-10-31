@@ -640,6 +640,7 @@ def main():
         layout="wide",
         initial_sidebar_state="auto",
         menu_items={
+            "About": "Source code on [GitHub](https://github.com/punchagan/expense-tracker/) :tada:",
             "Get Help": "https://github.com/punchagan/expense-tracker/issues",
             "Report a bug": "https://github.com/punchagan/expense-tracker/issues",
         },
