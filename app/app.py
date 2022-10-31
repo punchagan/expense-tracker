@@ -612,7 +612,7 @@ def show_transaction_info(row_id, data, categories, tags):
                 set_column_value(row, "parent", parent["id"])
         else:
             col2.write(value)
-    hide_details = col2.button("Close", key=f"details-{id}")
+    hide_details = col2.button("Close", key=f"details-{id}", type="primary")
     if hide_details:
         session = get_sqlalchemy_session()
         expense = session.query(Expense).get({"id": row_id})
