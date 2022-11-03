@@ -23,3 +23,7 @@ do
     python "${HERE}/parse-data.py" "${each}" --csv-type axis-cc
 done
 python "${HERE}/parse-data.py" "${HERE}/../downloaded_files/${GSHEET_ID}.csv" --csv-type cash
+
+if [ -z "${1:-}" ]; then
+    streamlit run app/app.py
+fi
