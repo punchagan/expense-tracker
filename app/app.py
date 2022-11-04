@@ -156,7 +156,7 @@ def mark_expenses_as_reviewed(expense_ids):
     st.experimental_rerun()
 
 
-def update_similar_counterparty_names(row, name):
+def update_similar_counterparty_names(row, name, old_name):
     bulk_update = name.endswith("**")
     name = name.strip("*")
     name_p = row["counterparty_name_p"]
@@ -165,7 +165,7 @@ def update_similar_counterparty_names(row, name):
     if bulk_update:
         expenses = session.query(Expense).filter(
             Expense.counterparty_name_p == name_p,
-            Expense.counterparty_name == name,
+            Expense.counterparty_name == old_name,
             Expense.source == source,
         )
         expenses.update({"counterparty_name": name}, synchronize_session=False)
@@ -291,7 +291,7 @@ def display_transaction(row, cols, data_columns, categories, tags):
             )
             if new_value != value:
                 if name == "counterparty_name":
-                    update_similar_counterparty_names(row, new_value)
+                    update_similar_counterparty_names(row, new_value, value)
                 else:
                     set_column_value(row, name, new_value)
         elif name == "date":
