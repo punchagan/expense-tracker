@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Path to the file to be parsed")
     parser.add_argument(
-        "--csv-type", default="axis", choices=CSV_TYPES.keys(), help="Type of CSV"
+        "--csv-type", required=True, choices=CSV_TYPES.keys(), help="Type of CSV"
     )
 
     args = parser.parse_args()

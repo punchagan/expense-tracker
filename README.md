@@ -100,7 +100,7 @@ tags by defining the list `TAGS` in the `conf.py` file.
   it and save it into the DB.
 
   ```bash
-  python ./scripts/parse-data.py ./downloaded_files/xxx.csv
+  python ./scripts/parse-data.py ./downloaded_files/xxx.csv --csv-type axis
   ```
 
 - To visualize the data in the DB, you can run the `streamlit` app:
