@@ -341,7 +341,7 @@ def display_transactions(data, categories, tags):
     with st.expander(f"Total {n} transactions", expanded=True):
         cols = [1, 1, 3, 2, 3, 3, 1, 1]
         data_columns = DATA_COLUMNS
-        knob1, _, knob3 = st.columns([2, 2, 1])
+        knob1, knob2, knob3 = st.columns([2, 2, 1])
         sort_column = knob1.radio(
             label="Sort Transactions by ...",
             index=1,
@@ -356,6 +356,12 @@ def display_transactions(data, categories, tags):
             page_number = knob3.number_input(
                 "Page number", min_value=1, max_value=max_value, disabled=show_all
             )
+        knob2.write(
+            """
+- Counterparty names support a bulk editing mode. Any transactions (parsed from the same source) with a similar name can be changed to a new name by entering a new name ending with two `*`. For instance, `Swiggy**`.
+- Parent for a transaction can be set from the Details View.
+        """.strip()
+        )
 
         headers = st.columns(cols)
         for idx, name in enumerate(data_columns):
