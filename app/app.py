@@ -621,7 +621,9 @@ def show_transaction_info(row_id, data, categories, tags):
             if old_parent_id != parent["id"]:
                 set_column_value(row, "parent", parent["id"])
         elif key == "amount":
-            amount = col2.number_input("Amount", value=value)
+            amount = col2.number_input(
+                "Amount", value=value, label_visibility="collapsed"
+            )
         else:
             col2.write(value)
     hide_details = col2.button("Close", key=f"details-{id}", type="primary")
