@@ -620,6 +620,8 @@ def show_transaction_info(row_id, data, categories, tags):
             )
             if old_parent_id != parent["id"]:
                 set_column_value(row, "parent", parent["id"])
+        elif key == "amount":
+            amount = col2.number_input("Amount", value=value)
         else:
             col2.write(value)
     hide_details = col2.button("Close", key=f"details-{id}", type="primary")
@@ -627,6 +629,7 @@ def show_transaction_info(row_id, data, categories, tags):
         session = get_sqlalchemy_session()
         expense = session.query(Expense).get({"id": row_id})
         expense.reviewed = True
+        expense.amount = amount
         session.commit()
         st.session_state.transaction_id = None
         st.experimental_rerun()
