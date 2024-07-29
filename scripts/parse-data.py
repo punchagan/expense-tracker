@@ -29,9 +29,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Path to the file to be parsed")
-    parser.add_argument(
-        "--csv-type", required=True, choices=CSV_TYPES.keys(), help="Type of CSV"
-    )
+    parser.add_argument("--csv-type", required=True, choices=CSV_TYPES.keys(), help="Type of CSV")
 
     args = parser.parse_args()
     engine = get_db_engine()

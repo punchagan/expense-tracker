@@ -31,9 +31,7 @@ def backup_db(path=DB_PATH):
     if not path.exists():
         return
 
-    trfh = TimedRotatingFileHandler(
-        path, delay=True, backupCount=30, when="d", interval=1
-    )
+    trfh = TimedRotatingFileHandler(path, delay=True, backupCount=30, when="d", interval=1)
     t = os.stat(path)[ST_CTIME]  # NOTE: ST_CTIME is the same as ST_MTIME on Unix
     trfh.rolloverAt = trfh.computeRollover(t)
     if not trfh.shouldRollover(record=None):

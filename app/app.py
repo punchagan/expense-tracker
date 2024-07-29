@@ -88,12 +88,10 @@ def load_data(start_date, end_date, category, db_last_modified):
     data = pd.read_sql_query(sql, engine, parse_dates=["date"], dtype=dtype)
     parents = tuple(set(data["id"]))
     if parents:
-        child_sql = text(
-            f"{base_sql} WHERE e.parent IN :parents GROUP BY e.id"
-        ).bindparams(bindparam("parents", value=parents, expanding=True))
-        children = pd.read_sql_query(
-            child_sql, engine, parse_dates=["date"], dtype=dtype
+        child_sql = text(f"{base_sql} WHERE e.parent IN :parents GROUP BY e.id").bindparams(
+            bindparam("parents", value=parents, expanding=True)
         )
+        children = pd.read_sql_query(child_sql, engine, parse_dates=["date"], dtype=dtype)
         data = pd.concat([data, children])
     data.category_id.fillna(NO_CATEGORY, inplace=True)
     data.parent.fillna("", inplace=True)
@@ -103,9 +101,7 @@ def load_data(start_date, end_date, category, db_last_modified):
         .apply(lambda x: x if x is not None else "")
     )
     data.remarks = (
-        data.remarks.replace("None", "")
-        .fillna("")
-        .apply(lambda x: x if x is not None else "")
+        data.remarks.replace("None", "").fillna("").apply(lambda x: x if x is not None else "")
     )
     data.tags = data.tags.apply(lambda x: list(filter(None, json.loads(x))))
     return data
@@ -378,9 +374,7 @@ def display_transactions(data, categories, tags):
         else:
             # number of transactions
             counts = data.counterparty_name.value_counts()
-            data["counts"] = data.apply(
-                lambda row: counts[row.counterparty_name], axis=1
-            )
+            data["counts"] = data.apply(lambda row: counts[row.counterparty_name], axis=1)
             sort_by = [
                 "ignore",
                 "counts",
@@ -400,9 +394,7 @@ def display_transactions(data, categories, tags):
         )
         child_df = df[df.parent.isin(page_df.id)]
         ids = parent_df.id.to_list()
-        child_df.index = child_df.apply(
-            lambda row: ids.index(row["parent"]) + 0.1, axis=1
-        )
+        child_df.index = child_df.apply(lambda row: ids.index(row["parent"]) + 0.1, axis=1)
         page_df = pd.concat([page_df, child_df])
         page_df.sort_index().reset_index(drop=True).apply(
             display_transaction,
@@ -446,9 +438,7 @@ def format_amount(amount):
     amount = (
         "-∞"
         if np.isneginf(amount)
-        else "∞"
-        if np.isposinf(amount)
-        else f"{CURRENCY_SYMBOL} {amount}"
+        else "∞" if np.isposinf(amount) else f"{CURRENCY_SYMBOL} {amount}"
     )
     return amount
 
@@ -537,14 +527,10 @@ def display_barcharts(data, categories, tags):
         axis=1,
         result_type="expand",
     )
-    day_data = data.pivot_table(
-        index="day", columns="category", values="amount", aggfunc="sum"
-    )
+    day_data = data.pivot_table(index="day", columns="category", values="amount", aggfunc="sum")
     col1.bar_chart(day_data)
 
-    weekday_data = data.sort_values(
-        by="weekday", key=lambda x: [WEEKDAYS.index(e) for e in x]
-    )
+    weekday_data = data.sort_values(by="weekday", key=lambda x: [WEEKDAYS.index(e) for e in x])
     col2.altair_chart(
         alt.Chart(weekday_data)
         .mark_bar()
@@ -556,9 +542,7 @@ def display_barcharts(data, categories, tags):
     category_data = data.pivot_table(
         index="category_id", columns="category", values="amount", aggfunc="sum"
     )
-    category_data.index = [
-        format_category(idx, categories) for idx in category_data.index
-    ]
+    category_data.index = [format_category(idx, categories) for idx in category_data.index]
 
     tag_data = data.explode("tags").pivot_table(
         index="tags", columns="category", values="amount", aggfunc="sum"
@@ -609,9 +593,7 @@ def show_transaction_info(row_id, data, categories, tags):
             old_parent_id = row["parent"]
             df = data[data["amount"] >= np.abs(row["amount"])].reset_index(drop=True)
             options = [{"id": ""}] + df.to_dict(orient="records")
-            index = (
-                int(df[df["id"] == old_parent_id].index[0]) + 1 if old_parent_id else 0
-            )
+            index = int(df[df["id"] == old_parent_id].index[0]) + 1 if old_parent_id else 0
             parent = col2.selectbox(
                 "Select Parent",
                 options=options,
@@ -677,9 +659,7 @@ def main():
     data = load_data(start_date, end_date, category, db_last_modified)
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
-    counterparty, selected_tags, (low, high) = display_extra_filters(
-        data, tags, display_info
-    )
+    counterparty, selected_tags, (low, high) = display_extra_filters(data, tags, display_info)
 
     if counterparty != "All":
         data = data[data["counterparty_name"] == counterparty]

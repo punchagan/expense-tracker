@@ -50,9 +50,7 @@ def transform_data(data, csv_type, engine):
     parsed_names = tuple(set(data["counterparty_name_p"]) - set([""]))
     if parsed_names:
         names = lookup_counterparty_names(engine)
-        data["counterparty_name"] = data["counterparty_name"].apply(
-            lambda x: names.get(x, x)
-        )
+        data["counterparty_name"] = data["counterparty_name"].apply(lambda x: names.get(x, x))
     return data
 
 
