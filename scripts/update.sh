@@ -13,7 +13,7 @@ TODAY=$(date +%Y_%m_%d)
 alembic upgrade head
 
 # Download data
-pytest -s "${HERE}/axis-scraper.py" --browser=firefox --start-date "${LAST_DATE:-2022-01-01}" --workers=2 --reruns=5 --reruns-delay=20 --archive-downloads
+pytest -s "${HERE}/axis-scraper.py" --browser=chrome --uc --start-date "${LAST_DATE:-2022-01-01}" --workers=2 --reruns=5 --reruns-delay=20 --archive-downloads
 "${HERE}/gdrive-csv.py"
 
 # Update new data in the database
