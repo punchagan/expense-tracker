@@ -92,7 +92,8 @@ def load_data(start_date, end_date, category, db_last_modified):
             bindparam("parents", value=parents, expanding=True)
         )
         children = pd.read_sql_query(child_sql, engine, parse_dates=["date"], dtype=dtype)
-        data = pd.concat([data, children])
+        if not children.empty:
+            data = pd.concat([data, children])
     data.fillna({"category_id": NO_CATEGORY}, inplace=True)
     data.fillna({"parent": ""}, inplace=True)
     data.counterparty_name = (
@@ -397,7 +398,8 @@ def display_transactions(data, categories, tags):
         child_df = df[df.parent.isin(page_df.id)]
         ids = parent_df.id.to_list()
         child_df.index = child_df.apply(lambda row: ids.index(row["parent"]) + 0.1, axis=1)
-        page_df = pd.concat([page_df, child_df])
+        if not child_df.empty:
+            page_df = pd.concat([page_df, child_df])
         page_df.sort_index().reset_index(drop=True).apply(
             display_transaction,
             axis=1,
