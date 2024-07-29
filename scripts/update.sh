@@ -5,6 +5,7 @@ HERE=$(dirname "$0")
 
 pushd "${HERE}/.."
 LAST_DATE=$(sqlite3 "${EXPENSES_DB}" 'SELECT MAX(date) FROM expense;' | cut -d " " -f 1) || true
+echo "Last date: ${LAST_DATE}"
 popd
 
 TODAY=$(date +%Y_%m_%d)
