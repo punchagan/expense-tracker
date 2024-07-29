@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 from bs4 import BeautifulSoup
+import pandas as pd
 
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -35,6 +36,37 @@ def extract_csv_from_html(htmlfile):
         f.write(extract_csv(csv_output).read())
 
     print(f"Created {to_filename}")
+
+
+def remove_currency_prefix(text):
+    """Removes the currency prefix from a string."""
+    return text.replace("₹", "").strip()
+
+
+def extract_csv_from_xls(xls_path):
+    """Converts XLS(X) to a CSV."""
+    data = pd.read_excel(xls_path)
+    # Find the header row where first column says "Date"
+    header_row_index = int(data[data.iloc[:, 0] == "Date"].index[0])
+    headers = data.iloc[header_row_index]
+    data = data[int(header_row_index) + 1 : -1]
+    data.columns = headers
+    data = data.dropna(axis=1, how="all")
+    # Add "Debit" and "Credit" columns based on the "Debit/Credit" column
+    for key in ("Debit", "Credit"):
+        data[key] = data.apply(
+            lambda row: (
+                remove_currency_prefix(row["Amount (INR)"])
+                if key in str(row["Debit/Credit"])
+                else None
+            ),
+            axis=1,
+        )
+
+    # Drop the original "Debit/Credit" column and the "Amount (INR)" column
+    data = data.drop(columns=["Debit/Credit", "Amount (INR)"])
+
+    data.to_csv(xls_path.with_suffix(".csv"), index=False)
 
 
 def login(sb):
@@ -110,72 +142,71 @@ def download_cc_statement(sb, start_date):
     sb.switch_to_newest_window()
     time.sleep(5)
 
+    # Close Dialog with popup, if visible
+    sb.wait_for_element_absent("div.loading_wrapper")
+    sb.click_if_visible(".MuiDialog-container button.MuiIconButton-root")
+
     # Navigate to Transactions
     sb.wait_for_element_absent("div.loading_wrapper")
     time.sleep(1)
     sb.click("div.coach-step-3")
 
     # Download Recent Transactions HTML
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-    sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-    sb.click_nth_visible_element(
-        "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
-        4,
-    )
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-    filename = f"CC_Statement_{TODAY:%Y_%m_%d}.html"
-    sb.assert_downloaded_file(filename)
-    path = sb.get_path_of_downloaded_file(filename)
-    extract_csv_from_html(path)
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-    sb.click(".MuiPaper-root svg")
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
+    for year in range(start_date.year, end_date.year + 1):
+        start_month = 1 if year != start_date.year else start_date.month
+        end_month = 12 if year != end_date.year else end_date.month
+        for month in range(start_month, end_month + 1):
+            # Click the Download button
+            sb.wait_for_element_absent("div.loading_wrapper")
+            time.sleep(1)
+            sb.click_nth_visible_element(".TitleCard__body button.MuiButtonBase-root", 2)
+            sb.wait_for_element_absent("div.loading_wrapper")
+            time.sleep(1)
 
-    repeat_months = (
-        end_date.month - (start_date.month - 1)
-        if end_date.year == start_date.year
-        else end_date.month
-    )
+            # Select the year
+            sb.click_nth_visible_element("div.MuiOutlinedInput-input", 1)
+            css = f"li[data-value='{year}']"
+            if not sb.is_element_present(css):
+                print(f"Could not find dropdown for {year}")
+                continue
 
-    sb.click(".title-card button.MuiButtonBase-root")
-    sb.wait_for_element_absent("div.loading_wrapper")
-    time.sleep(1)
-    months = len(sb.find_visible_elements("#month-expansion-panel__date-select"))
-    sb.click(".MuiPaper-root svg")
+            sb.click(css)
 
-    for index in range(0, min(repeat_months, months - 1)):
-        # Select "Previous" Month
-        sb.click(".title-card button.MuiButtonBase-root")
-        sb.wait_for_element_absent("div.loading_wrapper")
-        time.sleep(3)
-        sb.click_nth_visible_element("#month-expansion-panel__date-select", 2 + index)
-        sb.wait_for_element_absent("div.loading_wrapper")
-        time.sleep(3)
+            # Click the element whose data-value attribute matches the year
+            sb.click_nth_visible_element("div.MuiOutlinedInput-input", 2)
+            # Get the data-value by looking at the available options
+            data_values = [
+                el.get_attribute("data-value") for el in sb.find_elements("li[role=option]")
+            ]
+            for value in data_values:
+                if value.startswith(f"{year}-{month:02}"):
+                    break
+            else:
+                value = None
 
-        # Download Previous Month HTML (CSVs don't work for all months)
-        sb.click_nth_visible_element(".title-card button.MuiButtonBase-root", 2)
-        sb.wait_for_element_absent("div.loading_wrapper")
-        time.sleep(3)
-        sb.click_nth_visible_element(
-            "div.download-statement-options__shadow-card-option button.MuiButtonBase-root",
-            4,
-        )
-        sb.wait_for_element_absent("div.loading_wrapper")
-        time.sleep(3)
-        name = f"{TODAY:%Y_%m_%d}({index + 1})"
-        filename = f"CC_Statement_{name}.html"
-        sb.assert_downloaded_file(filename)
-        path = sb.get_path_of_downloaded_file(filename)
-        extract_csv_from_html(path)
-        sb.wait_for_element_absent("div.loading_wrapper")
-        time.sleep(3)
-        sb.click(".MuiPaper-root svg")
+            if value is None:
+                print(f"Could not find dropdown for {year}-{month:02} in {data_values}")
+                continue
+
+            # Select month
+            sb.click(f"li[data-value='{value}']")
+
+            # Select the download format
+            sb.click_nth_visible_element("div.MuiOutlinedInput-input", 3)
+            sb.click(f"li[data-value='xlsx']")
+            sb.click(f".downloadStatement__button-container button")
+            time.sleep(5)
+
+            # Save the downloaded file with the correct name
+            filename = f"CC_Statement_{TODAY:%Y_%m_%d}.xlsx"
+            sb.assert_downloaded_file(filename)
+            path = Path(sb.get_path_of_downloaded_file(filename))
+            # Rename using year and month before next download
+            new_path = path.with_name(f"CC_Statement_{year}_{month:02}.xlsx")
+            path.rename(new_path)
+            # Conver XLSX to CSV
+            extract_csv_from_xls(new_path)
+            sb.wait_for_element_absent("div.loading_wrapper")
 
 
 def test_get_ac_data(sb, start_date):
