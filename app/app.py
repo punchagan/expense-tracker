@@ -93,8 +93,8 @@ def load_data(start_date, end_date, category, db_last_modified):
         )
         children = pd.read_sql_query(child_sql, engine, parse_dates=["date"], dtype=dtype)
         data = pd.concat([data, children])
-    data.category_id.fillna(NO_CATEGORY, inplace=True)
-    data.parent.fillna("", inplace=True)
+    data.fillna({"category_id": NO_CATEGORY}, inplace=True)
+    data.fillna({"parent": ""}, inplace=True)
     data.counterparty_name = (
         data.counterparty_name.replace("None", "")
         .fillna("")
