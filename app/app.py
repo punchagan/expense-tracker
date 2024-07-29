@@ -241,7 +241,9 @@ def display_transaction(row, cols, data_columns, categories, tags):
         written = False
         col = columns[idx]
         if name == "ignore":
-            ignore_value = col.checkbox("", value=value, key=f"ignore-{id}")
+            ignore_value = col.checkbox(
+                "Ignore?", value=value, key=f"ignore-{id}", label_visibility="hidden"
+            )
             written = True
             if ignore_value != value:
                 set_column_value(row, "ignore", ignore_value)
