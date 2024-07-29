@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd-party
 from alembic.config import main as alembic_main
+from sqlalchemy import exc, text
 
 # Local
 from app.db_util import ensure_categories_created, ensure_tags_created, get_db_engine
@@ -35,9 +36,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     engine = get_db_engine()
     try:
-        engine.execute("SELECT * FROM expense").fetchone()
-        engine.execute("SELECT * FROM new_id").fetchone()
+        with engine.connect() as conn:
+            conn.execute(text("SELECT * FROM expense")).fetchone()
+            conn.execute(text("SELECT * FROM new_id")).fetchone()
     except exc.OperationalError:
+        print("Database not initialized. Running alembic migrations...")
         alembic_main(["upgrade", "head"])
 
     main(args.path, args.csv_type)

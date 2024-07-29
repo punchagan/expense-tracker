@@ -7,7 +7,7 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from stat import ST_CTIME
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
@@ -64,9 +64,10 @@ def category_names_lookup():
 
 def counterparty_names_lookup():
     engine = get_db_engine()
-    names = engine.execute(
-        "SELECT source, counterparty_name_p, counterparty_name FROM expense"
-    ).fetchall()
+    with engine.connect() as conn:
+        names = conn.execute(
+            text("SELECT source, counterparty_name_p, counterparty_name FROM expense")
+        ).fetchall()
     lookup = {}
     for source, parsed_name, name in names:
         if not (parsed_name and parsed_name != name):

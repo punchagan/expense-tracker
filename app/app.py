@@ -45,22 +45,23 @@ DATA_COLUMNS = [
 CURRENCY_SYMBOL = "₹"
 
 
-@st.experimental_singleton
+@st.cache_resource
 def get_sqlalchemy_session():
     engine = get_db_engine()
     Session = sessionmaker(bind=engine)
     return Session()
 
 
-@st.experimental_memo
+@st.cache_data
 def last_updated():
     engine = get_db_engine()
-    (date,) = engine.execute("SELECT MAX(date) FROM expense").fetchone()
+    with engine.connect() as conn:
+        (date,) = conn.execute(text("SELECT MAX(date) FROM expense")).fetchone()
     date, _ = date.split() if date else (None, None)
     return date
 
 
-@st.experimental_memo
+@st.cache_data
 def load_data(start_date, end_date, category, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
     engine = get_db_engine()
@@ -110,21 +111,21 @@ def load_data(start_date, end_date, category, db_last_modified):
     return data
 
 
-@st.experimental_memo
+@st.cache_data
 def get_categories():
     session = get_sqlalchemy_session()
     categories = session.query(Category).order_by("id").all()
     return {cat.id: cat for cat in categories}
 
 
-@st.experimental_memo
+@st.cache_data
 def get_tags():
     session = get_sqlalchemy_session()
     tags = session.query(Tag).order_by("id").all()
     return {tag.id: tag for tag in tags}
 
 
-@st.experimental_memo
+@st.cache_data
 def get_months():
     engine = get_db_engine()
     sql = f"SELECT date FROM expense"
@@ -143,7 +144,7 @@ def set_column_value(row, column_name, value):
     setattr(expense, column_name, value)
     expense.reviewed = True
     session.commit()
-    st.experimental_rerun()
+    st.rerun()
 
 
 def mark_expenses_as_reviewed(expense_ids):
@@ -153,7 +154,7 @@ def mark_expenses_as_reviewed(expense_ids):
         expenses = expenses.filter(Expense.id.in_(expense_ids))
     expenses.update({"reviewed": True}, synchronize_session=False)
     session.commit()
-    st.experimental_rerun()
+    st.rerun()
 
 
 def update_similar_counterparty_names(row, name, old_name):
@@ -174,7 +175,7 @@ def update_similar_counterparty_names(row, name, old_name):
         expense.counterparty_name = name
         expense.reviewed = True
     session.commit()
-    st.experimental_rerun()
+    st.rerun()
 
 
 def update_similar_counterparty_categories(row, category_id):
@@ -194,7 +195,7 @@ def update_similar_counterparty_categories(row, category_id):
     expense = session.query(Expense).get({"id": row_id})
     expense.reviewed = True
     session.commit()
-    st.experimental_rerun()
+    st.rerun()
 
 
 def set_tags_value(row, tags, all_tags):
@@ -217,7 +218,7 @@ def set_tags_value(row, tags, all_tags):
         expense.tags.append(all_tags[tag_id])
 
     session.commit()
-    st.experimental_rerun()
+    st.rerun()
 
 
 def format_category(category_id, categories):
@@ -280,7 +281,7 @@ def display_transaction(row, cols, data_columns, categories, tags):
             show_details = col.button("Details", key=f"details-{id}", type=type_)
             if show_details:
                 st.session_state.transaction_id = row["id"]
-                st.experimental_rerun()
+                st.rerun()
         elif name in {"remarks", "counterparty_name"}:
             written = True
             new_value = col.text_input(
@@ -634,7 +635,7 @@ def show_transaction_info(row_id, data, categories, tags):
         expense.amount = amount
         session.commit()
         st.session_state.transaction_id = None
-        st.experimental_rerun()
+        st.rerun()
 
 
 def local_css(file_name):
@@ -645,7 +646,7 @@ def local_css(file_name):
 def main():
     db_changed = backup_db()
     if db_changed:
-        st.experimental_singleton.clear()
+        get_sqlalchemy_session.clear()
 
     title = "Personal Expense Tracker"
 

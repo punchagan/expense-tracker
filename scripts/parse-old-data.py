@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd party libs
-from sqlalchemy import exc
+from sqlalchemy import exc, text
 
 # Local
 from app.db_util import (
@@ -53,7 +53,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     engine = get_db_engine()
     try:
-        engine.execute("SELECT * FROM expense").fetchone()
+        with engine.connect() as conn:
+            conn.execute(text("SELECT * FROM expense")).fetchone()
     except exc.OperationalError:
         sys.exit(f"The DB has no old data!")
     parse_old_data(**dict(args._get_kwargs()))

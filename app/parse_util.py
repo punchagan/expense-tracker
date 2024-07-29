@@ -3,7 +3,7 @@ from hashlib import sha1
 
 # 3rd party libs
 import pandas as pd
-from sqlalchemy import exc
+from sqlalchemy import exc, text
 
 # Local
 from app.db_util import (
@@ -73,11 +73,12 @@ def parse_data(path, csv_type):
     engine = get_db_engine()
     data["id"].to_sql("new_id", engine, if_exists="append", index=False)
     try:
-        new_ids = engine.execute(
-            "SELECT id FROM new_id WHERE id NOT IN (SELECT id FROM expense)"
-        ).fetchall()
-        new_ids = [id_ for (id_,) in new_ids]
-        engine.execute("DELETE FROM new_id")
+        with engine.connect() as conn:
+            new_ids = conn.execute(
+                text("SELECT id FROM new_id WHERE id NOT IN (SELECT id FROM expense)")
+            ).fetchall()
+            new_ids = [id_ for (id_,) in new_ids]
+            conn.execute(text("DELETE FROM new_id"))
     except exc.OperationalError:
         new_ids = list(data["id"])
 
