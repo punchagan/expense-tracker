@@ -57,8 +57,9 @@ def download_account_transactions(sb, start_date):
     # Select Detailed Statements
     sb.click("a#ACHMEPG_0")
     time.sleep(3)
-    sb.click("div#mat-tab-label-1-1")
-    sb.click("div.dynamic-date div.mat-select-value")
+    sb.click("div#mat-tab-label-0-1")
+    time.sleep(1)
+    sb.click_nth_visible_element("div.mat-form-field-infix", 2)
     time.sleep(1)
     sb.click_nth_visible_element("span.mat-option-text", 2)
     time.sleep(1)
