@@ -50,6 +50,8 @@ def login(sb):
 
 def download_account_transactions(sb, start_date):
     end_date = TODAY
+    if (end_date - start_date).days > 360:
+        end_date = start_date + datetime.timedelta(days=360)
     print(f"Downloading account transactions from {start_date} to {end_date}")
 
     # Select Detailed Statements
@@ -63,9 +65,13 @@ def download_account_transactions(sb, start_date):
 
     # Select Date Range
     sb.click("input#state_todate")
+    num_months = (TODAY.year - end_date.year) * 12 + (TODAY.month - end_date.month)
+    for _ in range(num_months):
+        sb.click("button.mat-calendar-previous-button")
     sb.click_nth_visible_element(".mat-calendar-body-cell-content", end_date.day)
     sb.click("input#state_fromdate")
-    for each in range(end_date.month - start_date.month):
+    num_months = (TODAY.year - start_date.year) * 12 + (TODAY.month - start_date.month)
+    for _ in range(num_months):
         sb.click("button.mat-calendar-previous-button")
     sb.click_nth_visible_element(".mat-calendar-body-cell-content", start_date.day)
     time.sleep(1)
