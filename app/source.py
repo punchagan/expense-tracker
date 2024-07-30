@@ -138,24 +138,21 @@ class AxisStatement(Source):
 class AxisCCStatement(Source):
     name = "axis-cc"
     columns = {
-        "date": "Transaction Date",
+        "date": "Date",
         "details": "Transaction Details",
-        "credit": None,
-        "debit": None,
-        "amount": "Amount in INR",
+        "credit": "Credit",
+        "debit": "Debit",
+        "amount": None,
     }
-    dtypes = {"Amount in INR": "float64"}
+    dtypes = {"Debit": "float64", "Credit": "float64"}
 
     @staticmethod
     def parse_details(expense, country, cities):
         details = expense.details
-        m = re.match("(.*?)(?: #\w+)* #(\d+)", details)
-        merchant_place, transaction_id = m.groups()
-        merchant_place = country.sub("", merchant_place)
-        merchant = cities.sub("", merchant_place)
+        merchant, _ = details.split(",", 1)
         ignore = details.startswith("MB PAYMENT")
+        # FIXME: Need a transaction ID, here?!
         return Transaction(
-            transaction_id=transaction_id,
             transaction_type="CC",
             counterparty_name=merchant.title(),
             counterparty_type="Merchant",
