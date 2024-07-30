@@ -75,9 +75,7 @@ class AxisStatement(Source):
                 remarks=remarks,
             )
         elif details.startswith("ECOM PUR/"):
-            transaction_type, to_name, _ = [
-                each.strip() for each in details.split("/", 2)
-            ]
+            transaction_type, to_name, _ = [each.strip() for each in details.split("/", 2)]
             transaction = Transaction(
                 transaction_type="ECOM",
                 counterparty_name=to_name.title(),
@@ -100,12 +98,8 @@ class AxisStatement(Source):
                 remarks=remarks,
             )
         elif details.startswith("BRN-CLG-CHQ"):
-            _, counterparty_name = [
-                each.strip() for each in details.split("PAID TO", 1)
-            ]
-            transaction = Transaction(
-                transaction_type="CHQ", counterparty_name=counterparty_name
-            )
+            _, counterparty_name = [each.strip() for each in details.split("PAID TO", 1)]
+            transaction = Transaction(transaction_type="CHQ", counterparty_name=counterparty_name)
         elif (
             re.search(
                 "(Consolidated|GST|Dr Card|Excess).*Charge",
