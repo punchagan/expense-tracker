@@ -127,10 +127,6 @@ def download_account_transactions(sb, start_date):
 
 def download_cc_statement(sb, start_date):
     end_date = TODAY
-    # NOTE: Currently, start_date being in the previous year isn't supported
-    # correctly, all the months in the current year get downloaded. This might
-    # be a problem if no data is collected after December bill is generated
-    # until the next year.
     print(f"Downloading credit-card transactions from {start_date} to {end_date}")
     # View detailed transaction info
     time.sleep(2)
