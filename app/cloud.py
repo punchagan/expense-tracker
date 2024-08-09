@@ -11,15 +11,19 @@ from alembic.config import main as alembic_main
 from app.app import main
 from app.db_util import DB_PATH, ensure_categories_created, ensure_tags_created
 from app.parse_util import parse_data
+from app.lib.git_manager import GitManager, get_repo_path
 
 
 def prepare_on_cloud():
     if DB_PATH.exists():
         return
+
     alembic_main(["upgrade", "head"])
     ensure_categories_created()
     ensure_tags_created()
     files = SAMPLE.glob("*.csv")
+    repo_path = get_repo_path()
+    GitManager.create_new_repo(repo_path)
 
     for path in files:
         csv_type = path.stem.split("-statement", 1)[0]
