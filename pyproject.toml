@@ -15,6 +15,7 @@ streamlit = "^1.13.0"
 alembic = "^1.8.1"
 pyperclip = "^1.8.2"
 openpyxl = "^3.1.5"
+gitpython = "^3.1.43"
 
 [tool.poetry.dev-dependencies]
 
