@@ -17,7 +17,7 @@ from sqlalchemy import bindparam, or_, text
 from sqlalchemy.orm import sessionmaker
 
 # Local
-from app.db_util import DB_PATH, backup_db, get_db_engine
+from app.db_util import DB_PATH, get_db_engine
 from app.model import Category, Expense, Tag
 from app.util import (
     daterange_from_year_month,
@@ -630,10 +630,6 @@ def local_css(file_name):
 
 
 def main():
-    db_changed = backup_db()
-    if db_changed:
-        get_sqlalchemy_session.clear()
-
     title = "Personal Expense Tracker"
 
     st.set_page_config(
