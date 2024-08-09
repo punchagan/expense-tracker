@@ -4,7 +4,9 @@ import git
 
 
 class GitManager:
-    def __init__(self, repo_path):
+    def __init__(self, repo_path=None):
+        if repo_path is None:
+            repo_path = get_repo_path()
         self.repo_path = Path(repo_path)
         self.repo = None
         self._initialize_repo()
