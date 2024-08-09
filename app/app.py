@@ -17,6 +17,7 @@ from sqlalchemy import bindparam, or_, text
 from sqlalchemy.orm import sessionmaker
 
 # Local
+from app.components.git_status import show_git_status
 from app.db_util import DB_PATH, get_db_engine
 from app.model import Category, Expense, Tag
 from app.util import (
@@ -647,6 +648,8 @@ def main():
     local_css("style.css")
     # Enable Streamlit theme for Altair
     # alt.themes.enable("streamlit")      # FIXME: 0.15.0/1 broke Streamlit theme support
+
+    git_manager = show_git_status()
 
     # Detect DB changes and invalidate Streamlit memoized data
     db_last_modified = os.path.getmtime(DB_PATH)
