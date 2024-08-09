@@ -145,7 +145,7 @@ def download_cc_statement(sb, start_date, end_date):
     time.sleep(1)
     sb.click("div.coach-step-3")
 
-    # Download Recent Transactions HTML
+    # Download XLSX for each month
     for year in range(start_date.year, end_date.year + 1):
         start_month = 1 if year != start_date.year else start_date.month
         end_month = 12 if year != end_date.year else end_date.month
@@ -181,7 +181,7 @@ def download_cc_statement(sb, start_date, end_date):
                 value = None
 
             if value is None:
-                print(f"Could not find dropdown for {year}-{month:02} in {data_values}")
+                print(f"Could not find dropdown for {year}-{month:02}")
                 # Close the popup dialog
                 sb.click("div.MuiDialog-paper svg.MuiSvgIcon-root")
                 continue
