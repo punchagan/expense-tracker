@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import git
 
@@ -47,3 +48,7 @@ class GitManager:
             )
         origin.push()
         return "Pushed changes to remote repository"
+
+
+def get_repo_path():
+    return Path(os.getenv("GIT_REPO_PATH", Path.cwd() / "data.git"))

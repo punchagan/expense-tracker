@@ -6,7 +6,7 @@ import streamlit as st
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.lib.git_manager import GitManager
+from app.lib.git_manager import GitManager, get_repo_path
 
 
 @st.fragment
@@ -40,8 +40,7 @@ def setup_repo(repo_path):
 
 
 def show_git_status():
-    repo_path = os.getenv("GIT_REPO_PATH", Path.cwd() / "data.git")
-
+    repo_path = get_repo_path()
     try:
         git_manager = GitManager(repo_path)
         st.toast(f"Using data repository at {repo_path}")

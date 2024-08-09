@@ -13,6 +13,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.util import extract_csv
+from app.lib.git_manager import get_repo_path
 
 TODAY = datetime.date.today()
 
@@ -197,7 +198,10 @@ def download_cc_statement(sb, start_date):
             sb.assert_downloaded_file(filename)
             path = Path(sb.get_path_of_downloaded_file(filename))
             # Rename using year and month before next download
-            new_path = path.with_name(f"CC_Statement_{year}_{month:02}.xlsx")
+            new_name = path.with_name(f"axis-cc-statement-{year}-{month:02}.xlsx").name
+            repo_path = get_repo_path()
+            new_path = repo_path.joinpath(str(year), new_name)
+            new_path.parent.mkdir(parents=True, exist_ok=True)
             path.rename(new_path)
             # Conver XLSX to CSV
             extract_csv_from_xls(new_path)
