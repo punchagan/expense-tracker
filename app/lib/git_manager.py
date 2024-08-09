@@ -65,4 +65,4 @@ class GitManager:
 
 
 def get_repo_path():
-    return Path(os.getenv("GIT_REPO_PATH", Path.cwd() / "data.git"))
+    return Path(os.getenv("DATA_REPO_PATH", Path.cwd() / "data.git"))
