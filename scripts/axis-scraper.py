@@ -13,7 +13,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.util import extract_csv
-from app.lib.git_manager import get_repo_path
+from app.lib.git_manager import GitManager
 
 TODAY = datetime.date.today()
 
@@ -198,14 +198,12 @@ def download_cc_statement(sb, start_date, end_date):
             # Save the downloaded file with the correct name
             filename = f"CC_Statement_{TODAY:%Y_%m_%d}.xlsx"
             sb.assert_downloaded_file(filename)
+
+            # Copy the file to the data git repo
             path = Path(sb.get_path_of_downloaded_file(filename))
-            # Rename using year and month before next download
-            new_name = path.with_name(f"axis-cc-statement-{year}-{month:02}.xlsx").name
-            repo_path = get_repo_path()
-            new_path = repo_path.joinpath(str(year), new_name)
-            new_path.parent.mkdir(parents=True, exist_ok=True)
-            path.rename(new_path)
-            # Conver XLSX to CSV
+            git_manager = GitManager()
+            new_path = git_manager.copy_file_to_repo(path, "axis-cc-statement", year, month)
+            # Convert XLSX to CSV
             extract_csv_from_xls(new_path)
             sb.wait_for_element_absent("div.loading_wrapper")
 
