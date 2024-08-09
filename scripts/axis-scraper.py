@@ -162,6 +162,8 @@ def download_cc_statement(sb, start_date, end_date):
             css = f"li[data-value='{year}']"
             if not sb.is_element_present(css):
                 print(f"Could not find dropdown for {year}")
+                # Close the popup dialog
+                sb.click("div.MuiDialog-paper svg.MuiSvgIcon-root")
                 continue
 
             sb.click(css)
@@ -180,6 +182,8 @@ def download_cc_statement(sb, start_date, end_date):
 
             if value is None:
                 print(f"Could not find dropdown for {year}-{month:02} in {data_values}")
+                # Close the popup dialog
+                sb.click("div.MuiDialog-paper svg.MuiSvgIcon-root")
                 continue
 
             # Select month
