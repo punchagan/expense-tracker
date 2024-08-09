@@ -149,7 +149,7 @@ class AxisCCStatement(Source):
     @staticmethod
     def parse_details(expense, country, cities):
         details = expense.details
-        merchant, _ = details.split(",", 1)
+        merchant = details.split(",", 1)[0]
         ignore = details.startswith("MB PAYMENT")
         # FIXME: Need a transaction ID, here?!
         return Transaction(
