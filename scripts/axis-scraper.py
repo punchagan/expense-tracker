@@ -81,9 +81,6 @@ def login(sb):
 
 
 def download_account_transactions(sb, start_date, end_date):
-    if (end_date - start_date).days > 360:
-        end_date = start_date + datetime.timedelta(days=360)
-    print(f"Downloading account transactions from {start_date} to {end_date}")
 
     # Select Detailed Statements
     sb.click("a#ACHMEPG_0")
@@ -95,17 +92,47 @@ def download_account_transactions(sb, start_date, end_date):
     sb.click_nth_visible_element("span.mat-option-text", 2)
     time.sleep(1)
 
-    # Select Date Range
-    sb.click("input#state_todate")
-    num_months = (TODAY.year - end_date.year) * 12 + (TODAY.month - end_date.month)
-    for _ in range(num_months):
-        sb.click("button.mat-calendar-previous-button")
-    sb.click_nth_visible_element(".mat-calendar-body-cell-content", end_date.day)
+    print(f"Downloading monthly account transactions from {start_date} to {end_date}")
+
+    for year in range(start_date.year, end_date.year + 1):
+        start_month = 1 if year != start_date.year else start_date.month
+        end_month = 12 if year != end_date.year else end_date.month
+        for month in range(start_month, end_month + 1):
+            download_monthly_account_transactions(sb, year, month)
+
+
+def download_monthly_account_transactions(sb, year, month):
+    # Select From Date
     sb.click("input#state_fromdate")
-    num_months = (TODAY.year - start_date.year) * 12 + (TODAY.month - start_date.month)
-    for _ in range(num_months):
-        sb.click("button.mat-calendar-previous-button")
-    sb.click_nth_visible_element(".mat-calendar-body-cell-content", start_date.day)
+    ### Open year/month dropdown
+    sb.click("div.mat-calendar-header span.mat-button-wrapper")
+    UI_FIRST_YEAR = 2001  # Assume years start from 2001
+    n_year = year - UI_FIRST_YEAR + 1
+    ### Select year, month, date from the calendar dropdowns
+    sb.click_nth_visible_element("div.mat-calendar-body-cell-content", n_year)
+    sb.click_nth_visible_element("div.mat-calendar-body-cell-content", month)
+    sb.click_nth_visible_element("div.mat-calendar-body-cell-content", 1)
+
+    # Select To Date
+    sb.click("input#state_todate")
+    ### Find num days of month
+    first_day = datetime.datetime(year, month, 1)
+    if year == TODAY.year and month == TODAY.month:
+        n_days = TODAY.day
+    else:
+        for n_days in range(28, 32):
+            last_day = first_day + datetime.timedelta(days=n_days)
+            if last_day.month != month:
+                break
+    ### Open year/month dropdown
+    sb.click("div.mat-calendar-header span.mat-button-wrapper")
+    UI_FIRST_YEAR = 2001  # Assume years start from 2001
+    n_year = year - UI_FIRST_YEAR + 1
+    ### Select year, month, date from the calendar dropdowns
+    sb.click_nth_visible_element("div.mat-calendar-body-cell-content", n_year)
+    sb.click_nth_visible_element("div.mat-calendar-body-cell-content", month)
+    sb.click_nth_visible_element(".mat-calendar-body-cell-content", n_days)
+
     time.sleep(1)
     sb.click("a#go")
 
@@ -123,6 +150,9 @@ def download_account_transactions(sb, start_date, end_date):
     text = extract_csv(path, catch_phrase="Tran Date")
     with open(path, "w") as f:
         f.write(text.read())
+
+    git_manager = GitManager()
+    git_manager.copy_file_to_repo(Path(path), "axis-ac-statement", year, month)
 
 
 def download_cc_statement(sb, start_date, end_date):
