@@ -5,3 +5,4 @@ __pycache__/
 /.envrc
 /*.db
 /conf.py
+/data.git/
