@@ -5,7 +5,7 @@ description = ""
 authors = ["Puneeth Chaganti <punchagan@muse-amuse.in>"]
 
 [tool.poetry.dependencies]
-python = ">3.9.7,<4.0"
+python = ">=3.10,<4.0"
 seleniumbase = "^4.29.3"
 pytest-parallel = "^0.1.1"
 numpy = "^2.0.1"
