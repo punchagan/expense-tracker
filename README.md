@@ -162,10 +162,3 @@ the scripts described above.
 - Newly "scraped" entries are highlighted as to-be-reviewed in the UI. Entries
   need to be manually marked as reviewed as scrapers could just be automated
   jobs, for instance.
-
-### Ideas to be implemented
-
-- Automatically add or suggest categories for transactions based on history and
-  some NLP/ML on the details available for a transaction.
-
-- Full text search in details/remarks/name/bank/etc
