@@ -80,8 +80,7 @@ def login(sb):
     print("Logged in successfully")
 
 
-def download_account_transactions(sb, start_date):
-    end_date = TODAY
+def download_account_transactions(sb, start_date, end_date):
     if (end_date - start_date).days > 360:
         end_date = start_date + datetime.timedelta(days=360)
     print(f"Downloading account transactions from {start_date} to {end_date}")
@@ -126,8 +125,7 @@ def download_account_transactions(sb, start_date):
         f.write(text.read())
 
 
-def download_cc_statement(sb, start_date):
-    end_date = TODAY
+def download_cc_statement(sb, start_date, end_date):
     print(f"Downloading credit-card transactions from {start_date} to {end_date}")
     # View detailed transaction info
     time.sleep(2)
@@ -208,11 +206,11 @@ def download_cc_statement(sb, start_date):
             sb.wait_for_element_absent("div.loading_wrapper")
 
 
-def test_get_ac_data(sb, start_date):
+def test_get_ac_data(sb, start_date, end_date):
     login(sb)
-    download_account_transactions(sb, start_date)
+    download_account_transactions(sb, start_date, end_date)
 
 
-def test_get_cc_data(sb, start_date):
+def test_get_cc_data(sb, start_date, end_date):
     login(sb)
-    download_cc_statement(sb, start_date)
+    download_cc_statement(sb, start_date, end_date)
