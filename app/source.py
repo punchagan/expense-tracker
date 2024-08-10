@@ -176,6 +176,9 @@ class AxisStatement(Source):
                 ignore=True,
             )
         else:
+            # FIXME: Leave this in for debugging, with a commandline arg
+            # import pdb
+            # pdb.set_trace()
             raise RuntimeError(f"Unknown Transaction Type: {details}")
 
         return transaction
@@ -197,7 +200,6 @@ class AxisCCStatement(Source):
         details = expense.details
         merchant = details.split(",", 1)[0]
         ignore = details.startswith("MB PAYMENT")
-        # FIXME: Need a transaction ID, here?!
         return Transaction(
             transaction_type="CC",
             counterparty_name=merchant.title(),
