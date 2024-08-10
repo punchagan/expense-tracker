@@ -18,12 +18,15 @@ pytest -s "${HERE}/axis-scraper.py" --browser=chrome --uc --start-date "${LAST_D
 "${HERE}/gdrive-csv.py"
 
 # Update new data in the database
-python "${HERE}/parse-data.py" "${HERE}/../downloaded_files/${AXIS_CUSTOMID}.csv" --csv-type axis
-for each in $(ls "${HERE}/../downloaded_files/CC_Statement_${TODAY}"*".csv");
+for each in "${DATA_REPO_PATH}"/*/axis-ac-statement*.csv;
+do
+    python "${HERE}/parse-data.py" "${each}" --csv-type axis
+done
+for each in "${DATA_REPO_PATH}"/*/axis-cc-statement*.csv;
 do
     python "${HERE}/parse-data.py" "${each}" --csv-type axis-cc
 done
-python "${HERE}/parse-data.py" "${HERE}/../downloaded_files/${GSHEET_ID}.csv" --csv-type cash
+python "${HERE}/parse-data.py" "${DATA_REPO_PATH}/manual-entries-${GSHEET_ID}.csv" --csv-type cash
 
 if [ -z "${1:-}" ]; then
     streamlit run app/app.py
