@@ -3,18 +3,22 @@ set -xeuo pipefail
 
 HERE=$(dirname "$0")
 
-pushd "${HERE}/.."
-LAST_DATE=$(sqlite3 "${EXPENSES_DB}" 'SELECT MAX(date) FROM expense;' | cut -d " " -f 1) || true
-echo "Last date: ${LAST_DATE}"
-popd
-
-TODAY=$(date +%Y_%m_%d)
-
 # Make sure DB has the latest structure
 alembic upgrade head
 
 # Download data
-pytest -s "${HERE}/axis-scraper.py" --browser=chrome --uc --start-date "${LAST_DATE:-2022-01-01}" --workers=2 --reruns=5 --reruns-delay=20 --archive-downloads
+
+### Download AC data
+LAST_FILE=$(basename "$(find "${DATA_REPO_PATH}"  -name "axis-ac*" | sort | tail -n 1)")
+LAST_DATE="${LAST_FILE:18:7}-01"
+pytest -k "ac_data" -s "${HERE}/axis-scraper.py" --chrome --headed --uc --start-date "${LAST_DATE:-$(date '+%G-01-01')}" --workers=2 --reruns=5 --reruns-delay=20
+
+### Download CC data
+LAST_FILE=$(basename "$(find "${DATA_REPO_PATH}"  -name "axis-cc*" | sort | tail -n 1)")
+LAST_DATE="${LAST_FILE:18:7}-01"
+pytest -k "cc_data" -s "${HERE}/axis-scraper.py" --chrome --headed --uc --start-date "${LAST_DATE:-$(date '+%G-01-01')}" --workers=2 --reruns=5 --reruns-delay=20
+
+### Download Manual entries data
 "${HERE}/gdrive-csv.py"
 
 # Update new data in the database
