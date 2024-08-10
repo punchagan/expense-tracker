@@ -58,15 +58,16 @@ def transform_data(data, csv_type, engine):
 def parse_data(path, csv_type):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
     source_cls = CSV_TYPES[csv_type]
-    transaction_date = source_cls.columns["date"]
+    date_column = source_cls.columns["date"]
     data = pd.read_csv(
         path,
-        parse_dates=[transaction_date],
+        parse_dates=[date_column],
         dayfirst=True,
         dtype=source_cls.dtypes,
         thousands=",",
         na_values=[" "],
-    ).sort_values(by=[transaction_date], ignore_index=True)
+        date_format={date_column: source_cls.date_format},
+    ).sort_values(by=[date_column], ignore_index=True)
     filename = Path(path).name
     data = data.apply(get_transformed_row, axis=1, csv_type=csv_type, filename=filename)
 

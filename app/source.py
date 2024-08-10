@@ -18,6 +18,7 @@ class Transaction:
 class Source:
     name = "base"
     columns = {}
+    date_format = None
 
     @staticmethod
     def parse_details(expense, country, cities):
@@ -33,6 +34,7 @@ class AxisStatement(Source):
         "debit": "DR",
         "amount": None,
     }
+    date_format = "%d-%m-%Y"
     dtypes = {"DR": "float64", "CR": "float64"}
 
     @staticmethod
@@ -193,6 +195,7 @@ class AxisCCStatement(Source):
         "debit": "Debit",
         "amount": None,
     }
+    date_format = "%d %b '%y"
     dtypes = {"Debit": "float64", "Credit": "float64"}
 
     @staticmethod
@@ -217,6 +220,7 @@ class SBIStatement(Source):
         "debit": "Debit",
         "amount": None,
     }
+    date_format = "%d %b %Y"
     dtypes = {"Debit": "float64", "Credit": "float64"}
 
 
@@ -229,6 +233,7 @@ class Cash(Source):
         "debit": None,
         "amount": "Amount",
     }
+    date_format = "%d/%m/%Y %H:%M:%S"
     dtypes = {"Amount": "float64"}
 
     @staticmethod
