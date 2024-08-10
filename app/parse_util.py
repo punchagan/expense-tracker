@@ -1,5 +1,6 @@
 # Standard libs
 from hashlib import sha1
+from pathlib import Path
 
 # 3rd party libs
 import pandas as pd
@@ -15,7 +16,7 @@ from app.model import Expense
 from app.source import CSV_TYPES
 
 
-def get_transformed_row(x, csv_type):
+def get_transformed_row(x, csv_type, filename):
     """Transform a parsed row into a row to be saved in the DB."""
     columns = ["id", "date", "details", "amount"]
 
@@ -32,7 +33,7 @@ def get_transformed_row(x, csv_type):
     )
     v = x[filter(None, amount_columns)].infer_objects(copy=False).fillna(0)
     amount = v[amount_h] if amount_h else v[debit_h] - v[credit_h]
-    hash_text = f"{details}-{date}-{amount}"
+    hash_text = f"{filename}-{x.name}-{details}-{date}-{amount}"
     sha = sha1(hash_text.encode("utf8")).hexdigest()
     return pd.Series([sha, date, details, amount], index=columns)
 
@@ -66,7 +67,8 @@ def parse_data(path, csv_type):
         thousands=",",
         na_values=[" "],
     ).sort_values(by=[transaction_date], ignore_index=True)
-    data = data.apply(get_transformed_row, axis=1, csv_type=csv_type)
+    filename = Path(path).name
+    data = data.apply(get_transformed_row, axis=1, csv_type=csv_type, filename=filename)
 
     engine = get_db_engine()
     data["id"].to_sql("new_id", engine, if_exists="append", index=False)
