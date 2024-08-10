@@ -79,6 +79,7 @@ def parse_data(path, csv_type):
             ).fetchall()
             new_ids = [id_ for (id_,) in new_ids]
             conn.execute(text("DELETE FROM new_id"))
+            conn.commit()
     except exc.OperationalError:
         new_ids = list(data["id"])
 
