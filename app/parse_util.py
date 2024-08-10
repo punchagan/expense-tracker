@@ -30,7 +30,7 @@ def get_transformed_row(x, csv_type):
         header_columns["credit"],
         header_columns["debit"],
     )
-    v = x[filter(None, amount_columns)].fillna(0)
+    v = x[filter(None, amount_columns)].infer_objects(copy=False).fillna(0)
     amount = v[amount_h] if amount_h else v[debit_h] - v[credit_h]
     hash_text = f"{details}-{date}-{amount}"
     sha = sha1(hash_text.encode("utf8")).hexdigest()
