@@ -78,9 +78,7 @@ def main(commit=False, use_existing_db=False):
     if commit:
         subprocess.check_call(["git", "add", ROOT.joinpath("screenshots")])
         try:
-            subprocess.check_output(
-                ["git", "commit", "-m", "screenshot: Update screenshots"]
-            )
+            subprocess.check_output(["git", "commit", "-m", "screenshot: Update screenshots"])
         except subprocess.CalledProcessError as e:
             print(e.output.decode("utf8").strip().splitlines()[-1])
 

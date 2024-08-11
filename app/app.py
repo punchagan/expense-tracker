@@ -20,12 +20,7 @@ from sqlalchemy.orm import sessionmaker
 from app.components.git_status import show_git_status
 from app.db_util import DB_PATH, get_db_engine
 from app.model import Category, Expense, Tag
-from app.util import (
-    daterange_from_year_month,
-    delta_percent,
-    format_month,
-    previous_month,
-)
+from app.util import daterange_from_year_month, delta_percent, format_month, previous_month
 
 DATE_FMT = "%d %b '%y"
 WEEKDAYS = [datetime.date(2001, 1, i).strftime("%A") for i in range(1, 8)]

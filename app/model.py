@@ -11,9 +11,7 @@ class Expense(Base):
     date = sa.Column(sa.DateTime(), nullable=False)
     details = sa.Column(sa.Text(), nullable=False)
     amount = sa.Column(sa.Float(asdecimal=True, decimal_return_scale=2), nullable=False)
-    ignore = sa.Column(
-        sa.Boolean(), nullable=False, default=False, server_default=literal(False)
-    )
+    ignore = sa.Column(sa.Boolean(), nullable=False, default=False, server_default=literal(False))
     category_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
     category = relationship("Category", backref="expenses")
     tags = relationship("Tag", secondary="expense_tag", backref="expenses")
@@ -29,9 +27,7 @@ class Expense(Base):
     counterparty_bank_p = sa.Column(sa.String(100), nullable=True)
     remarks = sa.Column(sa.Text(), nullable=True)
     parent = sa.Column(sa.String(40), sa.ForeignKey("expense.id"))
-    reviewed = sa.Column(
-        sa.Boolean(), nullable=False, default=False, server_default=literal(False)
-    )
+    reviewed = sa.Column(sa.Boolean(), nullable=False, default=False, server_default=literal(False))
 
     def __repr__(self):
         return (
