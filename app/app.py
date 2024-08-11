@@ -65,6 +65,7 @@ def last_updated():
 @st.cache_data
 def load_data(start_date, end_date, category, db_last_modified):
     # NOTE: db_last_modified is only used to invalidate the memoized data
+    print(f"DB last modified at: {db_last_modified}")
     engine = get_db_engine()
     category_clause = (
         "AND e.category_id=:category"
