@@ -643,7 +643,7 @@ def main():
     # Enable Streamlit theme for Altair
     # alt.themes.enable("streamlit")      # FIXME: 0.15.0/1 broke Streamlit theme support
 
-    git_manager = show_git_status()
+    show_git_status()
 
     # Detect DB changes and invalidate Streamlit memoized data
     db_last_modified = os.path.getmtime(DB_PATH)
