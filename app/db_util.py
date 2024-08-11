@@ -3,11 +3,13 @@ import re
 from collections import Counter
 from dataclasses import fields
 from pathlib import Path
+import tempfile
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
+from app.lib.git_manager import get_repo_path
 from app.model import Category
 from app.source import CSV_TYPES
 
@@ -120,3 +122,64 @@ def parse_details_for_expenses(expenses, n_debug=0):
     for expense in examples:
         print(expense)
         print("#" * 40)
+
+
+def dump_db_to_csv(path):
+    # SQLAlchemy equivalent of "sqlite3 $EXPENSES_DB .dump"
+    engine = get_db_engine()
+    with engine.connect() as conn:
+        with path.open("w") as f:
+            for line in conn.connection.iterdump():
+                f.write(f"{line}\n")
+    print(f"Dumped database to {path}")
+
+
+def sync_db_with_data_repo():
+
+    db_last_modified = Path(DB_PATH).stat().st_mtime
+
+    repo_path = get_repo_path()
+    db_dump = repo_path.joinpath("db.csv")
+    dump_last_modified = db_dump.stat().st_mtime if db_dump.exists() else 0
+
+    if db_last_modified > dump_last_modified:
+        print("Database is newer than database dump")
+        # Update db.csv with database data
+        dump_db_to_csv(db_dump)
+
+    elif dump_last_modified > db_last_modified:
+        print("Database dump is newer than database")
+
+        # Check if the current database dump is different from saved dump
+        # and update database with db.csv data if needed
+        with tempfile.NamedTemporaryFile() as f:
+            dump_db_to_csv(Path(f.name))
+            temp_dump_text = Path(f.name).read_text()
+
+        if not db_dump.read_text() == temp_dump_text:
+            print("Database dump has changed since last update")
+
+            temp_db_path = Path(tempfile.mktemp(suffix=".sqlite"))
+            temp_engine = create_engine(f"sqlite:///{temp_db_path}")
+
+            # Load the SQL dump into the temporary database
+            with temp_engine.connect() as temp_conn:
+                with db_dump.open("r") as f:
+                    sql = f.read()
+                statements = sql.split(";\n")
+                for statement in statements:
+                    temp_conn.execute(text(statement))
+
+            # Backup the current DB and copy the temporary DB over the existing one
+            Path(DB_PATH).rename(DB_PATH.with_suffix(".bak"))
+            temp_db_path.rename(DB_PATH)
+            print(f"Replaced {DB_PATH} with the updated database")
+
+        else:
+            print("Database dump has not changed since last update")
+            # Touching both files to update their modified time
+            db_dump.touch()
+            Path(DB_PATH).touch()
+
+    else:
+        print("The Database and the database dump are in sync")

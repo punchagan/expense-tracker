@@ -18,7 +18,7 @@ from sqlalchemy.orm import sessionmaker
 
 # Local
 from app.components.git_status import show_git_status
-from app.db_util import DB_PATH, get_db_engine
+from app.db_util import DB_PATH, get_db_engine, sync_db_with_data_repo
 from app.model import Category, Expense, Tag
 from app.util import daterange_from_year_month, delta_percent, format_month, previous_month
 
@@ -647,6 +647,9 @@ def main():
 
     # Detect DB changes and invalidate Streamlit memoized data
     db_last_modified = os.path.getmtime(DB_PATH)
+
+    # Sync DB with dump in git DATA repo
+    sync_db_with_data_repo()
 
     categories = get_categories()
     tags = get_tags()
