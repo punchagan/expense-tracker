@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 from dataclasses import dataclass
@@ -101,6 +102,10 @@ class AxisStatement(Source):
             else:
                 if "/" in extra:
                     to_bank, remarks = [each.strip() for each in extra.split("/", 1)]
+                    # bank and transaction remarks order changed after 2023-09-15
+                    if expense.date.date() > datetime.date(2023, 9, 15):
+                        to_bank, remarks = remarks, to_bank
+
                 else:
                     to_bank = ""
                     remarks = extra.strip()
