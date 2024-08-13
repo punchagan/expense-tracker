@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+"""Usage: python parse-old-data.py --commit -n <N> <FILTERS-JSON>
+
+Script to reparse DB data, when improvements are made to the parser.
+
+"""
+
 # Standard libs
 import json
 import sys
