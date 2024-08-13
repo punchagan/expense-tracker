@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Standard libs
+import json
 import sys
 from pathlib import Path
 
@@ -19,14 +20,10 @@ from app.db_util import (
 from app.model import Expense
 
 
-def parse_old_data(commit=False, num_examples=10):
+def parse_old_data(filters, commit=False, num_examples=10):
     """Parses "old" data in the DB using the appropriate parser."""
     session = get_sqlalchemy_session()
-    # NOTE: The filter query expression could be a CLI argument? It's possible
-    # to do this by implementing an API like the QuerySet Filter API in Django
-    # and accepting the query as JSON argument. But, maynot be worth the
-    # effort, as of now.
-    expenses = session.query(Expense).filter(Expense.transaction_id == None)
+    expenses = session.query(Expense).filter_by(**filters)
     count = expenses.count()
     parse_details_for_expenses(expenses, n_debug=num_examples)
     n = min(num_examples, count)
@@ -44,6 +41,8 @@ if __name__ == "__main__":
     import sys
 
     parser = argparse.ArgumentParser()
+    # Add filters JSON positional argument
+    parser.add_argument("filters", help="JSON argument for filters")
     parser.add_argument(
         "--commit", action="store_true", help="Commit the changes after confirmation"
     )
@@ -53,8 +52,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     engine = get_db_engine()
     try:
+        filters = json.loads(args.filters)
+    except ValueError as e:
+        print("Could not parse filters JSON")
+        sys.exit(1)
+
+    try:
         with engine.connect() as conn:
             conn.execute(text("SELECT * FROM expense")).fetchone()
     except exc.OperationalError:
         sys.exit(f"The DB has no old data!")
-    parse_old_data(**dict(args._get_kwargs()))
+    parse_old_data(filters=filters, commit=args.commit, num_examples=args.num_examples)
