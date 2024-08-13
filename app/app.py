@@ -645,7 +645,8 @@ def main():
 
     show_git_status()
 
-    # Detect DB changes and invalidate Streamlit memoized data
+    # db_last_modified is used to detect DB changes and invalidate Streamlit
+    # memoized data
     db_last_modified = os.path.getmtime(DB_PATH)
 
     # Sync DB with dump in git DATA repo
