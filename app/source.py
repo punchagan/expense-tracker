@@ -103,9 +103,9 @@ class AxisStatement(Source):
                 if "/" in extra:
                     to_bank, remarks = [each.strip() for each in extra.split("/", 1)]
                     # bank and transaction remarks order changed after 2023-09-15
-                    if expense.date.date() > datetime.date(2023, 9, 15):
+                    upi_date = datetime.date(2023, 9, 15)
+                    if transaction_type == "UPI" and expense.date.date() > upi_date:
                         to_bank, remarks = remarks, to_bank
-
                 else:
                     to_bank = ""
                     remarks = extra.strip()
