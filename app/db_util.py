@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
-from app.lib.git_manager import get_repo_path
+from app.lib.git_manager import GitManager, get_repo_path
 from app.model import Category
 from app.source import CSV_TYPES
 
@@ -48,7 +48,9 @@ def ensure_categories_created():
 
 def ensure_tags_created():
     session = get_sqlalchemy_session()
+    git_manager = GitManager()
     try:
+        git_manager.symlink_to_repo_file("conf.py", ROOT / "conf.py")
         from conf import TAGS as tags
     except ImportError:
         tags = []
@@ -56,7 +58,9 @@ def ensure_tags_created():
 
 
 def get_config_categories():
+    git_manager = GitManager()
     try:
+        git_manager.symlink_to_repo_file("conf.py", ROOT / "conf.py")
         from conf import EXTRA_CATEGORIES
 
         categories = CATEGORIES + EXTRA_CATEGORIES

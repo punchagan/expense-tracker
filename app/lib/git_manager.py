@@ -44,6 +44,18 @@ class GitManager:
         print(f"Copied {src} to {new_path}")
         return new_path
 
+    def symlink_to_repo_file(self, path, dst):
+        src = self.repo_path.joinpath(path)
+        if not src.exists():
+            raise FileNotFoundError(f"File not found at {src}")
+        if dst.exists():
+            if not dst.is_symlink():
+                raise FileExistsError(f"File already exists at {dst}")
+            else:
+                dst.unlink()
+        dst.symlink_to(src)
+        return dst
+
     def commit_changes(self, message):
         if not self.repo:
             raise ValueError("Repository not initialized")
