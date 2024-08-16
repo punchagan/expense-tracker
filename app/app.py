@@ -658,6 +658,10 @@ def main():
     display_info = bool(row_id)
     start_date, end_date, category = display_sidebar(title, categories, display_info)
     data = load_data(start_date, end_date, category, db_last_modified)
+    if display_info:
+        show_transaction_info(row_id, data, categories, tags)
+        return
+
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
     counterparty, selected_tags, (low, high) = display_extra_filters(data, tags, display_info)
@@ -685,12 +689,9 @@ def main():
         data = amount_filter_high(data, high)
         prev_data = amount_filter_high(prev_data, high)
 
-    if not display_info:
-        display_summary_stats(data, prev_data)
-        display_barcharts(data, categories, tags)
-        display_transactions(data, categories, tags)
-    else:
-        show_transaction_info(row_id, data, categories, tags)
+    display_summary_stats(data, prev_data)
+    display_barcharts(data, categories, tags)
+    display_transactions(data, categories, tags)
 
 
 if __name__ == "__main__":
