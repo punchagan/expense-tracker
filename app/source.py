@@ -40,7 +40,7 @@ class AxisStatement(Source):
 
     @staticmethod
     def parse_details(expense, country, cities):
-        details = expense.details
+        details = expense.details.replace("M/s", "M.s")
         axis_id = os.getenv("AXIS_CUSTOMID", "")
         if details.startswith("UPIRECONP2PM/"):
             _, transaction_id, _ = [each.strip() for each in details.split("/", 2)]
@@ -78,46 +78,90 @@ class AxisStatement(Source):
                 counterparty_type="Merchant",
                 remarks=details,
             )
-        elif details.startswith(("UPI/", "IMPS/", "NEFT/", "RTGS/", "NBSM/")):
-            if details.count("/") == 3:
-                transaction_type, transaction_id, to_name, _ = [
-                    each.strip() for each in details.split("/", 3)
-                ]
-                to_type = "P2M"
-                extra = " / "
+        elif details.startswith("UPI/"):
+            transaction_type, to_type, transaction_id, to_name, extra = [
+                each.strip() for each in details.split("/", 4)
+            ]
+            if "/" in extra:
+                to_bank, remarks = extra.split("/", 1)
             else:
-                transaction_type, to_type, transaction_id, to_name, extra = [
-                    each.strip() for each in details.split("/", 4)
-                ]
-            if to_type not in {"P2M", "P2A", "MB"}:
-                to_bank = to_name
-                to_name = transaction_id
-                transaction_id = to_type
-                to_type = "P2A"
-                remarks = extra.strip("/")
-            elif to_name == axis_id:
-                to_name = ""
                 to_bank = ""
                 remarks = extra
-            else:
-                if "/" in extra:
-                    to_bank, remarks = [each.strip() for each in extra.split("/", 1)]
-                    # bank and transaction remarks order changed after 2023-09-15
-                    upi_date = datetime.date(2023, 9, 15)
-                    if transaction_type == "UPI" and expense.date.date() > upi_date:
-                        to_bank, remarks = remarks, to_bank
-                else:
-                    to_bank = ""
-                    remarks = extra.strip()
 
-            to_type = "Person" if to_type == "P2A" else "Merchant"
+            # The transaction format was changed later to interchange bank name
+            # and remarks. Remarks are truncated to 6 characters, in the new
+            # format.
+            if len(to_bank) <= 6:
+                to_bank, remarks = remarks, to_bank
             transaction = Transaction(
                 transaction_id=transaction_id,
                 transaction_type=transaction_type,
-                counterparty_name=to_name.title(),
-                counterparty_type=to_type,
-                counterparty_bank=to_bank,
-                remarks=remarks,
+                counterparty_name=to_name.title().strip(),
+                counterparty_type=to_type.strip(),
+                counterparty_bank=to_bank.strip(),
+                remarks=remarks.strip("/").strip(),
+            )
+
+        elif details.startswith("IMPS/"):
+            transaction_type, to_type, transaction_id, to_name, extra = [
+                each.strip() for each in details.split("/", 4)
+            ]
+            # FIXME: if to_name is same as axis_id, then it is a credit
+            if extra.count("/") == 0:
+                to_bank = ""
+                remarks = extra
+            elif extra.count("/") == 1:
+                to_bank, remarks = [each.strip() for each in extra.split("/", 1)]
+                if to_bank.startswith(("X", "0")):
+                    to_bank, remarks = remarks, to_bank
+            else:
+                extra_remarks = extra.split("/", 2)
+                to_bank = (
+                    extra_remarks[1]
+                    if extra_remarks[0].startswith(("X", "0"))
+                    else extra_remarks[0]
+                )
+                remarks = "/".join(
+                    [extra_remarks[0], extra_remarks[2]]
+                    if extra_remarks[0].startswith(("X", "0"))
+                    else extra_remarks[1:]
+                )
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type=transaction_type,
+                counterparty_name=to_name.title().strip(),
+                counterparty_type=to_type.strip(),
+                counterparty_bank=to_bank.strip(),
+                remarks=remarks.strip("/").strip(),
+            )
+
+        elif details.startswith(("NEFT/")):
+            transaction_type, to_type, transaction_id, to_name, extra = [
+                each.strip() for each in details.split("/", 4)
+            ]
+            if to_type not in {"P2M", "P2A", "MB"}:
+                transaction_id, to_name, to_type, to_bank = to_type, transaction_id, "MB", to_name
+                remarks = extra.rsplit("/", 1)[-1]
+            else:
+                extra = extra.replace("/ATTN/", "ATTN")
+                to_bank, remarks = extra.split("/", 1)
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type=transaction_type,
+                counterparty_name=to_name.title().strip(),
+                counterparty_type=to_type.strip(),
+                counterparty_bank=to_bank.strip(),
+                remarks=remarks.strip("/").strip(),
+            )
+        elif details.startswith("NBSM/"):
+            transaction_type, transaction_id, to_name, remarks = [
+                each.strip() for each in details.split("/", 3)
+            ]
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type=transaction_type,
+                counterparty_name=to_name.title().strip(),
+                remarks=remarks.strip("/").strip(),
             )
         elif details.startswith("ECOM PUR/"):
             transaction_type, to_name, _ = [each.strip() for each in details.split("/", 2)]
