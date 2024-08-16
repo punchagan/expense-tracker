@@ -26,14 +26,21 @@ from app.db_util import (
 from app.model import Expense
 
 
-def parse_old_data(filters, commit=False, num_examples=10):
+def parse_old_data(filters, commit=False, num_examples=10, modify_reviewed=False):
     """Parses "old" data in the DB using the appropriate parser."""
+    if not modify_reviewed:
+        extra_msg = "(unreviewed only)"
+        filters["reviewed"] = False
+    else:
+        filters.pop("reviewed", None)
+        extra_msg = "(including reviewed)"
+
     session = get_sqlalchemy_session()
     expenses = session.query(Expense).filter_by(**filters)
     count = expenses.count()
     parse_details_for_expenses(expenses, n_debug=num_examples)
     n = min(num_examples, count)
-    print(f"Filtered {count} transactions to filter...")
+    print(f"Filtered {count} transactions to filter... {extra_msg}")
     print(f"Showing {n} example transactions above")
     if commit:
         yes = input("Do you wish to commit the changes([n]/y)? ")
@@ -55,6 +62,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "-n", "--num-examples", default=10, help="Number of examples to show", type=int
     )
+    parser.add_argument(
+        "--modify-reviewed",
+        action="store_true",
+        help="Modify reviewed expenses as well",
+    )
     args = parser.parse_args()
     engine = get_db_engine()
     try:
@@ -68,4 +80,9 @@ if __name__ == "__main__":
             conn.execute(text("SELECT * FROM expense")).fetchone()
     except exc.OperationalError:
         sys.exit(f"The DB has no old data!")
-    parse_old_data(filters=filters, commit=args.commit, num_examples=args.num_examples)
+    parse_old_data(
+        filters=filters,
+        commit=args.commit,
+        num_examples=args.num_examples,
+        modify_reviewed=args.modify_reviewed,
+    )
