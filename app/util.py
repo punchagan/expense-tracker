@@ -32,7 +32,7 @@ def delta_percent(curr, prev):
     if prev == 0:
         sign = "-" if curr <= 0 else "+"
         return f"{sign} unknown"
-    delta = (curr - prev) * 100 / prev
+    delta = (curr - prev) * 100 / abs(prev)
     return f"{delta:.2f} %"
 
 
