@@ -81,12 +81,15 @@ def login(sb):
 
 
 def download_account_transactions(sb, start_date, end_date):
-
-    # Select Detailed Statements
-    sb.click("a#ACHMEPG_0")
+    # Select Accounts Card
+    sb.click("mat-nav-list#navList1")
     time.sleep(3)
+
+    # Switch to Statements tab
     sb.click("div#mat-tab-label-0-1")
     time.sleep(1)
+
+    # Select Detailed transactions from the dropdown menu
     sb.click_nth_visible_element("div.mat-form-field-infix", 2)
     time.sleep(1)
     sb.click_nth_visible_element("span.mat-option-text", 2)
@@ -159,10 +162,16 @@ def download_cc_statement(sb, start_date, end_date):
     print(f"Downloading credit-card transactions from {start_date} to {end_date}")
     # View detailed transaction info
     time.sleep(2)
+
+    # Go to the Dashboard
     sb.click("#navList0")
     time.sleep(2)
-    sb.click("a#CCSSOF_1")
+
+    # Click on the Credit Card UI card
+    sb.click("div.cards.rCard1")
     time.sleep(2)
+
+    # Switch to the newly opened tab
     sb.switch_to_newest_window()
     time.sleep(5)
 
