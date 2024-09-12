@@ -138,6 +138,19 @@ def dump_db_to_csv(path):
     print(f"Dumped database to {path}")
 
 
+def load_db_from_csv(db_path, db_dump_path):
+    # SQLAlchemy equivalent of "sqlite3 $EXPENSES_DB < db.csv"
+    engine = create_engine(f"sqlite:///{db_path}")
+
+    # Load the SQL dump into the temporary database
+    with engine.connect() as conn:
+        with db_dump_path.open("r") as f:
+            sql = f.read()
+        statements = sql.split(";\n")
+        for statement in statements:
+            conn.execute(text(statement))
+
+
 def sync_db_with_data_repo():
 
     db_last_modified = Path(DB_PATH).stat().st_mtime
@@ -163,17 +176,9 @@ def sync_db_with_data_repo():
         if not db_dump.read_text() == temp_dump_text:
             print("Database dump has changed since last update")
 
+            # Load db_dump to temporary DB
             temp_db_path = Path(tempfile.mktemp(suffix=".sqlite"))
-            temp_engine = create_engine(f"sqlite:///{temp_db_path}")
-
-            # Load the SQL dump into the temporary database
-            with temp_engine.connect() as temp_conn:
-                with db_dump.open("r") as f:
-                    sql = f.read()
-                statements = sql.split(";\n")
-                for statement in statements:
-                    temp_conn.execute(text(statement))
-
+            load_db_from_csv(temp_db_path, db_dump)
             # Backup the current DB and copy the temporary DB over the existing one
             Path(DB_PATH).rename(DB_PATH.with_suffix(".bak"))
             temp_db_path.rename(DB_PATH)
