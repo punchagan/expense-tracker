@@ -38,23 +38,6 @@ def get_transformed_row(x, csv_type, filename):
     return pd.Series([sha, date, details, amount], index=columns)
 
 
-def transform_data(data, csv_type, engine):
-    source_cls = CSV_TYPES[csv_type]
-    transactions = data.apply(
-        source_cls.parse_details, axis=1, country=country, cities=cities
-    ).apply(lambda x: pd.Series(x.__dict__))
-    data = pd.concat([data, transactions], axis=1)
-    data["counterparty_bank_p"] = data["counterparty_bank"]
-
-    # Modify counterparty_name based on previously manually updated names
-    data["counterparty_name_p"] = data["counterparty_name"]
-    parsed_names = tuple(set(data["counterparty_name_p"]) - set([""]))
-    if parsed_names:
-        names = lookup_counterparty_names(engine)
-        data["counterparty_name"] = data["counterparty_name"].apply(lambda x: names.get(x, x))
-    return data
-
-
 def parse_data(path, csv_type):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
     source_cls = CSV_TYPES[csv_type]
