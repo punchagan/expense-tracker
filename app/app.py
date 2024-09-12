@@ -645,12 +645,12 @@ def main():
 
     show_git_status()
 
+    # Sync DB with dump in git DATA repo
+    sync_db_with_data_repo()
+
     # db_last_modified is used to detect DB changes and invalidate Streamlit
     # memoized data
     db_last_modified = os.path.getmtime(DB_PATH)
-
-    # Sync DB with dump in git DATA repo
-    sync_db_with_data_repo()
 
     categories = get_categories()
     tags = get_tags()

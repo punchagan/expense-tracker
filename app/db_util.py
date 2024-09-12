@@ -140,6 +140,8 @@ def dump_db_to_csv(path):
 
 def load_db_from_csv(db_path, db_dump_path):
     # SQLAlchemy equivalent of "sqlite3 $EXPENSES_DB < db.csv"
+    print(f"Loading DB from {db_dump_path}")
+
     engine = create_engine(f"sqlite:///{db_path}")
 
     # Load the SQL dump into the temporary database
@@ -149,14 +151,22 @@ def load_db_from_csv(db_path, db_dump_path):
         statements = sql.split(";\n")
         for statement in statements:
             conn.execute(text(statement))
+        conn.commit()
 
 
 def sync_db_with_data_repo():
-
-    db_last_modified = Path(DB_PATH).stat().st_mtime
-
+    db_path = Path(DB_PATH)
     repo_path = get_repo_path()
     db_dump = repo_path.joinpath("db.csv")
+
+    if not db_path.exists() and not db_dump.exists():
+        raise RuntimeError("Panic! No DB or DB dump found!")
+
+    if not db_path.exists():
+        load_db_from_csv(db_path, db_dump)
+        return
+
+    db_last_modified = db_path.stat().st_mtime
     dump_last_modified = db_dump.stat().st_mtime if db_dump.exists() else 0
 
     if db_last_modified > dump_last_modified:
