@@ -17,7 +17,7 @@ from app.model import Expense
 
 def get_transformed_row(x, header_columns, filename):
     """Transform a parsed row into a row to be saved in the DB."""
-    columns = ["id", "date", "details", "amount"]
+    columns = ["id", "date", "details", "amount", "source_file", "source_line"]
     date = x[header_columns["date"]]
     details = x[header_columns["details"]]
     if isinstance(details, pd.Series):
@@ -32,7 +32,7 @@ def get_transformed_row(x, header_columns, filename):
     amount = v[amount_h] if amount_h else v[debit_h] - v[credit_h]
     hash_text = f"{filename}-{x.name}-{details}-{date}-{amount}"
     sha = sha1(hash_text.encode("utf8")).hexdigest()
-    return pd.Series([sha, date, details, amount], index=columns)
+    return pd.Series([sha, date, details, amount, filename, x.name], index=columns)
 
 
 def parse_data(path, source_cls):

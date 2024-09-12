@@ -16,6 +16,8 @@ class Expense(Base):
     category = relationship("Category", backref="expenses")
     tags = relationship("Tag", secondary="expense_tag", backref="expenses")
     source = sa.Column(sa.String(10), server_default=literal(""), nullable=False)
+    source_file = sa.Column(sa.String(100), nullable=True)
+    source_line = sa.Column(sa.Integer, nullable=True)
     transaction_id = sa.Column(sa.String(20), nullable=True)
     transaction_type = sa.Column(
         sa.String(10), default="Cash", server_default=literal("Cash"), nullable=False
