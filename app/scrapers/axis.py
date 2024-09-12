@@ -263,7 +263,7 @@ class AxisStatement(Source):
     def fetch_data(cls, start_date=None, end_date=None):
         if start_date is None:
             git_manager = GitManager()
-            latest_file = git_manager.find_latest_file(f"{cls.name}-statement")
+            latest_file = git_manager.find_latest_file(cls.prefix)
             year, month = map(int, latest_file.stem.rsplit("-", 2)[-2:])
             start_date = datetime.date(year, month, 1)
 
@@ -487,7 +487,7 @@ class AxisCCStatement(Source):
     def fetch_data(cls, start_date=None, end_date=None):
         if start_date is None:
             git_manager = GitManager()
-            latest_file = git_manager.find_latest_file(f"{cls.name}-statement")
+            latest_file = git_manager.find_latest_file(cls.prefix)
             year, month = map(int, latest_file.stem.rsplit("-", 2)[-2:])
             start_date = datetime.date(year, month, 1)
 

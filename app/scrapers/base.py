@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from sqlalchemy.util import classproperty
+
 
 @dataclass
 class Transaction:
@@ -21,3 +23,7 @@ class Source:
     @staticmethod
     def parse_details(expense, country, cities):
         return Transaction()
+
+    @classproperty
+    def prefix(cls):
+        return f"{cls.name}-statement"
