@@ -4,12 +4,15 @@ import io
 import os
 import time
 from pathlib import Path
+import re
 
 from bs4 import BeautifulSoup
 import pandas as pd
+from seleniumbase import SB
 
 from app.util import extract_csv
 from app.lib.git_manager import GitManager
+from app.source import Source, Transaction
 
 TODAY = datetime.date.today()
 
@@ -241,3 +244,267 @@ def download_cc_statement(sb, start_date, end_date):
             # Convert XLSX to CSV
             extract_csv_from_xls(new_path)
             sb.wait_for_element_absent("div.loading_wrapper")
+
+
+class AxisStatement(Source):
+    name = "axis"
+    columns = {
+        "date": "Tran Date",
+        "details": "PARTICULARS",
+        "credit": "CR",
+        "debit": "DR",
+        "amount": None,
+    }
+    date_format = "%d-%m-%Y"
+    dtypes = {"DR": "float64", "CR": "float64"}
+
+    @classmethod
+    def fetch_data(cls, start_date=None, end_date=None):
+        if start_date is None:
+            git_manager = GitManager()
+            latest_file = git_manager.find_latest_file(f"{cls.name}-statement")
+            year, month = map(int, latest_file.stem.rsplit("-", 2)[-2:])
+            start_date = datetime.date(year, month, 1)
+
+        if end_date is None:
+            end_date = TODAY
+
+        with SB(uc=True, browser="chrome", headed=True) as sb:
+            login(sb)
+            download_account_transactions(sb, cls.name, start_date, end_date)
+
+    @staticmethod
+    def parse_details(expense, country, cities):
+        details = expense.details.replace("M/s", "M.s")
+        axis_id = os.getenv("AXIS_CUSTOMID", "")
+        if details.startswith("UPIRECONP2PM/"):
+            _, transaction_id, _ = [each.strip() for each in details.split("/", 2)]
+            transaction = Transaction(
+                transaction_type="UPI",
+                counterparty_type="Merchant",
+                remarks=details,
+            )
+        elif details.startswith("TIPS/"):
+            transaction_id = details.split("/")[3] if details.count("/") == 5 else ""
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type="SCG",
+                counterparty_type="Merchant",
+                remarks=details.rsplit("/", 1)[0],
+            )
+        elif details.startswith("CTF "):
+            extra = details.split()[-1]
+            to_name = re.search("[A-Z]+", extra)
+            to_name = to_name.group() if to_name else ""
+            transaction_id = re.search("[0-9]+", extra)
+            transaction_id = transaction_id.group() if transaction_id else ""
+            transaction = Transaction(
+                transaction_type="UPI",
+                transaction_id=transaction_id,
+                counterparty_name=to_name.title(),
+                counterparty_type="Merchant",
+                remarks=details,
+            )
+        elif details.startswith("UPI/CRADJ/"):
+            _, _, transaction_id, _ = [each.strip() for each in details.split("/", 3)]
+            transaction = Transaction(
+                transaction_type="UPI",
+                transaction_id=transaction_id,
+                counterparty_type="Merchant",
+                remarks=details,
+            )
+        elif details.startswith("UPI/"):
+            transaction_type, to_type, transaction_id, to_name, extra = [
+                each.strip() for each in details.split("/", 4)
+            ]
+            if "/" in extra:
+                to_bank, remarks = extra.split("/", 1)
+            else:
+                to_bank = ""
+                remarks = extra
+
+            # The transaction format was changed later to interchange bank name
+            # and remarks. Remarks are truncated to 6 characters, in the new
+            # format.
+            if len(to_bank) <= 6:
+                to_bank, remarks = remarks, to_bank
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type=transaction_type,
+                counterparty_name=to_name.title().strip(),
+                counterparty_type=to_type.strip(),
+                counterparty_bank=to_bank.strip(),
+                remarks=remarks.strip("/").strip(),
+            )
+
+        elif details.startswith("IMPS/"):
+            transaction_type, to_type, transaction_id, to_name, extra = [
+                each.strip() for each in details.split("/", 4)
+            ]
+            # FIXME: if to_name is same as axis_id, then it is a credit
+            if extra.count("/") == 0:
+                to_bank = ""
+                remarks = extra
+            elif extra.count("/") == 1:
+                to_bank, remarks = [each.strip() for each in extra.split("/", 1)]
+                if to_bank.startswith(("X", "0")):
+                    to_bank, remarks = remarks, to_bank
+            else:
+                extra_remarks = extra.split("/", 2)
+                to_bank = (
+                    extra_remarks[1]
+                    if extra_remarks[0].startswith(("X", "0"))
+                    else extra_remarks[0]
+                )
+                remarks = "/".join(
+                    [extra_remarks[0], extra_remarks[2]]
+                    if extra_remarks[0].startswith(("X", "0"))
+                    else extra_remarks[1:]
+                )
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type=transaction_type,
+                counterparty_name=to_name.title().strip(),
+                counterparty_type=to_type.strip(),
+                counterparty_bank=to_bank.strip(),
+                remarks=remarks.strip("/").strip(),
+            )
+
+        elif details.startswith(("NEFT/")):
+            transaction_type, to_type, transaction_id, to_name, extra = [
+                each.strip() for each in details.split("/", 4)
+            ]
+            if to_type not in {"P2M", "P2A", "MB"}:
+                transaction_id, to_name, to_type, to_bank = to_type, transaction_id, "MB", to_name
+                remarks = extra.rsplit("/", 1)[-1]
+            else:
+                extra = extra.replace("/ATTN/", "ATTN")
+                to_bank, remarks = extra.split("/", 1)
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type=transaction_type,
+                counterparty_name=to_name.title().strip(),
+                counterparty_type=to_type.strip(),
+                counterparty_bank=to_bank.strip(),
+                remarks=remarks.strip("/").strip(),
+            )
+        elif details.startswith("NBSM/"):
+            transaction_type, transaction_id, to_name, remarks = [
+                each.strip() for each in details.split("/", 3)
+            ]
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                transaction_type=transaction_type,
+                counterparty_name=to_name.title().strip(),
+                remarks=remarks.strip("/").strip(),
+            )
+        elif details.startswith("ECOM PUR/"):
+            transaction_type, to_name, _ = [each.strip() for each in details.split("/", 2)]
+            transaction = Transaction(
+                transaction_type="ECOM",
+                counterparty_name=to_name.title(),
+                counterparty_type="Merchant",
+            )
+        elif details.startswith("POS/"):
+            transaction_type, to_name, transaction_id, _ = [
+                each.strip() for each in details.split("/", 3)
+            ]
+            transaction = Transaction(
+                transaction_type="POS",
+                counterparty_name=to_name.title(),
+                counterparty_type="Merchant",
+            )
+        elif details.startswith("ATM-CASH"):
+            _, remarks = [each.strip() for each in details.split("/", 1)]
+            transaction = Transaction(
+                transaction_type="ATM",
+                counterparty_name="ATM",
+                remarks=remarks,
+            )
+        elif details.startswith("BRN-CLG-CHQ"):
+            _, counterparty_name = [each.strip() for each in details.split("PAID TO", 1)]
+            transaction = Transaction(transaction_type="CHQ", counterparty_name=counterparty_name)
+        elif (
+            re.search(
+                "(SMS Alerts|Monthly|Consolidated|GST|Dr Card|Excess).*(Chrg|Charge|Service Fee)",
+                details,
+                flags=re.IGNORECASE,
+            )
+            is not None
+        ):
+            transaction = Transaction(
+                transaction_type="AC",
+                counterparty_name="Axis Bank",
+                counterparty_type="Merchant",
+                remarks=details,
+            )
+        elif details.startswith("CreditCard Payment"):
+            transaction = Transaction(
+                transaction_type="AC",
+                transaction_id=details.rsplit("#", 1)[-1],
+                counterparty_name="CreditCard Payment",
+                counterparty_type="Merchant",
+                ignore=True,
+            )
+        elif axis_id and f"{axis_id}:" in details:
+            transaction = Transaction(
+                transaction_type="AC",
+                counterparty_name="Axis Bank",
+                counterparty_type="Merchant",
+                remarks=details[len(axis_id) + 1 :],
+            )
+        elif details.startswith("BRN-PYMT-CARD"):
+            transaction = Transaction(
+                transaction_type="AC",
+                counterparty_name="Axis Bank",
+                counterparty_type="Merchant",
+                remarks=details,
+                ignore=True,
+            )
+        else:
+            # FIXME: Leave this in for debugging, with a commandline arg
+            # import pdb
+            # pdb.set_trace()
+            raise RuntimeError(f"Unknown Transaction Type: {details}")
+
+        return transaction
+
+
+class AxisCCStatement(Source):
+    name = "axis-cc"
+    columns = {
+        "date": "Date",
+        "details": "Transaction Details",
+        "credit": "Credit",
+        "debit": "Debit",
+        "amount": None,
+    }
+    date_format = "%d %b '%y"
+    dtypes = {"Debit": "float64", "Credit": "float64"}
+
+    @classmethod
+    def fetch_data(cls, start_date=None, end_date=None):
+        if start_date is None:
+            git_manager = GitManager()
+            latest_file = git_manager.find_latest_file(f"{cls.name}-statement")
+            year, month = map(int, latest_file.stem.rsplit("-", 2)[-2:])
+            start_date = datetime.date(year, month, 1)
+
+        if end_date is None:
+            end_date = TODAY
+
+        with SB(uc=True, browser="chrome", headed=True) as sb:
+            login(sb)
+            download_cc_statement(sb, cls.name, start_date, end_date)
+
+    @staticmethod
+    def parse_details(expense, country, cities):
+        details = expense.details
+        merchant = details.split(",", 1)[0]
+        ignore = details.startswith("MB PAYMENT")
+        return Transaction(
+            transaction_type="CC",
+            counterparty_name=merchant.title(),
+            counterparty_type="Merchant",
+            ignore=ignore,
+        )

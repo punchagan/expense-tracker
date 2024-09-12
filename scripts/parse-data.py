@@ -14,7 +14,7 @@ from sqlalchemy import exc, text
 # Local
 from app.db_util import ensure_categories_created, ensure_tags_created, get_db_engine
 from app.parse_util import parse_data
-from app.source import CSV_TYPES
+from app.scrapers import CSV_TYPES
 
 
 def main(path, csv_type):
