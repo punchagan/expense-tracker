@@ -79,7 +79,7 @@ def login(sb):
     print("Logged in successfully")
 
 
-def download_account_transactions(sb, start_date, end_date):
+def download_account_transactions(sb, name, start_date, end_date):
     # Select Accounts Card
     sb.click("mat-nav-list#navList1")
     time.sleep(3)
@@ -100,10 +100,10 @@ def download_account_transactions(sb, start_date, end_date):
         start_month = 1 if year != start_date.year else start_date.month
         end_month = 12 if year != end_date.year else end_date.month
         for month in range(start_month, end_month + 1):
-            download_monthly_account_transactions(sb, year, month)
+            download_monthly_account_transactions(sb, name, year, month)
 
 
-def download_monthly_account_transactions(sb, year, month):
+def download_monthly_account_transactions(sb, name, year, month):
     # Select From Date
     sb.click("input#state_fromdate")
     ### Open year/month dropdown
@@ -154,10 +154,10 @@ def download_monthly_account_transactions(sb, year, month):
         f.write(text.read())
 
     git_manager = GitManager()
-    git_manager.copy_file_to_repo(Path(path), "axis-ac-statement", year, month)
+    git_manager.copy_file_to_repo(Path(path), f"{name}-statement", year, month)
 
 
-def download_cc_statement(sb, start_date, end_date):
+def download_cc_statement(sb, name, start_date, end_date):
     print(f"Downloading credit-card transactions from {start_date} to {end_date}")
     # View detailed transaction info
     time.sleep(2)
@@ -240,7 +240,7 @@ def download_cc_statement(sb, start_date, end_date):
             # Copy the file to the data git repo
             path = Path(sb.get_path_of_downloaded_file(filename))
             git_manager = GitManager()
-            new_path = git_manager.copy_file_to_repo(path, "axis-cc-statement", year, month)
+            new_path = git_manager.copy_file_to_repo(path, f"{name}-statement", year, month)
             # Convert XLSX to CSV
             extract_csv_from_xls(new_path)
             sb.wait_for_element_absent("div.loading_wrapper")
