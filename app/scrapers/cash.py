@@ -22,6 +22,7 @@ class CashStatement(Source):
         git_manager = GitManager()
         sheet_id = os.environ["GSHEET_ID"]
         url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
+        print(f"Fetching data from {url}")
         response = requests.get(url)
         csv_path = git_manager.repo_path.joinpath(f"{cls.name}-statement-{sheet_id}.csv")
         with open(csv_path, "w") as f:
