@@ -30,7 +30,7 @@ for each in "${DATA_REPO_PATH}"/*/axis-cc-statement*.csv;
 do
     python "${HERE}/parse-data.py" "${each}" --csv-type axis-cc
 done
-python "${HERE}/parse-data.py" "${DATA_REPO_PATH}/manual-entries-${GSHEET_ID}.csv" --csv-type cash
+python "${HERE}/parse-data.py" "${DATA_REPO_PATH}/cash-${GSHEET_ID}.csv" --csv-type cash
 
 if [ -z "${1:-}" ]; then
     streamlit run app/app.py

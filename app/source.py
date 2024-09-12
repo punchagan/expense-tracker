@@ -36,27 +36,4 @@ class SBIStatement(Source):
     dtypes = {"Debit": "float64", "Credit": "float64"}
 
 
-class Cash(Source):
-    name = "cash"
-    columns = {
-        "date": "Timestamp",
-        "details": ["Details", "Category"],
-        "credit": None,
-        "debit": None,
-        "amount": "Amount",
-    }
-    date_format = "%d/%m/%Y %H:%M:%S"
-    dtypes = {"Amount": "float64"}
-
-    @staticmethod
-    def parse_details(expense, country, cities):
-        details = expense.details
-        remarks, category_name = [each.strip() for each in details.split("/")]
-        return Transaction(
-            transaction_type="Cash",
-            remarks=remarks,
-            category_name=category_name,
-        )
-
-
 CSV_TYPES = {kls.name: kls for kls in Source.__subclasses__()}
