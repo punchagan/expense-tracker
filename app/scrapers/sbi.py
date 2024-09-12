@@ -4,7 +4,7 @@ import os
 import requests
 
 from app.lib.git_manager import GitManager
-from app.source import Source, Transaction
+from .base import Source, Transaction
 
 
 class SBIStatement(Source):

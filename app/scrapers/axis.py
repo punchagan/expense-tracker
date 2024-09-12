@@ -12,7 +12,8 @@ from seleniumbase import SB
 
 from app.util import extract_csv
 from app.lib.git_manager import GitManager
-from app.source import Source, Transaction
+
+from .base import Source, Transaction
 
 TODAY = datetime.date.today()
 
