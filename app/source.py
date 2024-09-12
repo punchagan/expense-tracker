@@ -21,5 +21,3 @@ class Source:
     @staticmethod
     def parse_details(expense, country, cities):
         return Transaction()
-
-CSV_TYPES = {kls.name: kls for kls in Source.__subclasses__()}

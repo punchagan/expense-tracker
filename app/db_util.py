@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
 from app.lib.git_manager import GitManager, get_repo_path
 from app.model import Category
-from app.source import CSV_TYPES
+from app.scrapers import CSV_TYPES
 
 ROOT = Path(__file__).parent.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
