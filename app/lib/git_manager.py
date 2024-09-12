@@ -32,6 +32,11 @@ class GitManager:
         git.Repo.clone_from(clone_url, repo_path)
         return cls(repo_path)
 
+    def find_latest_file(self, prefix):
+        files = self.repo_path.glob(f"**/{prefix}-*")
+        # The files have a format of prefix-YYYY-MM
+        return max(files)
+
     def copy_file_to_repo(self, src, prefix, year, month):
         new_name = src.with_stem(f"{prefix}-{year}-{month:02}").name
         repo_sub_path = Path(str(year), new_name)
