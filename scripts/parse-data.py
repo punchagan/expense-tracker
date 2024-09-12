@@ -20,7 +20,8 @@ from app.source import CSV_TYPES
 def main(path, csv_type):
     ensure_categories_created()
     ensure_tags_created()
-    parse_data(path, csv_type)
+    scraper_cls = CSV_TYPES[csv_type]
+    parse_data(path, scraper_cls)
 
 
 if __name__ == "__main__":

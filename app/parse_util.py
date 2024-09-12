@@ -13,14 +13,11 @@ from app.db_util import (
     parse_details_for_expenses,
 )
 from app.model import Expense
-from app.source import CSV_TYPES
 
 
-def get_transformed_row(x, csv_type, filename):
+def get_transformed_row(x, header_columns, filename):
     """Transform a parsed row into a row to be saved in the DB."""
     columns = ["id", "date", "details", "amount"]
-
-    header_columns = CSV_TYPES[csv_type].columns
     date = x[header_columns["date"]]
     details = x[header_columns["details"]]
     if isinstance(details, pd.Series):
@@ -38,9 +35,8 @@ def get_transformed_row(x, csv_type, filename):
     return pd.Series([sha, date, details, amount], index=columns)
 
 
-def parse_data(path, csv_type):
+def parse_data(path, source_cls):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
-    source_cls = CSV_TYPES[csv_type]
     date_column = source_cls.columns["date"]
     data = pd.read_csv(
         path,
@@ -52,7 +48,8 @@ def parse_data(path, csv_type):
         date_format={date_column: source_cls.date_format},
     ).sort_values(by=[date_column], ignore_index=True)
     filename = Path(path).name
-    data = data.apply(get_transformed_row, axis=1, csv_type=csv_type, filename=filename)
+    columns = source_cls.columns
+    data = data.apply(get_transformed_row, axis=1, header_columns=columns, filename=filename)
 
     engine = get_db_engine()
     data["id"].to_sql("new_id", engine, if_exists="append", index=False)
@@ -70,7 +67,7 @@ def parse_data(path, csv_type):
     # Select only IDs not already in the DB.
     data = data[data["id"].isin(new_ids)]
     if not data.empty:
-        data["source"] = csv_type
+        data["source"] = source_cls.name
         expenses = [Expense(**d) for d in data.to_dict("records")]
         parse_details_for_expenses(expenses)
         session = get_sqlalchemy_session()
