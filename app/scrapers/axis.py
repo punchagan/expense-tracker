@@ -226,8 +226,8 @@ def download_cc_statement(sb, start_date, end_date):
 
             # Select the download format
             sb.click_nth_visible_element("div.MuiOutlinedInput-input", 3)
-            sb.click(f"li[data-value='xlsx']")
-            sb.click(f".downloadStatement__button-container button")
+            sb.click("li[data-value='xlsx']")
+            sb.click(".downloadStatement__button-container button")
             time.sleep(5)
 
             # Save the downloaded file with the correct name
