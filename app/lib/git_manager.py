@@ -32,6 +32,9 @@ class GitManager:
         git.Repo.clone_from(clone_url, repo_path)
         return cls(repo_path)
 
+    def find_files(self, prefix, suffix):
+        return sorted(self.repo_path.glob(f"**/{prefix}-*.{suffix}"))
+
     def find_latest_file(self, prefix):
         files = self.repo_path.glob(f"**/{prefix}-*")
         # The files have a format of prefix-YYYY-MM

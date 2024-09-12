@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from sqlalchemy.util import classproperty
 
+from app.lib.git_manager import GitManager
+
 
 @dataclass
 class Transaction:
@@ -27,3 +29,8 @@ class Source:
     @classproperty
     def prefix(cls):
         return f"{cls.name}-statement"
+
+    @classmethod
+    def find_files(cls, suffix="csv"):
+        git_manager = GitManager()
+        return git_manager.find_files(cls.prefix, suffix=suffix)
