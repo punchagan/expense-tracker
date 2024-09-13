@@ -26,24 +26,20 @@ if __name__ == "__main__":
     # Ensure DB has the latest structure
     alembic_main(["upgrade", "head"])
 
+    scrapers = [AxisStatement, AxisCCStatement, CashStatement]
+
     # Download AC data
-    AxisStatement.fetch_data()
-    AxisCCStatement.fetch_data()
-    CashStatement.fetch_data()
+    for scraper in scrapers:
+        scraper.fetch_data()
 
     # Ensure tags and categories are created
     ensure_categories_created()
     ensure_tags_created()
 
     # Parse the data
-    for path in AxisStatement.find_files():
-        parse_data(path, AxisStatement)
-
-    for path in AxisCCStatement.find_files():
-        parse_data(path, AxisCCStatement)
-
-    for path in CashStatement.find_files():
-        parse_data(path, CashStatement)
+    for scraper in scrapers:
+        for path in scraper.find_files():
+            parse_data(path, scraper)
 
     args = parser.parse_args()
     if args.serve:
