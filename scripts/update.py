@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from alembic.config import main as alembic_main
 
 from app.parse_util import parse_data
-from app.scrapers import CSV_TYPES
+from app.scrapers import ALL_SCRAPERS
 from app.db_util import ensure_categories_created, ensure_tags_created
 
 
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     # Download AC data
     for scraper_name in SCRAPERS:
-        scraper = CSV_TYPES[scraper_name]
+        scraper = ALL_SCRAPERS[scraper_name]
         scraper.fetch_data()
 
     # Ensure tags and categories are created

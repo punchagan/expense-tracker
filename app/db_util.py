@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
 from app.lib.git_manager import GitManager, get_repo_path
 from app.model import Category
-from app.scrapers import CSV_TYPES
+from app.scrapers import ALL_SCRAPERS
 
 ROOT = Path(__file__).parent.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
@@ -97,7 +97,7 @@ def parse_details_for_expenses(expenses, n_debug=0):
     counterparty_lookup = counterparty_names_lookup()
     examples = []
     for i, expense in enumerate(expenses):
-        source_cls = CSV_TYPES[expense.source]
+        source_cls = ALL_SCRAPERS[expense.source]
 
         # Parse details of an expense into a transaction object
         transaction = source_cls.parse_details(expense, country, cities)
