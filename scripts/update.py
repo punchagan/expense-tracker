@@ -10,29 +10,38 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # 3rd-party
 from alembic.config import main as alembic_main
 
+# Local
 from app.parse_util import parse_data
 from app.scrapers import ALL_SCRAPERS
 from app.db_util import ensure_categories_created, ensure_tags_created
 
 
 if __name__ == "__main__":
-
     import argparse
 
     parser = argparse.ArgumentParser()
-    # Add flag to start streamlit server
     parser.add_argument("--serve", action="store_true", help="Start streamlit server")
+    parser.add_argument(
+        "--scrapers",
+        nargs="*",
+        choices=ALL_SCRAPERS.keys(),
+        help="Specify one or more scrapers to use",
+    )
+    args = parser.parse_args()
 
     # Ensure DB has the latest structure
     alembic_main(["upgrade", "head"])
 
-    try:
-        from conf import SCRAPERS
-    except ImportError:
-        parser.error("Please define scrapers in conf.py")
+    if not args.scrapers:
+        try:
+            from conf import SCRAPERS as scrapers_to_use
+        except ImportError:
+            parser.error("Please define scrapers in conf.py or use --scrapers to specify them.")
+    else:
+        scrapers_to_use = sorted(set(args.scrapers))
 
-    # Download AC data
-    for scraper_name in SCRAPERS:
+    # Fetch data
+    for scraper_name in scrapers_to_use:
         scraper = ALL_SCRAPERS[scraper_name]
         scraper.fetch_data()
 
@@ -41,11 +50,11 @@ if __name__ == "__main__":
     ensure_tags_created()
 
     # Parse the data
-    for scraper in SCRAPERS:
+    for scraper_name in scrapers_to_use:
+        scraper = ALL_SCRAPERS[scraper_name]
         for path in scraper.find_files():
             parse_data(path, scraper)
 
-    args = parser.parse_args()
     if args.serve:
         from streamlit.web.cli import main_run
 
