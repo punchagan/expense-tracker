@@ -27,6 +27,8 @@ if __name__ == "__main__":
         choices=ALL_SCRAPERS.keys(),
         help="Specify one or more scrapers to use",
     )
+    parser.add_argument("--no-fetch", action="store_true", help="Skip fetching data")
+    parser.add_argument("--no-parse", action="store_true", help="Skip parsing data")
     args = parser.parse_args()
 
     # Ensure DB has the latest structure
@@ -40,20 +42,22 @@ if __name__ == "__main__":
     else:
         scrapers_to_use = sorted(set(args.scrapers))
 
-    # Fetch data
-    for scraper_name in scrapers_to_use:
-        scraper = ALL_SCRAPERS[scraper_name]
-        scraper.fetch_data()
+    # Fetch data if not skipped
+    if not args.no_fetch:
+        for scraper_name in scrapers_to_use:
+            scraper = ALL_SCRAPERS[scraper_name]
+            scraper.fetch_data()
 
     # Ensure tags and categories are created
     ensure_categories_created()
     ensure_tags_created()
 
-    # Parse the data
-    for scraper_name in scrapers_to_use:
-        scraper = ALL_SCRAPERS[scraper_name]
-        for path in scraper.find_files():
-            parse_data(path, scraper)
+    # Parse data if not skipped
+    if not args.no_parse:
+        for scraper_name in scrapers_to_use:
+            scraper = ALL_SCRAPERS[scraper_name]
+            for path in scraper.find_files():
+                parse_data(path, scraper)
 
     if args.serve:
         from streamlit.web.cli import main_run
