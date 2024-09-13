@@ -37,6 +37,7 @@ def get_transformed_row(x, header_columns, filename):
 
 def parse_data(path, source_cls):
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
+    print(f"Parsing {path} using '{source_cls.name}' scraper...")
     date_column = source_cls.columns["date"]
     data = pd.read_csv(
         path,
