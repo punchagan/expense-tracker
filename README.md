@@ -8,6 +8,8 @@ bank/credit-card statements and dump them into a local SQLite DB.  There's a
 simple UI that interacts with this local DB that lets the user explore and
 analyse their spending patterns.
 
+:warning: **NOTE: This is alpha software. Use at your own risk!**
+
 ## Screenshots
 
 ![Latest Screenshot](/screenshots/latest.png "Latest Screenshot using Sample data")
