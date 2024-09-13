@@ -1,3 +1,12 @@
+# Specify the scrapers to be used
+SCRAPERS = [
+    "axis",
+    "axis-cc",
+    "cash",
+    "sbi",
+]
+
+
 # List of additional user defined categories
 EXTRA_CATEGORIES = [
     # Food & Dining

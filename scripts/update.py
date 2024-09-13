@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from alembic.config import main as alembic_main
 
 from app.parse_util import parse_data
-from app.scrapers import AxisStatement, AxisCCStatement, CashStatement
+from app.scrapers import CSV_TYPES
 from app.db_util import ensure_categories_created, ensure_tags_created
 
 
@@ -26,10 +26,14 @@ if __name__ == "__main__":
     # Ensure DB has the latest structure
     alembic_main(["upgrade", "head"])
 
-    scrapers = [AxisStatement, AxisCCStatement, CashStatement]
+    try:
+        from conf import SCRAPERS
+    except ImportError:
+        parser.error("Please define scrapers in conf.py")
 
     # Download AC data
-    for scraper in scrapers:
+    for scraper_name in SCRAPERS:
+        scraper = CSV_TYPES[scraper_name]
         scraper.fetch_data()
 
     # Ensure tags and categories are created
@@ -37,7 +41,7 @@ if __name__ == "__main__":
     ensure_tags_created()
 
     # Parse the data
-    for scraper in scrapers:
+    for scraper in SCRAPERS:
         for path in scraper.find_files():
             parse_data(path, scraper)
 
