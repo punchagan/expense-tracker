@@ -35,9 +35,9 @@ DATA_COLUMNS = [
     "date",
     "amount",
     "counterparty_name",
+    "remarks",
     "category_id",
     "tags",
-    "remarks",
     # FIXME: Add parent column?!
     "ignore",
 ]
