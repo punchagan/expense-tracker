@@ -21,11 +21,6 @@ def test_capture_screenshot(sb):
     path = screenshot_dir.joinpath("latest.png")
     sb.save_screenshot(str(path))
 
-    sb.click(".streamlit-expander .row-widget button")
-    time.sleep(2)
-    path = screenshot_dir.joinpath("info.png")
-    sb.save_screenshot(str(path))
-
 
 def set_env_vars(env, script_path):
     """Set env vars from run-sample.sh in our subprocess environment variables."""
