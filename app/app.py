@@ -18,7 +18,14 @@ from sqlalchemy.orm import sessionmaker
 
 # Local
 from app.components.git_status import show_git_status
-from app.db_util import DB_PATH, get_db_engine, sync_db_with_data_repo
+from app.db_util import (
+    DB_PATH,
+    get_db_engine,
+    sync_db_with_data_repo,
+    update_similar_counterparty_categories,
+    update_similar_counterparty_names,
+    set_tags_value,
+)
 from app.model import Category, Expense, Tag
 from app.util import daterange_from_year_month, delta_percent, format_month, previous_month
 
@@ -143,49 +150,6 @@ def mark_expenses_as_reviewed(expense_ids):
     st.rerun()
 
 
-def update_similar_counterparty_names(session, expense, name):
-    expenses = session.query(Expense).filter(
-        Expense.counterparty_name_p == expense.counterparty_name_p,
-        Expense.counterparty_name == expense.counterparty_name,
-        Expense.source == expense.source,
-    )
-    expenses.update({"counterparty_name": name}, synchronize_session=False)
-
-
-def update_similar_counterparty_categories(session, expense, category_name):
-    name = expense.counterparty_name
-    expenses = session.query(Expense).where(
-        or_(
-            Expense.counterparty_name == name,
-            Expense.parent == expense.id,
-            Expense.id == expense.parent,
-        )
-    )
-    categories = get_categories()
-    name_map = {cat.name: cat.id for cat in categories.values()}
-    category_id = name_map[category_name] if category_name is not None else None
-    expenses.update({"category_id": category_id}, synchronize_session=False)
-
-
-def set_tags_value(session, expense, tag):
-    old_tags = {tag.id: tag for tag in expense.tags}
-    old_ids = set(old_tags)
-
-    all_tags = get_tags()
-    names_map = {tag.name: tag.id for tag in all_tags.values()}
-    tag_id = names_map[tag] if tag else None
-    new_ids = set([tag_id]) if tag else set()
-
-    removed = old_ids - new_ids
-    for old_id, tag in old_tags.items():
-        if old_id in removed:
-            expense.tags.remove(tag)
-
-    added = new_ids - old_ids
-    for tag_id in added:
-        expense.tags.append(all_tags[tag_id])
-
-
 def format_category(category_id, categories):
     if category_id == NO_CATEGORY:
         return "Uncategorized"
@@ -217,9 +181,11 @@ def write_changes_to_db(df):
                 name = value.strip("*")
                 update_similar_counterparty_names(session, expense, name)
             elif key == "category_id":
-                update_similar_counterparty_categories(session, expense, value)
+                categories = get_categories()
+                update_similar_counterparty_categories(session, expense, value, categories)
             elif key == "tags":
-                set_tags_value(session, expense, value)
+                tags = get_tags()
+                set_tags_value(session, expense, value, tags)
             else:
                 setattr(expense, key, value)
 

@@ -5,12 +5,12 @@ from dataclasses import fields
 from pathlib import Path
 import tempfile
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, or_
 from sqlalchemy.orm import sessionmaker
 
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
 from app.lib.git_manager import GitManager, get_repo_path
-from app.model import Category
+from app.model import Category, Expense
 from app.scrapers import ALL_SCRAPERS
 
 ROOT = Path(__file__).parent.parent
@@ -126,6 +126,47 @@ def parse_details_for_expenses(expenses, n_debug=0):
     for expense in examples:
         print(expense)
         print("#" * 40)
+
+
+def update_similar_counterparty_names(session, expense, name):
+    expenses = session.query(Expense).filter(
+        Expense.counterparty_name_p == expense.counterparty_name_p,
+        Expense.counterparty_name == expense.counterparty_name,
+        Expense.source == expense.source,
+    )
+    expenses.update({"counterparty_name": name}, synchronize_session=False)
+
+
+def update_similar_counterparty_categories(session, expense, category_name, all_categories):
+    name = expense.counterparty_name
+    expenses = session.query(Expense).where(
+        or_(
+            Expense.counterparty_name == name,
+            Expense.parent == expense.id,
+            Expense.id == expense.parent,
+        )
+    )
+    name_map = {cat.name: cat.id for cat in all_categories.values()}
+    category_id = name_map[category_name] if category_name is not None else None
+    expenses.update({"category_id": category_id}, synchronize_session=False)
+
+
+def set_tags_value(session, expense, tag, all_tags):
+    old_tags = {tag.id: tag for tag in expense.tags}
+    old_ids = set(old_tags)
+
+    names_map = {tag.name: tag.id for tag in all_tags.values()}
+    tag_id = names_map[tag] if tag else None
+    new_ids = set([tag_id]) if tag else set()
+
+    removed = old_ids - new_ids
+    for old_id, tag in old_tags.items():
+        if old_id in removed:
+            expense.tags.remove(tag)
+
+    added = new_ids - old_ids
+    for tag_id in added:
+        expense.tags.append(all_tags[tag_id])
 
 
 def dump_db_to_csv(path):
