@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from collections import Counter
 from dataclasses import fields
 from pathlib import Path
@@ -50,7 +51,10 @@ def ensure_tags_created():
     session = get_sqlalchemy_session()
     git_manager = GitManager()
     try:
-        git_manager.symlink_to_repo_file("conf.py", ROOT / "conf.py")
+        path = str(git_manager.repo_path)
+        if path not in sys.path:
+            sys.path.insert(1, path)
+
         from conf import TAGS as tags
     except ImportError:
         tags = []
@@ -60,7 +64,10 @@ def ensure_tags_created():
 def get_config_categories():
     git_manager = GitManager()
     try:
-        git_manager.symlink_to_repo_file("conf.py", ROOT / "conf.py")
+        path = str(git_manager.repo_path)
+        if path not in sys.path:
+            sys.path.insert(1, path)
+
         from conf import EXTRA_CATEGORIES
 
         categories = CATEGORIES + EXTRA_CATEGORIES
