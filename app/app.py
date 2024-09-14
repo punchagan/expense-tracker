@@ -22,6 +22,9 @@ from app.db_util import DB_PATH, get_db_engine, sync_db_with_data_repo
 from app.model import Category, Expense, Tag
 from app.util import daterange_from_year_month, delta_percent, format_month, previous_month
 
+# Enable Pandas copy-on-write
+pd.options.mode.copy_on_write = True
+
 DATE_FMT = "%d %b '%y"
 WEEKDAYS = [datetime.date(2001, 1, i).strftime("%A") for i in range(1, 8)]
 HERE = Path(__file__).parent
@@ -35,7 +38,7 @@ DATA_COLUMNS = [
     "category_id",
     "tags",
     "remarks",
-    "details",
+    # FIXME: Add parent column?!
     "ignore",
 ]
 CURRENCY_SYMBOL = "₹"
@@ -130,17 +133,6 @@ def get_months():
     return [(0, 13)] + months
 
 
-def set_column_value(row, column_name, value):
-    session = get_sqlalchemy_session()
-    row[column_name] = value
-    id_ = row["id"]
-    expense = session.query(Expense).get({"id": id_})
-    setattr(expense, column_name, value)
-    expense.reviewed = True
-    session.commit()
-    st.rerun()
-
-
 def mark_expenses_as_reviewed(expense_ids):
     session = get_sqlalchemy_session()
     expenses = session.query(Expense)
@@ -151,56 +143,38 @@ def mark_expenses_as_reviewed(expense_ids):
     st.rerun()
 
 
-def update_similar_counterparty_names(row, name, old_name):
-    bulk_update = name.endswith("**")
-    name = name.strip("*")
-    name_p = row["counterparty_name_p"]
-    source = row["source"]
-    session = get_sqlalchemy_session()
-    if bulk_update:
-        expenses = session.query(Expense).filter(
-            Expense.counterparty_name_p == name_p,
-            Expense.counterparty_name == old_name,
-            Expense.source == source,
-        )
-        expenses.update({"counterparty_name": name}, synchronize_session=False)
-    else:
-        expense = session.query(Expense).get({"id": row["id"]})
-        expense.counterparty_name = name
-        expense.reviewed = True
-    session.commit()
-    st.rerun()
+def update_similar_counterparty_names(session, expense, name):
+    expenses = session.query(Expense).filter(
+        Expense.counterparty_name_p == expense.counterparty_name_p,
+        Expense.counterparty_name == expense.counterparty_name,
+        Expense.source == expense.source,
+    )
+    expenses.update({"counterparty_name": name}, synchronize_session=False)
 
 
-def update_similar_counterparty_categories(row, category_id):
-    name = row["counterparty_name"]
-    category_id = None if category_id == NO_CATEGORY else category_id
-    parent_id = row["parent"]
-    row_id = row["id"]
-    session = get_sqlalchemy_session()
+def update_similar_counterparty_categories(session, expense, category_name):
+    name = expense.counterparty_name
     expenses = session.query(Expense).where(
         or_(
             Expense.counterparty_name == name,
-            Expense.parent == row_id,
-            Expense.id == parent_id,
+            Expense.parent == expense.id,
+            Expense.id == expense.parent,
         )
     )
+    categories = get_categories()
+    name_map = {cat.name: cat.id for cat in categories.values()}
+    category_id = name_map[category_name] if category_name is not None else None
     expenses.update({"category_id": category_id}, synchronize_session=False)
-    expense = session.query(Expense).get({"id": row_id})
-    expense.reviewed = True
-    session.commit()
-    st.rerun()
 
 
-def set_tags_value(row, tags, all_tags):
-    session = get_sqlalchemy_session()
-    id_ = row["id"]
-    expense = session.query(Expense).get({"id": id_})
-    expense.reviewed = True
-
+def set_tags_value(session, expense, tag):
     old_tags = {tag.id: tag for tag in expense.tags}
     old_ids = set(old_tags)
-    new_ids = set(tags)
+
+    all_tags = get_tags()
+    names_map = {tag.name: tag.id for tag in all_tags.values()}
+    tag_id = names_map[tag] if tag else None
+    new_ids = set([tag_id]) if tag else set()
 
     removed = old_ids - new_ids
     for old_id, tag in old_tags.items():
@@ -210,9 +184,6 @@ def set_tags_value(row, tags, all_tags):
     added = new_ids - old_ids
     for tag_id in added:
         expense.tags.append(all_tags[tag_id])
-
-    session.commit()
-    st.rerun()
 
 
 def format_category(category_id, categories):
@@ -231,81 +202,35 @@ def format_tag(tag_id, tags):
     return tags[tag_id].name
 
 
-def display_transaction(row, cols, data_columns, categories, tags):
-    columns = st.columns(cols)
-    id = row["id"]
-    for idx, name in enumerate(data_columns):
-        value = row.get(name)
-        written = False
-        col = columns[idx]
-        if name == "ignore":
-            ignore_value = col.checkbox(
-                "Ignore?", value=value, key=f"ignore-{id}", label_visibility="hidden"
-            )
-            written = True
-            if ignore_value != value:
-                set_column_value(row, "ignore", ignore_value)
-        elif name == "category_id":
-            options = [NO_CATEGORY] + sorted(categories)
-            category_id = col.selectbox(
-                label="Category",
-                options=options,
-                index=options.index(value),
-                key=f"category-{id}",
-                label_visibility="collapsed",
-                format_func=lambda x: format_category(x, categories),
-            )
-            if category_id != value:
-                update_similar_counterparty_categories(row, category_id)
-            written = True
-        elif name == "tags":
-            options = sorted(tags)
-            selected = col.multiselect(
-                label="Tags",
-                options=options,
-                default=value,
-                key=f"tag-{id}",
-                label_visibility="collapsed",
-                format_func=lambda x: format_tag(x, tags),
-            )
-            if sorted(selected) != sorted(value):
-                set_tags_value(row, selected, all_tags=tags)
-            written = True
-        elif name == "details":
-            written = True
-            type_ = "primary" if not row["reviewed"] else "secondary"
-            show_details = col.button("Details", key=f"details-{id}", type=type_)
-            if show_details:
-                st.session_state.transaction_id = row["id"]
-                st.rerun()
-        elif name in {"remarks", "counterparty_name"}:
-            written = True
-            new_value = col.text_input(
-                name.replace("_", " ").title(),
-                value=value,
-                label_visibility="collapsed",
-                key=f"{name}-{id}",
-            )
-            if new_value != value:
-                if name == "counterparty_name":
-                    update_similar_counterparty_names(row, new_value, value)
-                else:
-                    set_column_value(row, name, new_value)
-        elif name == "date":
-            value = f"{value.strftime(DATE_FMT)}"
-            if row["parent"]:
-                value = f"*{value}*"
-        elif name == "amount":
-            value = f"{value:.2f}"
-            if row["parent"]:
-                value = f"*{value}*"
+def write_changes_to_db(df):
+    # Find the changes
+    changes = st.session_state["expenses_data"]["edited_rows"]
 
-        if not written:
-            col.write(value)
+    for idx, change in changes.items():
+        row = df.loc[idx]
+        # Fetch the expense from the DB
+        session = get_sqlalchemy_session()
+        expense = session.get(Expense, {"id": row["id"]})
 
-    return show_details
+        for key, value in change.items():
+            if key == "counterparty_name" and value.endswith("**"):
+                name = value.strip("*")
+                update_similar_counterparty_names(session, expense, name)
+            elif key == "category_id":
+                update_similar_counterparty_categories(session, expense, value)
+            elif key == "tags":
+                set_tags_value(session, expense, value)
+            else:
+                setattr(expense, key, value)
+
+        if change:
+            expense.reviewed = True
+
+    if changes:
+        session.commit()
 
 
+@st.fragment
 def display_summary_stats(data, prev_data):
     col1, col2 = st.columns(2)
     data_clean = remove_ignored_rows(data)
@@ -337,7 +262,6 @@ def display_transactions(data, categories, tags):
 
     with st.expander(f"Total {n} transactions", expanded=True):
         cols = [1, 1, 3, 2, 3, 3, 1, 1]
-        data_columns = DATA_COLUMNS
         knob1, knob2, knob3 = st.columns([2, 2, 1])
         sort_column = knob1.radio(
             label="Sort Transactions by ...",
@@ -361,9 +285,6 @@ def display_transactions(data, categories, tags):
         """.strip()
         )
 
-        headers = st.columns(cols)
-        for idx, name in enumerate(data_columns):
-            headers[idx].write(format_column_name(name))
         df = data_clean if hide_ignored_transactions else data
         df = df if not show_only_unreviewed else df[df.reviewed == False]
         sort_orders = {"ignore": True}
@@ -397,13 +318,41 @@ def display_transactions(data, categories, tags):
         child_df.index = child_df.apply(lambda row: ids.index(row["parent"]) + 0.1, axis=1)
         if not child_df.empty:
             page_df = pd.concat([page_df, child_df])
-        page_df.sort_index().reset_index(drop=True).apply(
-            display_transaction,
-            axis=1,
-            cols=cols,
-            data_columns=data_columns,
-            categories=categories,
-            tags=tags,
+
+        # Transform the data for display
+        page_df["category_id"] = page_df["category_id"].apply(
+            lambda x: format_category(x, categories)
+        )
+        # FIXME: Just use the first tag until we switch to ListColumn
+        all_tags = get_tags()
+        page_df["tags"] = page_df["tags"].apply(lambda tags: all_tags[tags[0]].name if tags else "")
+
+        edited_df = st.data_editor(
+            page_df,
+            column_config={
+                "date": st.column_config.DateColumn("Date", format="DD MMM 'YY"),
+                "category_id": st.column_config.SelectboxColumn(
+                    "Category",
+                    help="The category of the transaction",
+                    options=[cat.name for cat in categories.values()],
+                    required=False,
+                ),
+                # FIXME: use ListColumn when it becomes editable
+                # See https://github.com/streamlit/streamlit/pull/9223
+                "tags": st.column_config.SelectboxColumn(
+                    "Tags",
+                    help="The tags of the transaction. (Note: Currently, only one tag is supported)",
+                    options=[tag.name for tag in tags.values()],
+                    required=False,
+                ),
+            },
+            key="expenses_data",
+            on_change=write_changes_to_db,
+            args=(page_df,),
+            use_container_width=True,
+            column_order=DATA_COLUMNS,
+            disabled=["date", "amount"],
+            hide_index=True,
         )
 
         _, r3, r2, r1 = st.columns([3, 1, 1, 1])
@@ -572,53 +521,6 @@ def format_row(row):
     return f"{row['date']} — {row['amount']} — {row['details']}"
 
 
-def show_transaction_info(row_id, data, categories, tags):
-    row = data[data["id"] == row_id].reset_index(drop=True).squeeze()
-    col1, col2 = st.columns(2)
-    additional_columns = [
-        "transaction_type",
-        "transaction_id",
-        "source",
-        "counterparty_bank",
-        "parent",
-    ]
-    for key in DATA_COLUMNS + additional_columns:
-        value = row[key]
-        if key == "category_id":
-            value = format_category(value, categories)
-        elif key == "tags":
-            value = ", ".join([format_tag(t, tags) for t in value])
-        value = "--" if value == "" else value
-        col1.write(format_column_name(key))
-        if key == "parent":
-            old_parent_id = row["parent"]
-            df = data[data["amount"] >= np.abs(row["amount"])].reset_index(drop=True)
-            options = [{"id": ""}] + df.to_dict(orient="records")
-            index = int(df[df["id"] == old_parent_id].index[0]) + 1 if old_parent_id else 0
-            parent = col2.selectbox(
-                "Select Parent",
-                options=options,
-                index=index,
-                label_visibility="collapsed",
-                format_func=format_row,
-            )
-            if old_parent_id != parent["id"]:
-                set_column_value(row, "parent", parent["id"])
-        elif key == "amount":
-            amount = col2.number_input("Amount", value=value, label_visibility="collapsed")
-        else:
-            col2.write(value)
-    hide_details = col2.button("Close", key=f"details-{id}", type="primary")
-    if hide_details:
-        session = get_sqlalchemy_session()
-        expense = session.query(Expense).get({"id": row_id})
-        expense.reviewed = True
-        expense.amount = amount
-        session.commit()
-        st.session_state.transaction_id = None
-        st.rerun()
-
-
 def local_css(file_name):
     with open(HERE.joinpath(file_name)) as f:
         st.markdown("<style>{}</style>".format(f.read()), unsafe_allow_html=True)
@@ -654,17 +556,12 @@ def main():
 
     categories = get_categories()
     tags = get_tags()
-    row_id = st.session_state.get("transaction_id")
-    display_info = bool(row_id)
-    start_date, end_date, category = display_sidebar(title, categories, display_info)
+    start_date, end_date, category = display_sidebar(title, categories, disabled=False)
     data = load_data(start_date, end_date, category, db_last_modified)
-    if display_info:
-        show_transaction_info(row_id, data, categories, tags)
-        return
 
     prev_start, prev_end = previous_month(start_date)
     prev_data = load_data(prev_start, prev_end, category, db_last_modified)
-    counterparty, selected_tags, (low, high) = display_extra_filters(data, tags, display_info)
+    counterparty, selected_tags, (low, high) = display_extra_filters(data, tags, disabled=False)
 
     if counterparty != "All":
         data = data[data["counterparty_name"] == counterparty]
