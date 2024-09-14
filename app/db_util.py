@@ -151,7 +151,7 @@ def update_similar_counterparty_categories(session, expense, category_name, all_
     expenses.update({"category_id": category_id}, synchronize_session=False)
 
 
-def set_tags_value(session, expense, tag, all_tags):
+def set_tags_value(expense, tag, all_tags):
     old_tags = {tag.id: tag for tag in expense.tags}
     old_ids = set(old_tags)
 

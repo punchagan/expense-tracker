@@ -13,7 +13,7 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
-from sqlalchemy import bindparam, or_, text
+from sqlalchemy import bindparam, text
 from sqlalchemy.orm import sessionmaker
 
 # Local
@@ -185,7 +185,7 @@ def write_changes_to_db(df):
                 update_similar_counterparty_categories(session, expense, value, categories)
             elif key == "tags":
                 tags = get_tags()
-                set_tags_value(session, expense, value, tags)
+                set_tags_value(expense, value, tags)
             else:
                 setattr(expense, key, value)
 
@@ -293,7 +293,7 @@ def display_transactions(data, categories, tags):
         all_tags = get_tags()
         page_df["tags"] = page_df["tags"].apply(lambda tags: all_tags[tags[0]].name if tags else "")
 
-        edited_df = st.data_editor(
+        st.data_editor(
             page_df,
             column_config={
                 "date": st.column_config.DateColumn("Date", format="DD MMM 'YY"),
