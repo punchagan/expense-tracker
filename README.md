@@ -14,8 +14,6 @@ analyse their spending patterns.
 
 ![Latest Screenshot](/screenshots/latest.png "Latest Screenshot using Sample data")
 
-![Info Screenshot](/screenshots/info.png "Info Screenshot using Sample data")
-
 ## Why build one yourself?
 
 We use a lot of Internet Banking these days, but I still don't feel comfortable
