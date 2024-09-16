@@ -40,13 +40,13 @@ def setup_repo(repo_path):
 
 
 def show_git_status():
-    repo_path = get_repo_path()
     try:
-        git_manager = GitManager(repo_path)
-        st.toast(f"Using data repository at {repo_path}")
+        git_manager = GitManager()
+        st.toast(f"Using data repository at {git_manager.repo_path}")
 
     except (FileNotFoundError, ValueError):
         with st.expander("Data git repository not found!", expanded=True, icon="⚠"):
+            repo_path = get_repo_path()
             git_manager = setup_repo(repo_path)
 
     return git_manager
