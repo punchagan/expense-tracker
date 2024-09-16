@@ -550,9 +550,6 @@ def main():
         },
     )
 
-    # Enable Streamlit theme for Altair
-    # alt.themes.enable("streamlit")      # FIXME: 0.15.0/1 broke Streamlit theme support
-
     show_git_status()
 
     # Sync DB with dump in git DATA repo
