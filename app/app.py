@@ -40,8 +40,8 @@ ALL_TAG = ALL_CATEGORY = 0
 NO_TAG = NO_CATEGORY = -1
 DATA_COLUMNS = [
     "date",
-    "amount",
     "counterparty_name",
+    "amount",
     "remarks",
     "category_id",
     "tags",
