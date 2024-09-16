@@ -228,12 +228,14 @@ def format_column_name(name):
 
 def display_transactions(data, categories, tags):
     data_clean = remove_ignored_rows(data)
+    m = len(data[data.category_id == NO_CATEGORY])
+
     n = len(data)
     nc = len(data_clean)
     page_size = 20
     paginate = len(data_clean) > 2 * page_size
 
-    with st.expander(f"Total {n} transactions", expanded=True):
+    with st.expander(f"Total {n} transactions ({m} uncategorized)", expanded=True):
         knob1, knob2, knob3 = st.columns([2, 2, 1])
         sort_column = knob1.radio(
             label="Sort Transactions by ...",
