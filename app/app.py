@@ -171,7 +171,7 @@ def write_changes_to_db(df):
     changes = st.session_state["expenses_data"]["edited_rows"]
 
     for idx, change in changes.items():
-        row = df.loc[idx]
+        row = df.iloc[idx]
         # Fetch the expense from the DB
         session = get_sqlalchemy_session()
         expense = session.get(Expense, {"id": row["id"]})
