@@ -34,6 +34,10 @@ if __name__ == "__main__":
     # Ensure DB has the latest structure
     alembic_main(["upgrade", "head"])
 
+    # Ensure tags and categories are created
+    ensure_categories_created()
+    ensure_tags_created()
+
     if not args.scrapers:
         try:
             from conf import SCRAPERS as scrapers_to_use
@@ -47,10 +51,6 @@ if __name__ == "__main__":
         for scraper_name in scrapers_to_use:
             scraper = ALL_SCRAPERS[scraper_name]
             scraper.fetch_data()
-
-    # Ensure tags and categories are created
-    ensure_categories_created()
-    ensure_tags_created()
 
     # Parse data if not skipped
     if not args.no_parse:
