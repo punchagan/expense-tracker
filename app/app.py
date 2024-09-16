@@ -550,7 +550,6 @@ def main():
         },
     )
 
-    local_css("style.css")
     # Enable Streamlit theme for Altair
     # alt.themes.enable("streamlit")      # FIXME: 0.15.0/1 broke Streamlit theme support
 

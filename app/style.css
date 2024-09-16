@@ -1,9 +1,0 @@
-.streamlit-expander div[data-testid="stHorizontalBlock"] {
-    padding: 0.5em;
-}
-
-.streamlit-expander div[data-testid="stHorizontalBlock"]:hover {
-    border: 1px dashed;
-    border-radius: 0.5em;
-    padding: 0.5em;
-}
