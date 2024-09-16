@@ -309,7 +309,22 @@ def display_transactions(data, categories, tags):
         st.data_editor(
             page_df,
             column_config={
-                "date": st.column_config.DateColumn("Date", format="DD MMM 'YY"),
+                "date": st.column_config.DateColumn(
+                    "Date", format="DD MMM 'YY", help="Date of the transaction."
+                ),
+                "counterparty_name": st.column_config.TextColumn(
+                    "Counterparty", help="The name of the counterparty"
+                ),
+                "amount": st.column_config.NumberColumn(
+                    "Amount", format="%.2f", help="The amount of the transaction"
+                ),
+                "remarks": st.column_config.TextColumn(
+                    "Details", help="Details of the transaction"
+                ),
+                "ignore": st.column_config.CheckboxColumn(
+                    "Ignore",
+                    help="Ignore this transaction in the summary stats and visualizations",
+                ),
                 "category_id": st.column_config.SelectboxColumn(
                     "Category",
                     help="The category of the transaction",
