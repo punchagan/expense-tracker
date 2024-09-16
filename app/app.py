@@ -45,7 +45,7 @@ DATA_COLUMNS = [
     "remarks",
     "category_id",
     "tags",
-    # FIXME: Add parent column?!
+    "parent",
     "ignore",
 ]
 CURRENCY_SYMBOL = "₹"
@@ -186,6 +186,13 @@ def write_changes_to_db(df):
             elif key == "tags":
                 tags = get_tags()
                 set_tags_value(expense, value, tags)
+            elif key == "parent":
+                parent_id = value
+                if value is not None:
+                    parent_id = value.split(":::")[-1]
+                    if not parent_id or parent_id == expense.id:
+                        parent_id = None
+                setattr(expense, key, parent_id)
             else:
                 setattr(expense, key, value)
 
@@ -292,7 +299,13 @@ def display_transactions(data, categories, tags):
         # FIXME: Just use the first tag until we switch to ListColumn
         all_tags = get_tags()
         page_df["tags"] = page_df["tags"].apply(lambda tags: all_tags[tags[0]].name if tags else "")
-
+        # Add the parent transaction details to the child transactions
+        session = get_sqlalchemy_session()
+        parents = session.query(Expense).filter(Expense.id.in_(page_df["parent"])).all()
+        parents_map = {exp.id: exp for exp in parents}
+        page_df["parent"] = page_df["parent"].apply(
+            lambda pid: format_row(parents_map[pid].__dict__) if pid else None
+        )
         st.data_editor(
             page_df,
             column_config={
@@ -301,6 +314,22 @@ def display_transactions(data, categories, tags):
                     "Category",
                     help="The category of the transaction",
                     options=[cat.name for cat in categories.values()],
+                    required=False,
+                ),
+                "parent": st.column_config.SelectboxColumn(
+                    "Parent",
+                    help=(
+                        "Choose a parent transaction for the current transaction."
+                        "\n\n Only the transactions that are part of the current view"
+                        "(year/month/category/amount range/etc.) are shown. "
+                        "**Change the filters if your required transaction is not visible.**"
+                    ),
+                    # NOTE: We use all the transactions of the current filtered
+                    # view as options, since the parent may not be in the
+                    # current page. Also, to keep the UI fast, we don't try to
+                    # any smart filtering of options to remove invalid ones
+                    # (like transaction can't be it's own parent, etc.)
+                    options=page_df.apply(format_row, axis=1),
                     required=False,
                 ),
                 # FIXME: use ListColumn when it becomes editable
@@ -482,9 +511,7 @@ def display_barcharts(data, categories, tags):
 
 
 def format_row(row):
-    if not row["id"]:
-        return "<No Parent>"
-    return f"{row['date']} — {row['amount']} — {row['details']}"
+    return f"{row['date']:%Y-%m-%d} — {row['amount']:.2f} — {row['details']}:::{row['id']}"
 
 
 def local_css(file_name):
