@@ -530,11 +530,6 @@ def format_row(row):
     return f"{row['date']:%Y-%m-%d} — {row['amount']:.2f} — {row['details']}:::{row['id']}"
 
 
-def local_css(file_name):
-    with open(HERE.joinpath(file_name)) as f:
-        st.markdown("<style>{}</style>".format(f.read()), unsafe_allow_html=True)
-
-
 def main():
     title = "Personal Expense Tracker"
 
