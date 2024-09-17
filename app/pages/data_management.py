@@ -20,6 +20,13 @@ def main():
     else:
         git_manager = GitManager()
         st.write(f"Using data repository at `{git_manager.repo_path}`")
+
+        if git_manager.is_dirty():
+            changes = git_manager.get_uncommitted_changes()
+            with st.expander("Repository changes ...", expanded=len(changes) <= 50):
+                md = f"```git\n{'\n'.join(changes)}\n```"
+                st.markdown(md)
+
         if st.button("View Dashboard"):
             st.switch_page("pages/dashboard.py")
 
