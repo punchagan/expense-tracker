@@ -547,7 +547,14 @@ def dashboard():
         st.switch_page("pages/data_management.py")
 
     if git_manager.is_dirty():
-        st.warning("You have uncommitted changes in your data repository.")
+        col1, col2 = st.columns([4, 1])
+        col1.warning("- You have uncommitted changes in your data repository.")
+        clicked = col2.button(
+            "Manage Repository",
+            use_container_width=True,
+        )
+        if clicked:
+            st.switch_page("pages/data_management.py")
 
     # Sync DB with dump in git DATA repo
     sync_db_with_data_repo()
