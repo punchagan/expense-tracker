@@ -542,8 +542,12 @@ def dashboard():
         },
     )
 
-    if not check_git_status():
+    git_manager = check_git_status()
+    if git_manager is None:
         st.switch_page("pages/data_management.py")
+
+    if git_manager.is_dirty():
+        st.warning("You have uncommitted changes in your data repository.")
 
     # Sync DB with dump in git DATA repo
     sync_db_with_data_repo()

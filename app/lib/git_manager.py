@@ -66,6 +66,14 @@ class GitManager:
         dst.symlink_to(src)
         return dst
 
+    def get_uncommitted_changes(self):
+        if not self.repo:
+            raise ValueError("Repository not initialized")
+        return self.repo.git.diff(self.repo.head, no_color=True).splitlines()
+
+    def is_dirty(self):
+        return bool(self.get_uncommitted_changes())
+
     def commit_changes(self, message):
         if not self.repo:
             raise ValueError("Repository not initialized")

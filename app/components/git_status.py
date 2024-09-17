@@ -41,11 +41,11 @@ def setup_repo(repo_path):
 
 def check_git_status():
     try:
-        GitManager()
+        git_manager = GitManager()
     except (FileNotFoundError, ValueError):
-        return False
+        return None
 
-    return True
+    return git_manager
 
 
 if __name__ == "__main__":
