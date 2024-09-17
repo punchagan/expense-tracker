@@ -14,7 +14,7 @@ from sqlalchemy import bindparam, text
 from sqlalchemy.orm import sessionmaker
 
 # Local
-from app.components.git_status import show_git_status
+from app.components.git_status import check_git_status
 from app.db_util import (
     DB_PATH,
     get_db_engine,
@@ -542,7 +542,8 @@ def dashboard():
         },
     )
 
-    show_git_status()
+    if not check_git_status():
+        st.switch_page("pages/data_management.py")
 
     # Sync DB with dump in git DATA repo
     sync_db_with_data_repo()

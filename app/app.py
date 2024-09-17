@@ -10,14 +10,21 @@ import streamlit as st
 
 
 def main():
+    icon = "📊"
+    title = "Personal Expense Tracker"
     nav = st.navigation(
         [
             st.Page(
                 "pages/dashboard.py",
                 default=True,
-                title="Dashboard",
-                icon="📊",
-            )
+                title=f"{title} — Dashboard",
+                icon=icon,
+            ),
+            st.Page(
+                "pages/data_management.py",
+                title=f"{title} — Data Management",
+                icon=icon,
+            ),
         ],
         position="hidden",
     )
