@@ -242,6 +242,7 @@ def display_transactions(data, categories, tags):
         )
         hide_ignored_transactions = knob1.checkbox(label="Hide Ignored Transactions")
         show_only_unreviewed = knob1.checkbox(label="Show Only Unreviewed")
+        show_only_uncategorized = knob1.checkbox(label="Show Only Uncategorized")
         show_all = not paginate or knob3.checkbox(label="Turn off pagination")
         if paginate:
             count = n if not hide_ignored_transactions else nc
@@ -258,6 +259,7 @@ def display_transactions(data, categories, tags):
 
         df = data_clean if hide_ignored_transactions else data
         df = df if not show_only_unreviewed else df[df.reviewed == False]
+        df = df if not show_only_uncategorized else df[df.category_id == NO_CATEGORY]
         sort_orders = {"ignore": True}
         if sort_column == "date":
             sort_by = ["ignore", "date", "amount", "details"]
