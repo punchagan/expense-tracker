@@ -363,7 +363,7 @@ def display_transactions(data, categories, tags):
             hide_index=True,
         )
 
-        _, r3, r2, r1 = st.columns([3, 1, 1, 1])
+        _, r4, r3, r2, r1 = st.columns([2, 1, 1, 1, 1])
         mark_page_reviewed = r1.button(
             "Mark Page Reviewed",
             key=f"mark-page-reviewed",
@@ -390,6 +390,15 @@ def display_transactions(data, categories, tags):
         )
         if mark_all_reviewed:
             mark_expenses_as_reviewed([])
+
+        gform_id = os.environ.get("GFORM_ID")
+        if gform_id:
+            url = f"https://docs.google.com/forms/d/{gform_id}/edit"
+            add_manual_transaction = r4.link_button(
+                "Add Manual Transaction",
+                url,
+                help="Open the form to add a manual transaction",
+            )
 
 
 def format_amount(amount):
