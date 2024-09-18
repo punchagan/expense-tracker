@@ -308,7 +308,7 @@ def display_transactions(data, categories, tags):
             page_df,
             column_config={
                 "date": st.column_config.DateColumn(
-                    "Date", format="DD MMM 'YY", help="Date of the transaction."
+                    "Date", format="DD MMM 'YY (ddd)", help="Date of the transaction."
                 ),
                 "counterparty_name": st.column_config.TextColumn(
                     "Counterparty", help="The name of the counterparty"
