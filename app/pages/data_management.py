@@ -31,6 +31,8 @@ def main():
         st.write(f"Using data repository at `{git_manager.repo_path}`")
 
         if git_manager.is_dirty():
+            status = git_manager.status()
+            st.markdown(f"```git\n{'\n'.join(status)}\n```")
             changes = git_manager.get_uncommitted_changes()
             with st.expander("Repository changes ...", expanded=len(changes) <= 50):
                 md = f"```git\n{'\n'.join(changes)}\n```"
