@@ -17,7 +17,10 @@ pyperclip = "^1.8.2"
 openpyxl = "^3.1.5"
 gitpython = "^3.1.43"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
+zulint = {git = "https://github.com/zulip/zulint.git"}
+ruff = "^0.6.7"
+mypy = "^1.11.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
