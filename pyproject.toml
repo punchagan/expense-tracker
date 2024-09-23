@@ -96,15 +96,12 @@ ignore = [
     "DTZ011", # `datetime.date.today()` used
 
     "PLR2004", # Magic value used in comparison
-    "N805", # First argument of a method should be named `self`
-    "N806", # Lowercase
     "B023", # Function definition does not bind loop variable `key`
     "B904", # raise-without-from-inside-except
     "C405", # unnecessary-literal-set
     "C408", # unnecessary-collection-call
     "EXE001", #shebang-not-executable
     "SIM117", #multiple-with-statements
-    "N811", # constant-imported-as-non-constant
     "W291", # trailing-whitespace
     "PLR1704", #defined-argument-from-local
 ]

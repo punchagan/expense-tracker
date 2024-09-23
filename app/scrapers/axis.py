@@ -109,8 +109,8 @@ def download_monthly_account_transactions(sb, name, year, month):
     sb.click("input#state_fromdate")
     ### Open year/month dropdown
     sb.click("div.mat-calendar-header span.mat-button-wrapper")
-    UI_FIRST_YEAR = 2001  # Assume years start from 2001
-    n_year = year - UI_FIRST_YEAR + 1
+    ui_first_year = 2001  # Assume years start from 2001
+    n_year = year - ui_first_year + 1
     ### Select year, month, date from the calendar dropdowns
     sb.click_nth_visible_element("div.mat-calendar-body-cell-content", n_year)
     sb.click_nth_visible_element("div.mat-calendar-body-cell-content", month)
@@ -129,8 +129,8 @@ def download_monthly_account_transactions(sb, name, year, month):
                 break
     ### Open year/month dropdown
     sb.click("div.mat-calendar-header span.mat-button-wrapper")
-    UI_FIRST_YEAR = 2001  # Assume years start from 2001
-    n_year = year - UI_FIRST_YEAR + 1
+    ui_first_year = 2001  # Assume years start from 2001
+    n_year = year - ui_first_year + 1
     ### Select year, month, date from the calendar dropdowns
     sb.click_nth_visible_element("div.mat-calendar-body-cell-content", n_year)
     sb.click_nth_visible_element("div.mat-calendar-body-cell-content", month)

@@ -50,8 +50,7 @@ CURRENCY_SYMBOL = "₹"
 @st.cache_resource
 def get_sqlalchemy_session():
     engine = get_db_engine()
-    Session = sessionmaker(bind=engine)
-    return Session()
+    return sessionmaker(bind=engine)()
 
 
 @st.cache_data

@@ -27,7 +27,7 @@ class Source:
         return Transaction()
 
     @classproperty
-    def prefix(cls):
+    def prefix(cls):  # noqa: N805
         return f"{cls.name}-statement"
 
     @classmethod

@@ -55,7 +55,9 @@ def ensure_tags_created():
         if path not in sys.path:
             sys.path.insert(1, path)
 
-        from conf import TAGS as tags
+        from conf import TAGS
+
+        tags = TAGS
     except ImportError:
         tags = []
     return create_tags(session, tags)
@@ -86,8 +88,7 @@ def get_db_engine():
 
 def get_sqlalchemy_session():
     engine = get_db_engine()
-    Session = sessionmaker(bind=engine)
-    return Session()
+    return sessionmaker(bind=engine)()
 
 
 def parse_details_for_expenses(expenses, n_debug=0):
