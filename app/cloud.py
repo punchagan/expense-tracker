@@ -7,11 +7,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SAMPLE))
 
 from alembic.config import main as alembic_main
-
 from app.app import main
 from app.db_util import DB_PATH, ensure_categories_created, ensure_tags_created
-from app.parse_util import parse_data
 from app.lib.git_manager import GitManager, get_repo_path
+from app.parse_util import parse_data
 
 
 def prepare_on_cloud():

@@ -71,7 +71,7 @@ if __name__ == "__main__":
     engine = get_db_engine()
     try:
         filters = json.loads(args.filters)
-    except ValueError as e:
+    except ValueError:
         print("Could not parse filters JSON")
         sys.exit(1)
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         with engine.connect() as conn:
             conn.execute(text("SELECT * FROM expense")).fetchone()
     except exc.OperationalError:
-        sys.exit(f"The DB has no old data!")
+        sys.exit("The DB has no old data!")
     parse_old_data(
         filters=filters,
         commit=args.commit,

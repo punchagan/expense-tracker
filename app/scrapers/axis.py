@@ -2,16 +2,16 @@ import csv
 import datetime
 import io
 import os
+import re
 import time
 from pathlib import Path
-import re
 
-from bs4 import BeautifulSoup
 import pandas as pd
+from bs4 import BeautifulSoup
 from seleniumbase import SB
 
-from app.util import extract_csv
 from app.lib.git_manager import GitManager
+from app.util import extract_csv
 
 from .base import Source, Transaction
 
@@ -279,7 +279,7 @@ class AxisStatement(Source):
         details = expense.details.replace("M/s", "M.s")
         axis_id = os.getenv("AXIS_CUSTOMID", "")
         if details.startswith("UPIRECONP2PM/"):
-            _, transaction_id, _ = [each.strip() for each in details.split("/", 2)]
+            _, transaction_id, _ = (each.strip() for each in details.split("/", 2))
             transaction = Transaction(
                 transaction_type="UPI",
                 counterparty_type="Merchant",
@@ -307,7 +307,7 @@ class AxisStatement(Source):
                 remarks=details,
             )
         elif details.startswith("UPI/CRADJ/"):
-            _, _, transaction_id, _ = [each.strip() for each in details.split("/", 3)]
+            _, _, transaction_id, _ = (each.strip() for each in details.split("/", 3))
             transaction = Transaction(
                 transaction_type="UPI",
                 transaction_id=transaction_id,
@@ -315,9 +315,9 @@ class AxisStatement(Source):
                 remarks=details,
             )
         elif details.startswith("UPI/"):
-            transaction_type, to_type, transaction_id, to_name, extra = [
+            transaction_type, to_type, transaction_id, to_name, extra = (
                 each.strip() for each in details.split("/", 4)
-            ]
+            )
             if "/" in extra:
                 to_bank, remarks = extra.split("/", 1)
             else:
@@ -339,15 +339,15 @@ class AxisStatement(Source):
             )
 
         elif details.startswith("IMPS/"):
-            transaction_type, to_type, transaction_id, to_name, extra = [
+            transaction_type, to_type, transaction_id, to_name, extra = (
                 each.strip() for each in details.split("/", 4)
-            ]
+            )
             # FIXME: if to_name is same as axis_id, then it is a credit
             if extra.count("/") == 0:
                 to_bank = ""
                 remarks = extra
             elif extra.count("/") == 1:
-                to_bank, remarks = [each.strip() for each in extra.split("/", 1)]
+                to_bank, remarks = (each.strip() for each in extra.split("/", 1))
                 if to_bank.startswith(("X", "0")):
                     to_bank, remarks = remarks, to_bank
             else:
@@ -371,10 +371,10 @@ class AxisStatement(Source):
                 remarks=remarks.strip("/").strip(),
             )
 
-        elif details.startswith(("NEFT/")):
-            transaction_type, to_type, transaction_id, to_name, extra = [
+        elif details.startswith("NEFT/"):
+            transaction_type, to_type, transaction_id, to_name, extra = (
                 each.strip() for each in details.split("/", 4)
-            ]
+            )
             if to_type not in {"P2M", "P2A", "MB"}:
                 transaction_id, to_name, to_type, to_bank = to_type, transaction_id, "MB", to_name
                 remarks = extra.rsplit("/", 1)[-1]
@@ -390,9 +390,9 @@ class AxisStatement(Source):
                 remarks=remarks.strip("/").strip(),
             )
         elif details.startswith("NBSM/"):
-            transaction_type, transaction_id, to_name, remarks = [
+            transaction_type, transaction_id, to_name, remarks = (
                 each.strip() for each in details.split("/", 3)
-            ]
+            )
             transaction = Transaction(
                 transaction_id=transaction_id,
                 transaction_type=transaction_type,
@@ -400,30 +400,30 @@ class AxisStatement(Source):
                 remarks=remarks.strip("/").strip(),
             )
         elif details.startswith("ECOM PUR/"):
-            transaction_type, to_name, _ = [each.strip() for each in details.split("/", 2)]
+            transaction_type, to_name, _ = (each.strip() for each in details.split("/", 2))
             transaction = Transaction(
                 transaction_type="ECOM",
                 counterparty_name=to_name.title(),
                 counterparty_type="Merchant",
             )
         elif details.startswith("POS/"):
-            transaction_type, to_name, transaction_id, _ = [
+            transaction_type, to_name, transaction_id, _ = (
                 each.strip() for each in details.split("/", 3)
-            ]
+            )
             transaction = Transaction(
                 transaction_type="POS",
                 counterparty_name=to_name.title(),
                 counterparty_type="Merchant",
             )
         elif details.startswith("ATM-CASH"):
-            _, remarks = [each.strip() for each in details.split("/", 1)]
+            _, remarks = (each.strip() for each in details.split("/", 1))
             transaction = Transaction(
                 transaction_type="ATM",
                 counterparty_name="ATM",
                 remarks=remarks,
             )
         elif details.startswith("BRN-CLG-CHQ"):
-            _, counterparty_name = [each.strip() for each in details.split("PAID TO", 1)]
+            _, counterparty_name = (each.strip() for each in details.split("PAID TO", 1))
             transaction = Transaction(transaction_type="CHQ", counterparty_name=counterparty_name)
         elif (
             re.search(

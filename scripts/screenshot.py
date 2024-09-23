@@ -40,8 +40,8 @@ def main(commit=False, use_existing_db=False):
     db_path = ROOT.joinpath(db_name)
     if db_path.exists() and not use_existing_db:
         db_path.unlink()
-    subprocess.check_call(["bash", sample_script, "--no-server"], env=env)
-    p = subprocess.Popen(
+    subprocess.check_call(["bash", sample_script, "--no-server"], env=env)  # noqa: S603
+    p = subprocess.Popen(  # noqa: S603
         [
             "streamlit",
             "run",
@@ -71,9 +71,11 @@ def main(commit=False, use_existing_db=False):
     p.kill()
 
     if commit:
-        subprocess.check_call(["git", "add", ROOT.joinpath("screenshots")])
+        subprocess.check_call(["git", "add", ROOT.joinpath("screenshots")])  # noqa: S603
         try:
-            subprocess.check_output(["git", "commit", "-m", "screenshot: Update screenshots"])
+            subprocess.check_output(  # noqa: S603
+                ["git", "commit", "-m", "screenshot: Update screenshots"]
+            )
         except subprocess.CalledProcessError as e:
             print(e.output.decode("utf8").strip().splitlines()[-1])
 

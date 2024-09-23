@@ -2,7 +2,6 @@
 import datetime
 import json
 import os
-import sys
 from pathlib import Path
 
 # 3rd party libs
@@ -18,10 +17,10 @@ from app.components.git_status import check_git_status
 from app.db_util import (
     DB_PATH,
     get_db_engine,
+    set_tags_value,
     sync_db_with_data_repo,
     update_similar_counterparty_categories,
     update_similar_counterparty_names,
-    set_tags_value,
 )
 from app.model import Category, Expense, Tag
 from app.util import daterange_from_year_month, delta_percent, format_month, previous_month
@@ -74,7 +73,7 @@ def load_data(start_date, end_date, category, db_last_modified):
         if category not in {NO_CATEGORY, ALL_CATEGORY}
         else ("AND e.category_id IS NULL" if category == NO_CATEGORY else "")
     )
-    base_sql = f"""
+    base_sql = """
     SELECT e.*, JSON_GROUP_ARRAY(et.tag_id) AS tags
     FROM expense e
     LEFT JOIN expense_tag et ON e.id = et.expense_id
@@ -129,7 +128,7 @@ def get_tags():
 @st.cache_data
 def get_months():
     engine = get_db_engine()
-    sql = f"SELECT date FROM expense"
+    sql = "SELECT date FROM expense"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"])
     months = set(data["date"].apply(lambda x: (x.year, x.month)))
     years = {(y, 13) for (y, _) in months}
@@ -258,7 +257,7 @@ def display_transactions(data, categories, tags):
         )
 
         df = data_clean if hide_ignored_transactions else data
-        df = df if not show_only_unreviewed else df[df.reviewed == False]
+        df = df if not show_only_unreviewed else df[df.reviewed is False]
         df = df if not show_only_uncategorized else df[df.category_id == NO_CATEGORY]
         sort_orders = {"ignore": True}
         if sort_column == "date":
@@ -368,7 +367,7 @@ def display_transactions(data, categories, tags):
         _, r4, r3, r2, r1 = st.columns([2, 1, 1, 1, 1])
         mark_page_reviewed = r1.button(
             "Mark Page Reviewed",
-            key=f"mark-page-reviewed",
+            key="mark-page-reviewed",
             help="Mark all transactions in the current page as reviewed",
             disabled=show_all,
         )
@@ -378,7 +377,7 @@ def display_transactions(data, categories, tags):
 
         mark_filter_reviewed = r2.button(
             "Mark Filtered Reviewed",
-            key=f"mark-filtered-reviewed",
+            key="mark-filtered-reviewed",
             help="Mark all transactions in the currently filtered view as reviewed",
         )
         if mark_filter_reviewed:
@@ -387,7 +386,7 @@ def display_transactions(data, categories, tags):
 
         mark_all_reviewed = r3.button(
             "Mark *All* Reviewed",
-            key=f"mark-all-reviewed",
+            key="mark-all-reviewed",
             help="Mark all transactions in the DB as reviewed",
         )
         if mark_all_reviewed:
@@ -396,7 +395,7 @@ def display_transactions(data, categories, tags):
         gform_id = os.environ.get("GFORM_ID")
         if gform_id:
             url = f"https://docs.google.com/forms/d/{gform_id}/edit"
-            add_manual_transaction = r4.link_button(
+            r4.link_button(
                 "Add Manual Transaction",
                 url,
                 help="Open the form to add a manual transaction",
@@ -418,13 +417,13 @@ def display_extra_filters(data, tags, disabled):
     options = (-np.inf, 0, 1000, 5000, 10000, 20000, np.inf)
     with st.sidebar:
         counterparty = st.selectbox(
-            "Counter Party", counterparties, disabled=disabled, key=f"cp-filter"
+            "Counter Party", counterparties, disabled=disabled, key="cp-filter"
         )
         selected_tags = st.multiselect(
             label="Tags",
             options=tag_ids,
             default=[],
-            key=f"tag-filter",
+            key="tag-filter",
             format_func=lambda x: format_tag(x, tags),
             disabled=disabled,
         )
@@ -588,7 +587,10 @@ def dashboard():
         prev_data = prev_data[prev_data["counterparty_name"] == counterparty]
 
     if selected_tags:
-        tag_filter = lambda x: bool(set(x).intersection(selected_tags))
+
+        def tag_filter(x):
+            return bool(set(x).intersection(selected_tags))
+
         data = data[data.tags.apply(tag_filter)]
         prev_data = prev_data[prev_data.tags.apply(tag_filter)]
 

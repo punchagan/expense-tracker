@@ -9,12 +9,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 3rd-party
 from alembic.config import main as alembic_main
+from app.db_util import ensure_categories_created, ensure_tags_created
 
 # Local
 from app.parse_util import parse_data
 from app.scrapers import ALL_SCRAPERS
-from app.db_util import ensure_categories_created, ensure_tags_created
-
 
 if __name__ == "__main__":
     import argparse
@@ -40,7 +39,9 @@ if __name__ == "__main__":
 
     if not args.scrapers:
         try:
-            from conf import SCRAPERS as scrapers_to_use
+            from conf import SCRAPERS
+
+            scrapers_to_use = SCRAPERS
         except ImportError:
             parser.error("Please define scrapers in conf.py or use --scrapers to specify them.")
     else:

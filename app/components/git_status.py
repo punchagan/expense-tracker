@@ -1,12 +1,12 @@
-import os
 import sys
 from pathlib import Path
+
 import streamlit as st
 
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.lib.git_manager import GitManager, get_repo_path
+from app.lib.git_manager import GitManager
 
 
 @st.fragment
@@ -25,7 +25,7 @@ def setup_repo(repo_path):
                 message = f"Initialized new git repository at {repo_path}"
                 st.success(message)
             except Exception as e:
-                st.error(f"Error creating repository: {str(e)}")
+                st.error(f"Error creating repository: {e!s}")
     else:
         clone_url = st.text_input("Enter the git clone URL:")
         if st.button("Clone Repository"):
@@ -34,7 +34,7 @@ def setup_repo(repo_path):
                 message = f"Cloned repository from {clone_url} to {repo_path}"
                 st.success(message)
             except Exception as e:
-                st.error(f"Error cloning repository: {str(e)}")
+                st.error(f"Error cloning repository: {e!s}")
 
     return git_manager
 

@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 import streamlit as st
 
-from app.components.git_status import setup_repo, check_git_status
-from app.lib.git_manager import get_repo_path, GitManager
+from app.components.git_status import check_git_status, setup_repo
+from app.lib.git_manager import GitManager, get_repo_path
 
 
 @st.dialog("Commit Changes to the Data Repository")

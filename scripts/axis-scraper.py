@@ -4,7 +4,7 @@ from pathlib import Path
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.scrapers.axis import login, download_account_transactions, download_cc_statement
+from app.scrapers.axis import download_account_transactions, download_cc_statement, login
 
 
 def test_get_ac_data(sb, start_date, end_date):

@@ -1,4 +1,5 @@
 import os
+
 import requests
 
 from app.lib.git_manager import GitManager
@@ -32,7 +33,7 @@ class CashStatement(Source):
     @staticmethod
     def parse_details(expense, country, cities):
         details = expense.details
-        remarks, category_name = [each.strip() for each in details.split("/")]
+        remarks, category_name = (each.strip() for each in details.split("/"))
         return Transaction(
             transaction_type="Cash",
             remarks=remarks,

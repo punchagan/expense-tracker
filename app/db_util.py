@@ -1,12 +1,12 @@
 import os
 import re
 import sys
+import tempfile
 from collections import Counter
 from dataclasses import fields
 from pathlib import Path
-import tempfile
 
-from sqlalchemy import create_engine, text, or_
+from sqlalchemy import create_engine, or_, text
 from sqlalchemy.orm import sessionmaker
 
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
@@ -231,7 +231,7 @@ def sync_db_with_data_repo():
             dump_db_to_csv(Path(f.name))
             temp_dump_text = Path(f.name).read_text()
 
-        if not db_dump.read_text() == temp_dump_text:
+        if db_dump.read_text() != temp_dump_text:
             print("Database dump has changed since last update")
 
             # Load db_dump to temporary DB

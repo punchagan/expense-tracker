@@ -1,10 +1,4 @@
-#!/usr/bin/env python3
-
-import os
-import requests
-
-from app.lib.git_manager import GitManager
-from .base import Source, Transaction
+from .base import Source
 
 
 class SBIStatement(Source):
