@@ -9,12 +9,14 @@ HERE = Path(__file__).parent
 ROOT = HERE.parent
 USE_SAMPLE_CONF = "USE_SAMPLE_CONF" in os.environ
 
+NUM_MONTHS = 12
+
 if USE_SAMPLE_CONF:
     sys.path.insert(0, str(ROOT.joinpath("sample")))
 
 
 def daterange_from_year_month(year, month):
-    if year > 0 and 0 < month < 13:
+    if year > 0 and 0 < month <= NUM_MONTHS:
         start_date = datetime.datetime(year, month, 1)
         _, num_days = calendar.monthrange(year, month)
         end_date = start_date + datetime.timedelta(days=num_days)
@@ -73,7 +75,7 @@ def extract_csv(path, catch_phrase="Transaction Date"):
 
 def format_month(month):
     year, month = month
-    if year > 0 and month < 13:
+    if year > 0 and month <= NUM_MONTHS:
         return datetime.date(year, month, 1).strftime(r"⠀⠀%b, '%y")
     if year > 0:
         return datetime.date(year, 1, 1).strftime("⠀%Y")

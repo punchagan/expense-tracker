@@ -95,7 +95,6 @@ ignore = [
     "DTZ007", # Naive datetime constructed using `datetime.datetime.strptime()` without %z
     "DTZ011", # `datetime.date.today()` used
 
-    "PLR2004", # Magic value used in comparison
     "B023", # Function definition does not bind loop variable `key`
     "B904", # raise-without-from-inside-except
     "C405", # unnecessary-literal-set
@@ -103,5 +102,4 @@ ignore = [
     "EXE001", #shebang-not-executable
     "SIM117", #multiple-with-statements
     "W291", # trailing-whitespace
-    "PLR1704", #defined-argument-from-local
 ]

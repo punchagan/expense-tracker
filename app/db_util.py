@@ -168,9 +168,9 @@ def set_tags_value(expense, tag, all_tags):
     new_ids = set([tag_id]) if tag else set()
 
     removed = old_ids - new_ids
-    for old_id, tag in old_tags.items():
+    for old_id, old_tag in old_tags.items():
         if old_id in removed:
-            expense.tags.remove(tag)
+            expense.tags.remove(old_tag)
 
     added = new_ids - old_ids
     for tag_id in added:

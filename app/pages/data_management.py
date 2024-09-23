@@ -3,6 +3,8 @@ import streamlit as st
 from app.components.git_status import check_git_status, setup_repo
 from app.lib.git_manager import GitManager, get_repo_path
 
+NUM_CHANGED_LINES = 50
+
 
 @st.dialog("Commit Changes to the Data Repository")
 def commit_dialog(git_manager: GitManager):
@@ -32,7 +34,7 @@ def main():
             status = git_manager.status()
             st.markdown(f"```git\n{'\n'.join(status)}\n```")
             changes = git_manager.get_uncommitted_changes()
-            with st.expander("Repository changes ...", expanded=len(changes) <= 50):
+            with st.expander("Repository changes ...", expanded=len(changes) <= NUM_CHANGED_LINES):
                 md = f"```git\n{'\n'.join(changes)}\n```"
                 st.markdown(md)
             if st.button("Commit Changes"):

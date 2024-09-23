@@ -286,7 +286,9 @@ class AxisStatement(Source):
                 remarks=details,
             )
         elif details.startswith("TIPS/"):
-            transaction_id = details.split("/")[3] if details.count("/") == 5 else ""
+            transaction_id = (
+                details.split("/")[3] if details.count("/") == 5 else ""  # noqa: PLR2004
+            )
             transaction = Transaction(
                 transaction_id=transaction_id,
                 transaction_type="SCG",
@@ -327,7 +329,7 @@ class AxisStatement(Source):
             # The transaction format was changed later to interchange bank name
             # and remarks. Remarks are truncated to 6 characters, in the new
             # format.
-            if len(to_bank) <= 6:
+            if len(to_bank) <= 6:  # noqa: PLR2004
                 to_bank, remarks = remarks, to_bank
             transaction = Transaction(
                 transaction_id=transaction_id,

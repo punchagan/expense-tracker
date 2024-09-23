@@ -45,6 +45,7 @@ DATA_COLUMNS = [
     "ignore",
 ]
 CURRENCY_SYMBOL = "₹"
+NUM_COLUMNS_ADJACENT_CHARTS = 40
 
 
 @st.cache_resource
@@ -518,7 +519,7 @@ def display_barcharts(data, categories, tags):
 
     n_cat = len(category_data.index)
     n_tag = len(tag_data.index)
-    if n_tag + n_cat < 40 and n_tag > 0 and n_cat > 0:
+    if n_tag + n_cat < NUM_COLUMNS_ADJACENT_CHARTS and n_tag > 0 and n_cat > 0:
         col1, col2 = st.columns([n_cat, n_tag])
     else:
         col1, col2 = st, st
