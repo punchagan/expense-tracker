@@ -1,7 +1,7 @@
 """initial-table
 
 Revision ID: c97322f9bec0
-Revises: 
+Revises:
 Create Date: 2022-10-07 11:23:55.185469
 
 """
