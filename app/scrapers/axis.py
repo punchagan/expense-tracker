@@ -52,16 +52,17 @@ def extract_csv_from_xls(xls_path):
     data = data[int(header_row_index) + 1 : -1]
     data.columns = headers
     data = data.dropna(axis=1, how="all")
+
     # Add "Debit" and "Credit" columns based on the "Debit/Credit" column
-    for key in ("Debit", "Credit"):
-        data[key] = data.apply(
-            lambda row: (
-                remove_currency_prefix(row["Amount (INR)"])
-                if key in str(row["Debit/Credit"])
-                else None
-            ),
-            axis=1,
+    def clean_column(row, column_name):
+        return (
+            remove_currency_prefix(str(row["Amount (INR)"]))
+            if column_name == str(row["Debit/Credit"]).strip()
+            else None
         )
+
+    for key in ("Debit", "Credit"):
+        data[key] = data.apply(clean_column, column_name=key, axis=1)
 
     # Drop the original "Debit/Credit" column and the "Amount (INR)" column
     data = data.drop(columns=["Debit/Credit", "Amount (INR)"])

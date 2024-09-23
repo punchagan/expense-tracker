@@ -16,10 +16,10 @@ class GitManager:
         if self.repo_path.exists():
             try:
                 self.repo = git.Repo(self.repo_path)
-            except git.exc.InvalidGitRepositoryError:
+            except git.exc.InvalidGitRepositoryError as err:
                 raise ValueError(
                     f"The directory {self.repo_path} exists but is not a valid git repository."
-                )
+                ) from err
         else:
             raise FileNotFoundError(f"Repository not found at {self.repo_path}")
 
@@ -92,10 +92,10 @@ class GitManager:
             raise ValueError("Repository not initialized")
         try:
             origin = self.repo.remote("origin")
-        except ValueError:
+        except ValueError as err:
             raise ValueError(
                 "No remote named 'origin' found. Please set up a remote before pushing."
-            )
+            ) from err
         origin.push()
         return "Pushed changes to remote repository"
 
