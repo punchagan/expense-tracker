@@ -96,15 +96,11 @@ ignore = [
     "DTZ011", # `datetime.date.today()` used
 
     "PLR2004", # Magic value used in comparison
-    "S324", # Probable use of insecure hash functions
-    "S113", # Probable use of `requests` call without timeout
-    "S311", # Standard pseudo-random generators
     "N805", # First argument of a method should be named `self`
     "N806", # Lowercase
     "B023", # Function definition does not bind loop variable `key`
     "B904", # raise-without-from-inside-except
     "C405", # unnecessary-literal-set
-    "S306", # suspicious-mktemp-usage
     "C408", # unnecessary-collection-call
     "EXE001", #shebang-not-executable
     "SIM117", #multiple-with-statements

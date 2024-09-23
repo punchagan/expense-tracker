@@ -32,7 +32,7 @@ def set_env_vars(env, script_path):
 
 
 def main(commit=False, use_existing_db=False):
-    port = str(random.randint(10000, 20000))
+    port = str(random.randint(10000, 20000))  # noqa: S311
     sample_script = HERE.joinpath("run-sample.sh")
     env = os.environ.copy()
     set_env_vars(env, sample_script)

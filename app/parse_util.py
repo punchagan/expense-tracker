@@ -31,7 +31,7 @@ def get_transformed_row(x, header_columns, filename):
     v = x[filter(None, amount_columns)].infer_objects(copy=False).fillna(0)
     amount = v[amount_h] if amount_h else v[debit_h] - v[credit_h]
     hash_text = f"{filename}-{x.name}-{details}-{date}-{amount}"
-    sha = sha1(hash_text.encode("utf8")).hexdigest()
+    sha = sha1(hash_text.encode("utf8")).hexdigest()  # noqa: S324
     return pd.Series([sha, date, details, amount, filename, x.name], index=columns)
 
 

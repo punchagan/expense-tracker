@@ -235,7 +235,7 @@ def sync_db_with_data_repo():
             print("Database dump has changed since last update")
 
             # Load db_dump to temporary DB
-            temp_db_path = Path(tempfile.mktemp(suffix=".sqlite"))
+            temp_db_path = Path(tempfile.mkstemp(suffix=".sqlite"))
             load_db_from_csv(temp_db_path, db_dump)
             # Backup the current DB and copy the temporary DB over the existing one
             Path(DB_PATH).rename(DB_PATH.with_suffix(".bak"))
