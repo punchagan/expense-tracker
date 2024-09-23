@@ -133,7 +133,7 @@ def get_months():
     months = set(data["date"].apply(lambda x: (x.year, x.month)))
     years = {(y, 13) for (y, _) in months}
     months = sorted(months.union(years), reverse=True)
-    return [(0, 13)] + months
+    return [(0, 13), *months]
 
 
 def mark_expenses_as_reviewed(expense_ids):
@@ -412,7 +412,7 @@ def format_amount(amount):
 
 
 def display_extra_filters(data, tags, disabled):
-    counterparties = ["All"] + sorted(set(data["counterparty_name"]) - set([""]))
+    counterparties = ["All", *sorted(set(data["counterparty_name"]) - set([""]))]
     tag_ids = sorted({tag for tags in data.tags for tag in tags})
     options = (-np.inf, 0, 1000, 5000, 10000, 20000, np.inf)
     with st.sidebar:
@@ -461,7 +461,7 @@ def display_sidebar(title, categories, disabled):
         )
         start_date, end_date = daterange_from_year_month(*option)
 
-        category_ids = [ALL_CATEGORY, NO_CATEGORY] + sorted(categories.keys())
+        category_ids = [ALL_CATEGORY, NO_CATEGORY, *sorted(categories.keys())]
         category = st.selectbox(
             "Category",
             category_ids,

@@ -69,7 +69,7 @@ def get_country_data(country=COUNTRY):
         countries = ROOT.joinpath("data", "country-codes.json")
         with open(countries) as f:
             countries_data = json.load(f)
-            country = [c for c in countries_data if c["name"] == country][0]
+            country = next(c for c in countries_data if c["name"] == country)
 
         with open(cities) as f:
             cities_data = json.load(f)

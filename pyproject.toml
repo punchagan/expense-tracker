@@ -102,7 +102,6 @@ ignore = [
     "N805", # First argument of a method should be named `self`
     "N806", # Lowercase
     "B023", # Function definition does not bind loop variable `key`
-    "RUF005", # Consider iterable unpacking instead of concatenation
     "B904", # raise-without-from-inside-except
     "C405", # unnecessary-literal-set
     "S306", # suspicious-mktemp-usage
@@ -112,5 +111,4 @@ ignore = [
     "N811", # constant-imported-as-non-constant
     "W291", # trailing-whitespace
     "PLR1704", #defined-argument-from-local
-    "RUF015", #nnecessary-iterable-allocation-for-first-element
 ]
