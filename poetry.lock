@@ -2444,4 +2444,4 @@ resolved_reference = "a070f3a349bc0c7ce09ad097b1d3e419b42a6126"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "c9e313ed549ebd58cee167a7773272c021ec099c8e1895736fab306efa03e103"
+content-hash = "cc8878b69f43ab68c4fed489101bda4f91dfa2455188ffeccce297e6ac0cf905"
