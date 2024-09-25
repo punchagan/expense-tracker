@@ -1,13 +1,14 @@
-import os
 from pathlib import Path
 
 import git
+
+from app.util import DATA_REPO_PATH
 
 
 class GitManager:
     def __init__(self, repo_path=None):
         if repo_path is None:
-            repo_path = get_repo_path()
+            repo_path = DATA_REPO_PATH
         self.repo_path = Path(repo_path)
         self.repo = None
         self._initialize_repo()
@@ -98,7 +99,3 @@ class GitManager:
             ) from err
         origin.push()
         return "Pushed changes to remote repository"
-
-
-def get_repo_path():
-    return Path(os.getenv("DATA_REPO_PATH", Path.cwd() / "data.git"))

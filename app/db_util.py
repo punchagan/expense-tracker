@@ -10,9 +10,10 @@ from sqlalchemy import create_engine, or_, text
 from sqlalchemy.orm import sessionmaker
 
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
-from app.lib.git_manager import GitManager, get_repo_path
+from app.lib.git_manager import GitManager
 from app.model import Category, Expense
 from app.scrapers import ALL_SCRAPERS
+from app.util import DATA_REPO_PATH
 
 ROOT = Path(__file__).parent.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
@@ -205,7 +206,7 @@ def load_db_from_csv(db_path, db_dump_path):
 
 def sync_db_with_data_repo():
     db_path = Path(DB_PATH)
-    repo_path = get_repo_path()
+    repo_path = DATA_REPO_PATH
     db_dump = repo_path.joinpath("db.csv")
 
     if not db_path.exists() and not db_dump.exists():

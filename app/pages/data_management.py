@@ -1,7 +1,8 @@
 import streamlit as st
 
 from app.components.git_status import check_git_status, setup_repo
-from app.lib.git_manager import GitManager, get_repo_path
+from app.lib.git_manager import GitManager
+from app.util import DATA_REPO_PATH
 
 NUM_CHANGED_LINES = 50
 
@@ -23,8 +24,7 @@ def main():
         with st.expander(
             "Data git repository not found!", expanded=True, icon=":material/warning:"
         ):
-            repo_path = get_repo_path()
-            setup_repo(repo_path)
+            setup_repo(DATA_REPO_PATH)
 
     else:
         git_manager = GitManager()
