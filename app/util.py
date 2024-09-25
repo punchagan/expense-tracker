@@ -5,6 +5,8 @@ import os
 import sys
 from pathlib import Path
 
+import pytz
+
 HERE = Path(__file__).parent
 ROOT = HERE.parent
 USE_SAMPLE_CONF = "USE_SAMPLE_CONF" in os.environ
@@ -17,18 +19,29 @@ if USE_SAMPLE_CONF:
 else:
     sys.path.insert(0, str(DATA_REPO_PATH))
 
+try:
+    from conf import TIMEZONE
+except ImportError:
+    TIMEZONE = "Asia/Kolkata"
+
+TZINFO = pytz.timezone(TIMEZONE)
+
+
+def today():
+    return datetime.datetime.now(tz=TZINFO).date()
+
 
 def daterange_from_year_month(year, month):
     if year > 0 and 0 < month <= NUM_MONTHS:
-        start_date = datetime.datetime(year, month, 1)
+        start_date = datetime.date(year, month, 1)
         _, num_days = calendar.monthrange(year, month)
         end_date = start_date + datetime.timedelta(days=num_days)
     elif year > 0:
-        start_date = datetime.datetime(year, 1, 1)
-        end_date = datetime.datetime(year + 1, 1, 1)
+        start_date = datetime.date(year, 1, 1)
+        end_date = datetime.date(year + 1, 1, 1)
     else:
-        start_date = datetime.datetime(1900, 1, 1)
-        end_date = datetime.datetime(2100, 1, 1)
+        start_date = datetime.date(1900, 1, 1)
+        end_date = datetime.date(2100, 1, 1)
 
     return start_date, end_date
 

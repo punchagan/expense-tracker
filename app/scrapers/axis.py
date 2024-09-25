@@ -11,11 +11,11 @@ from bs4 import BeautifulSoup
 from seleniumbase import SB
 
 from app.lib.git_manager import GitManager
-from app.util import extract_csv
+from app.util import extract_csv, today
 
 from .base import Source, Transaction
 
-TODAY = datetime.date.today()
+TODAY = today()
 
 
 def extract_csv_from_html(htmlfile):
@@ -120,7 +120,7 @@ def download_monthly_account_transactions(sb, name, year, month):
     # Select To Date
     sb.click("input#state_todate")
     ### Find num days of month
-    first_day = datetime.datetime(year, month, 1)
+    first_day = datetime.date(year, month, 1)
     if year == TODAY.year and month == TODAY.month:
         n_days = TODAY.day
     else:
