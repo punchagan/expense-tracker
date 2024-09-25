@@ -14,6 +14,8 @@ DATA_REPO_PATH = Path(os.getenv("DATA_REPO_PATH", Path.cwd() / "data.git"))
 
 if USE_SAMPLE_CONF:
     sys.path.insert(0, str(ROOT.joinpath("sample")))
+else:
+    sys.path.insert(0, str(DATA_REPO_PATH))
 
 
 def daterange_from_year_month(year, month):

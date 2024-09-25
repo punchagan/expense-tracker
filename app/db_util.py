@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 import tempfile
 from collections import Counter
 from dataclasses import fields
@@ -10,7 +9,6 @@ from sqlalchemy import create_engine, or_, text
 from sqlalchemy.orm import sessionmaker
 
 from app.data import CATEGORIES, create_categories, create_tags, get_country_data
-from app.lib.git_manager import GitManager
 from app.model import Category, Expense
 from app.scrapers import ALL_SCRAPERS
 from app.util import DATA_REPO_PATH
@@ -50,12 +48,7 @@ def ensure_categories_created():
 
 def ensure_tags_created():
     session = get_sqlalchemy_session()
-    git_manager = GitManager()
     try:
-        path = str(git_manager.repo_path)
-        if path not in sys.path:
-            sys.path.insert(1, path)
-
         from conf import TAGS
 
         tags = TAGS
@@ -65,12 +58,7 @@ def ensure_tags_created():
 
 
 def get_config_categories():
-    git_manager = GitManager()
     try:
-        path = str(git_manager.repo_path)
-        if path not in sys.path:
-            sys.path.insert(1, path)
-
         from conf import EXTRA_CATEGORIES
 
         categories = CATEGORIES + EXTRA_CATEGORIES
