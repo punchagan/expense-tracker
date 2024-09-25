@@ -83,7 +83,7 @@ def load_data(start_date, end_date, category, db_last_modified):
     {category_clause}
     GROUP BY e.id;
     """
-    params = dict(start_date=start_date, end_date=end_date)
+    params = {"start_date": start_date, "end_date": end_date}
     if category not in {NO_CATEGORY, ALL_CATEGORY}:
         params["category"] = category
     sql = text(f"{base_sql} {filter_sql}").bindparams(**params)
@@ -412,7 +412,7 @@ def format_amount(amount):
 
 
 def display_extra_filters(data, tags, disabled):
-    counterparties = ["All", *sorted(set(data["counterparty_name"]) - set([""]))]
+    counterparties = ["All", *sorted(set(data["counterparty_name"]) - {""})]
     tag_ids = sorted({tag for tags in data.tags for tag in tags})
     options = (-np.inf, 0, 1000, 5000, 10000, 20000, np.inf)
     with st.sidebar:

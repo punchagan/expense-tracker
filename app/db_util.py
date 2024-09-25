@@ -154,7 +154,7 @@ def set_tags_value(expense, tag, all_tags):
 
     names_map = {tag.name: tag.id for tag in all_tags.values()}
     tag_id = names_map[tag] if tag else None
-    new_ids = set([tag_id]) if tag else set()
+    new_ids = {tag_id} if tag else set()
 
     removed = old_ids - new_ids
     for old_id, old_tag in old_tags.items():
