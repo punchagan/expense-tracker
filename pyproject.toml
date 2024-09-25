@@ -91,5 +91,4 @@ ignore = [
     "ANN204", # Missing return type annotation
     "ANN205", # Missing return type annotation
     "ANN206", # Missing return type annotation
-    "SIM117", #multiple-with-statements
 ]

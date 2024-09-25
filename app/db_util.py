@@ -169,10 +169,9 @@ def set_tags_value(expense, tag, all_tags):
 def dump_db_to_csv(path):
     # SQLAlchemy equivalent of "sqlite3 $EXPENSES_DB .dump"
     engine = get_db_engine()
-    with engine.connect() as conn:
-        with path.open("w") as f:
-            for line in conn.connection.iterdump():
-                f.write(f"{line}\n")
+    with engine.connect() as conn, path.open("w") as f:
+        for line in conn.connection.iterdump():
+            f.write(f"{line}\n")
     print(f"Dumped database to {path}")
 
 
