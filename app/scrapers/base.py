@@ -34,3 +34,7 @@ class Source:
     def find_files(cls, suffix="csv"):
         git_manager = GitManager()
         return git_manager.find_files(cls.prefix, suffix=suffix)
+
+    @classmethod
+    def fetch_data(cls, start_date=None, end_date=None):
+        raise NotImplementedError
