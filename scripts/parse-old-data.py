@@ -10,6 +10,7 @@ Script to reparse DB data, when improvements are made to the parser.
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 # HACK: include app module in sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -26,7 +27,12 @@ from app.db_util import (
 from app.model import Expense
 
 
-def parse_old_data(filters, commit=False, num_examples=10, modify_reviewed=False):
+def parse_old_data(
+    filters: dict[str, Any],
+    commit: bool = False,
+    num_examples: int = 10,
+    modify_reviewed: bool = False,
+) -> None:
     """Parses "old" data in the DB using the appropriate parser."""
     if not modify_reviewed:
         extra_msg = "(unreviewed only)"

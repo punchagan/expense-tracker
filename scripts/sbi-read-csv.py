@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.util import extract_csv
 
 
-def extract_clean_csv(from_filename, to_folderpath):
+def extract_clean_csv(from_filename: str, to_folderpath: str) -> Path:
     """Read a dirty TSV and dump a clean CSV."""
     to_filename = Path(from_filename).with_suffix(".csv").name
     to_path = Path(to_folderpath).absolute().joinpath(to_filename)

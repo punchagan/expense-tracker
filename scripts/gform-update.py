@@ -14,7 +14,7 @@ from app.db_util import get_config_categories
 SAMPLE_ID = "1elqWT1w1Asyhf5rixbwIaGb7brk-thYDUOCr5LHHZFI"
 
 
-def main(sample=False):
+def main(sample: bool = False) -> None:
     categories = "\n".join(sorted(get_config_categories()))
     pyperclip.copy(categories)
     print("Copied categories to the clipboard")

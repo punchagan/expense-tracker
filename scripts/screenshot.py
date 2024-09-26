@@ -6,13 +6,14 @@ import time
 from pathlib import Path
 
 import pytest
+import seleniumbase
 
 THIS = Path(__file__)
 HERE = THIS.parent
 ROOT = HERE.parent
 
 
-def test_capture_screenshot(sb):
+def test_capture_screenshot(sb: "seleniumbase.SB") -> None:
     screenshot_dir = ROOT.joinpath("screenshots").absolute()
     os.makedirs(screenshot_dir, exist_ok=True)
 
@@ -22,7 +23,7 @@ def test_capture_screenshot(sb):
     sb.save_screenshot(str(path))
 
 
-def set_env_vars(env, script_path):
+def set_env_vars(env: dict[str, str], script_path: Path) -> None:
     """Set env vars from run-sample.sh in our subprocess environment variables."""
     with open(script_path) as f:
         exports = [line for line in f.read().splitlines() if line.startswith("export")]
@@ -31,7 +32,7 @@ def set_env_vars(env, script_path):
             env[var] = val.strip('"').strip("'")
 
 
-def main(commit=False, use_existing_db=False):
+def main(commit: bool = False, use_existing_db: bool = False) -> None:
     port = str(random.randint(10000, 20000))  # noqa: S311
     sample_script = HERE.joinpath("run-sample.sh")
     env = os.environ.copy()
