@@ -217,11 +217,6 @@ def display_summary_stats(data, prev_data):
     col2.metric("Maximum Spend", f"{CURRENCY_SYMBOL} {max_:.2f}")
 
 
-def format_column_name(name):
-    name = name.replace("_id", "").replace("_", " ")
-    return f"**{name.title()}**"
-
-
 def display_transactions(data, categories, tags):
     data_clean = remove_ignored_rows(data)
     m = len(data[data.category_id == NO_CATEGORY])
