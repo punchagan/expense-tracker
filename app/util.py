@@ -20,18 +20,18 @@ else:
     sys.path.insert(0, str(DATA_REPO_PATH))
 
 try:
-    from conf import TIMEZONE
+    from conf import TIMEZONE  # type: ignore [attr-defined]
 except ImportError:
     TIMEZONE = "Asia/Kolkata"
 
 TZINFO = pytz.timezone(TIMEZONE)
 
 
-def today():
+def today() -> datetime.date:
     return datetime.datetime.now(tz=TZINFO).date()
 
 
-def daterange_from_year_month(year, month):
+def daterange_from_year_month(year: int, month: int) -> tuple[datetime.date, datetime.date]:
     if year > 0 and 0 < month <= NUM_MONTHS:
         start_date = datetime.date(year, month, 1)
         _, num_days = calendar.monthrange(year, month)
@@ -46,7 +46,7 @@ def daterange_from_year_month(year, month):
     return start_date, end_date
 
 
-def delta_percent(curr, prev):
+def delta_percent(curr: float, prev: float) -> str:
     if prev == 0:
         sign = "-" if curr <= 0 else "+"
         return f"{sign} unknown"
@@ -54,7 +54,7 @@ def delta_percent(curr, prev):
     return f"{delta:.2f} %"
 
 
-def extract_csv(path, catch_phrase="Transaction Date"):
+def extract_csv(path: str | io.StringIO, catch_phrase: str = "Transaction Date") -> io.StringIO:
     """Extact CSV part of a file, based on a catch phrase in the header."""
 
     if isinstance(path, io.StringIO):
@@ -89,8 +89,8 @@ def extract_csv(path, catch_phrase="Transaction Date"):
     return io.StringIO("\n".join(lines))
 
 
-def format_month(month):
-    year, month = month
+def format_month(year_month: tuple[int, int]) -> str:
+    year, month = year_month
     if year > 0 and month <= NUM_MONTHS:
         return datetime.date(year, month, 1).strftime(r"⠀⠀%b, '%y")
     if year > 0:
@@ -98,8 +98,7 @@ def format_month(month):
     return "All"
 
 
-def previous_month(start_date):
-    end = start_date
+def previous_month(end: datetime.date) -> tuple[datetime.date, datetime.date]:
     prev = end - datetime.timedelta(days=1)
     start = datetime.date(prev.year, prev.month, 1)
     return start, end
