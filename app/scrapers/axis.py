@@ -1,16 +1,16 @@
-import csv
 import datetime
-import io
 import os
 import re
 import time
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
-from bs4 import BeautifulSoup
+import seleniumbase
 from seleniumbase import SB
 
 from app.lib.git_manager import GitManager
+from app.model import Expense
 from app.util import extract_csv, today
 
 from .base import Source, Transaction
@@ -18,23 +18,23 @@ from .base import Source, Transaction
 TODAY = today()
 
 
-def remove_currency_prefix(text):
+def remove_currency_prefix(text: str) -> str:
     """Removes the currency prefix from a string."""
     return text.replace("₹", "").strip()
 
 
-def extract_csv_from_xls(xls_path):
+def extract_csv_from_xls(xls_path: Path) -> Path:
     """Converts XLS(X) to a CSV."""
     data = pd.read_excel(xls_path)
     # Find the header row where first column says "Date"
     header_row_index = int(data[data.iloc[:, 0] == "Date"].index[0])
     headers = data.iloc[header_row_index]
     data = data[int(header_row_index) + 1 : -1]
-    data.columns = headers
+    data.columns = pd.Index(headers)
     data = data.dropna(axis=1, how="all")
 
     # Add "Debit" and "Credit" columns based on the "Debit/Credit" column
-    def clean_column(row, column_name):
+    def clean_column(row: pd.Series[Any], column_name: str) -> str | None:
         return (
             remove_currency_prefix(str(row["Amount (INR)"]))
             if column_name == str(row["Debit/Credit"]).strip()
@@ -46,11 +46,12 @@ def extract_csv_from_xls(xls_path):
 
     # Drop the original "Debit/Credit" column and the "Amount (INR)" column
     data = data.drop(columns=["Debit/Credit", "Amount (INR)"])
+    csv_path = xls_path.with_suffix(".csv")
+    data.to_csv(csv_path, index=False)
+    return csv_path
 
-    data.to_csv(xls_path.with_suffix(".csv"), index=False)
 
-
-def login(sb):
+def login(sb: "seleniumbase.BaseCase") -> None:
     sb.open("https://omni.axisbank.co.in/axisretailbanking/")
     username = os.environ["AXIS_USERNAME"]
     password = os.environ["AXIS_PASSWORD"]
@@ -61,7 +62,9 @@ def login(sb):
     print("Logged in successfully")
 
 
-def download_account_transactions(sb, name, start_date, end_date):
+def download_account_transactions(
+    sb: "seleniumbase.BaseCase", name: str, start_date: datetime.date, end_date: datetime.date
+) -> None:
     # Select Accounts Card
     sb.click("mat-nav-list#navList1")
     time.sleep(3)
@@ -85,7 +88,9 @@ def download_account_transactions(sb, name, start_date, end_date):
             download_monthly_account_transactions(sb, name, year, month)
 
 
-def download_monthly_account_transactions(sb, name, year, month):
+def download_monthly_account_transactions(
+    sb: "seleniumbase.BaseCase", name: str, year: int, month: int
+) -> None:
     # Select From Date
     sb.click("input#state_fromdate")
     ### Open year/month dropdown
@@ -139,7 +144,9 @@ def download_monthly_account_transactions(sb, name, year, month):
     git_manager.copy_file_to_repo(Path(path), f"{name}-statement", year, month)
 
 
-def download_cc_statement(sb, name, start_date, end_date):
+def download_cc_statement(
+    sb: "seleniumbase.BaseCase", name: str, start_date: datetime.date, end_date: datetime.date
+) -> None:
     print(f"Downloading credit-card transactions from {start_date} to {end_date}")
     # View detailed transaction info
     time.sleep(2)
@@ -241,7 +248,9 @@ class AxisStatement(Source):
     dtypes = {"DR": "float64", "CR": "float64"}
 
     @classmethod
-    def fetch_data(cls, start_date=None, end_date=None):
+    def fetch_data(
+        cls, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> None:
         if start_date is None:
             git_manager = GitManager()
             latest_file = git_manager.find_latest_file(cls.prefix)
@@ -256,7 +265,7 @@ class AxisStatement(Source):
             download_account_transactions(sb, cls.name, start_date, end_date)
 
     @staticmethod
-    def parse_details(expense):
+    def parse_details(expense: Expense) -> Transaction:
         details = expense.details.replace("M/s", "M.s")
         axis_id = os.getenv("AXIS_CUSTOMID", "")
         if details.startswith("UPIRECONP2PM/"):
@@ -278,14 +287,14 @@ class AxisStatement(Source):
             )
         elif details.startswith("CTF "):
             extra = details.split()[-1]
-            to_name = re.search("[A-Z]+", extra)
-            to_name = to_name.group() if to_name else ""
+            to_name_ctf = re.search("[A-Z]+", extra)
+            to_name_str = to_name_ctf.group() if to_name_ctf else ""
             transaction_id = re.search("[0-9]+", extra)
             transaction_id = transaction_id.group() if transaction_id else ""
             transaction = Transaction(
                 transaction_type="UPI",
                 transaction_id=transaction_id,
-                counterparty_name=to_name.title(),
+                counterparty_name=to_name_str.title(),
                 counterparty_type="Merchant",
                 remarks=details,
             )
@@ -467,7 +476,9 @@ class AxisCCStatement(Source):
     dtypes = {"Debit": "float64", "Credit": "float64"}
 
     @classmethod
-    def fetch_data(cls, start_date=None, end_date=None):
+    def fetch_data(
+        cls, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> None:
         if start_date is None:
             git_manager = GitManager()
             latest_file = git_manager.find_latest_file(cls.prefix)
@@ -482,10 +493,10 @@ class AxisCCStatement(Source):
             download_cc_statement(sb, cls.name, start_date, end_date)
 
     @staticmethod
-    def parse_details(expense, country, cities):
+    def parse_details(expense: Expense) -> Transaction:
         details = expense.details
         merchant = details.split(",", 1)[0]
-        ignore = details.startswith("MB PAYMENT")
+        ignore = bool(details.startswith("MB PAYMENT"))
         return Transaction(
             transaction_type="CC",
             counterparty_name=merchant.title(),

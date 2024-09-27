@@ -1,8 +1,11 @@
+import datetime
 from dataclasses import dataclass
+from pathlib import Path
 
 from sqlalchemy.util import classproperty
 
 from app.lib.git_manager import GitManager
+from app.model import Expense
 
 
 @dataclass
@@ -19,22 +22,24 @@ class Transaction:
 
 class Source:
     name = "base"
-    columns = {}
-    date_format = None
+    columns: dict[str, None | str | list[str]] = {}
+    date_format: str | None = None
 
     @staticmethod
-    def parse_details(expense):
+    def parse_details(expense: Expense) -> Transaction:
         return Transaction()
 
     @classproperty
-    def prefix(cls):  # noqa: N805
+    def prefix(cls) -> str:  # noqa: N805
         return f"{cls.name}-statement"
 
     @classmethod
-    def find_files(cls, suffix="csv"):
+    def find_files(cls, suffix: str = "csv") -> list[Path]:
         git_manager = GitManager()
         return git_manager.find_files(cls.prefix, suffix=suffix)
 
     @classmethod
-    def fetch_data(cls, start_date=None, end_date=None):
+    def fetch_data(
+        cls, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> None:
         raise NotImplementedError

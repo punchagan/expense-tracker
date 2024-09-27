@@ -1,8 +1,10 @@
+import datetime
 import os
 
 import requests
 
 from app.lib.git_manager import GitManager
+from app.model import Expense
 
 from .base import Source, Transaction
 
@@ -20,7 +22,9 @@ class CashStatement(Source):
     dtypes = {"Amount": "float64"}
 
     @classmethod
-    def fetch_data(cls):
+    def fetch_data(
+        cls, start_date: datetime.date | None = None, end_date: datetime.date | None = None
+    ) -> None:
         git_manager = GitManager()
         sheet_id = os.environ["GSHEET_ID"]
         url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
@@ -31,7 +35,7 @@ class CashStatement(Source):
             f.write(response.text)
 
     @staticmethod
-    def parse_details(expense):
+    def parse_details(expense: Expense) -> Transaction:
         details = expense.details
         remarks, category_name = (each.strip() for each in details.split("/"))
         return Transaction(
