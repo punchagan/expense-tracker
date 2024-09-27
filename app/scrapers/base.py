@@ -23,7 +23,7 @@ class Source:
     date_format = None
 
     @staticmethod
-    def parse_details(expense, country, cities):
+    def parse_details(expense):
         return Transaction()
 
     @classproperty

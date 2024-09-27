@@ -276,7 +276,7 @@ class AxisStatement(Source):
             download_account_transactions(sb, cls.name, start_date, end_date)
 
     @staticmethod
-    def parse_details(expense, country, cities):
+    def parse_details(expense):
         details = expense.details.replace("M/s", "M.s")
         axis_id = os.getenv("AXIS_CUSTOMID", "")
         if details.startswith("UPIRECONP2PM/"):

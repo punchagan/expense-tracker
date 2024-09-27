@@ -31,7 +31,7 @@ class CashStatement(Source):
             f.write(response.text)
 
     @staticmethod
-    def parse_details(expense, country, cities):
+    def parse_details(expense):
         details = expense.details
         remarks, category_name = (each.strip() for each in details.split("/"))
         return Transaction(

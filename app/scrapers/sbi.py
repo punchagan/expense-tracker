@@ -22,5 +22,5 @@ class SBIStatement(Source):
         )
 
     @staticmethod
-    def parse_details(expense, country, cities):
+    def parse_details(expense):
         raise NotImplementedError("Parsing details for SBI is not implemented yet.")

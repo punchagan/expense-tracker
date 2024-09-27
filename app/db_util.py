@@ -1,5 +1,4 @@
 import os
-import re
 import tempfile
 from collections import Counter
 from dataclasses import fields
@@ -8,7 +7,7 @@ from pathlib import Path
 from sqlalchemy import create_engine, or_, text
 from sqlalchemy.orm import sessionmaker
 
-from app.data import CATEGORIES, create_categories, create_tags, get_country_data
+from app.data import CATEGORIES, create_categories, create_tags
 from app.model import Category, Expense
 from app.scrapers import ALL_SCRAPERS
 from app.util import DATA_REPO_PATH
@@ -87,9 +86,6 @@ def parse_details_for_expenses(expenses, n_debug=0):
     clobber fields which may have been hand edited...
 
     """
-    country, cities = get_country_data()
-    country = re.compile(f",* ({'|'.join(country.values())})$", flags=re.IGNORECASE)
-    cities = re.compile(f",* ({'|'.join(cities)})$", flags=re.IGNORECASE)
     categories = category_names_lookup()
     counterparty_lookup = counterparty_names_lookup()
     examples = []
@@ -97,7 +93,7 @@ def parse_details_for_expenses(expenses, n_debug=0):
         source_cls = ALL_SCRAPERS[expense.source]
 
         # Parse details of an expense into a transaction object
-        transaction = source_cls.parse_details(expense, country, cities)
+        transaction = source_cls.parse_details(expense)
 
         # Copy attributes from parsed Transaction dataclass to Expense object
         attrs = {f.name: f.name for f in fields(transaction)}
