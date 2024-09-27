@@ -13,7 +13,7 @@ HERE = THIS.parent
 ROOT = HERE.parent
 
 
-def test_capture_screenshot(sb: "seleniumbase.SB") -> None:
+def test_capture_screenshot(sb: "seleniumbase.BaseCase") -> None:
     screenshot_dir = ROOT.joinpath("screenshots").absolute()
     os.makedirs(screenshot_dir, exist_ok=True)
 

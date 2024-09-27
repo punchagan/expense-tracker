@@ -15,7 +15,7 @@ def extract_clean_csv(from_filename: str, to_folderpath: str) -> Path:
     to_path = Path(to_folderpath).absolute().joinpath(to_filename)
     text = extract_csv(from_filename, catch_phrase="Txn Date")
     df = pd.read_csv(text, sep="\t")
-    df.columns = [c.strip() for c in df.columns]
+    df.columns = pd.Index([c.strip() for c in df.columns])
     df.to_csv(to_path, index=False)
     return to_path
 
