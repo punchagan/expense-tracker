@@ -18,26 +18,6 @@ from .base import Source, Transaction
 TODAY = today()
 
 
-def extract_csv_from_html(htmlfile):
-    """Converts HTML to a CSV."""
-    with open(htmlfile) as f:
-        soup = BeautifulSoup(f, "html.parser")
-    table = soup.findAll("table")[1]
-    rows = table.findAll("tr")
-    csv_rows = [
-        [cell.get_text().strip() for cell in row.findAll(["td", "th"])][2:-2] for row in rows
-    ]
-    to_filename = Path(htmlfile).with_suffix(".csv")
-    csv_output = io.StringIO()
-    writer = csv.writer(csv_output)
-    writer.writerows(csv_rows)
-    with open(to_filename, "w") as f:
-        csv_output.seek(0)
-        f.write(extract_csv(csv_output).read())
-
-    print(f"Created {to_filename}")
-
-
 def remove_currency_prefix(text):
     """Removes the currency prefix from a string."""
     return text.replace("₹", "").strip()
