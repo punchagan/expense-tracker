@@ -11,10 +11,11 @@ from app.app import main
 from app.db_util import DB_PATH, ensure_categories_created, ensure_tags_created
 from app.lib.git_manager import GitManager
 from app.parse_util import parse_data
+from app.scrapers import ALL_SCRAPERS
 from app.util import DATA_REPO_PATH
 
 
-def prepare_on_cloud():
+def prepare_on_cloud() -> None:
     if DB_PATH.exists():
         return
 
@@ -25,8 +26,9 @@ def prepare_on_cloud():
     GitManager.create_new_repo(DATA_REPO_PATH)
 
     for path in files:
-        csv_type = path.stem.split("-statement", 1)[0]
-        parse_data(path, csv_type)
+        scraper_name = path.stem.split("-statement", 1)[0]
+        scraper = ALL_SCRAPERS[scraper_name]
+        parse_data(path, scraper)
 
 
 if __name__ == "__main__":
