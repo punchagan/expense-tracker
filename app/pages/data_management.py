@@ -8,7 +8,7 @@ NUM_CHANGED_LINES = 50
 
 
 @st.dialog("Commit Changes to the Data Repository")
-def commit_dialog(git_manager: GitManager):
+def commit_dialog(git_manager: GitManager) -> None:
     message = st.text_input("Enter commit message", max_chars=80)
     if st.button("Commit"):
         git_manager.commit_changes(message)
@@ -16,7 +16,7 @@ def commit_dialog(git_manager: GitManager):
         st.rerun()
 
 
-def main():
+def main() -> None:
     st.title("Data Git Repository Management")
 
     repo_exists = check_git_status()
