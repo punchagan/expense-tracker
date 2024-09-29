@@ -87,3 +87,33 @@ ignore = [
     "S105", # Possible hardcoded password
     "S607", # Starting a process with a partial executable path
 ]
+
+[tool.mypy]
+scripts_are_modules = true
+show_traceback = true
+
+# Enable strict mode, with some exceptions.
+strict = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+warn_return_any = false
+
+# Enable optional errors.
+enable_error_code = [
+    "redundant-expr",
+    "truthy-bool",
+    "ignore-without-code",
+    "unused-awaitable",
+]
+
+# Display the codes needed for # type: ignore[code] annotations.
+show_error_codes = true
+
+# Warn of unreachable or redundant code.
+warn_unreachable = true
+
+# To suppress all missing import errors for all untyped libraries
+ignore_missing_imports = true
+
+plugins = "sqlalchemy.ext.mypy.plugin"
