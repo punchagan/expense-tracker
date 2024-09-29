@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import streamlit as st
 
 
-def main():
+def main() -> None:
     if st.secrets.get("ON_CLOUD") or os.getenv("ON_CLOUD"):
         from app.cloud import prepare_on_cloud
 
