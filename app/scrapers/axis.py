@@ -268,7 +268,7 @@ class AxisStatement(Source):
 
     @staticmethod
     def parse_details(expense: Expense) -> Transaction:
-        details = expense.details.replace("M/s", "M.s")
+        details = str(expense.details).replace("M/s", "M.s")
         axis_id = os.getenv("AXIS_CUSTOMID", "")
         if details.startswith("UPIRECONP2PM/"):
             _, transaction_id, _ = (each.strip() for each in details.split("/", 2))
@@ -291,8 +291,8 @@ class AxisStatement(Source):
             extra = details.split()[-1]
             to_name_ctf = re.search("[A-Z]+", extra)
             to_name_str = to_name_ctf.group() if to_name_ctf else ""
-            transaction_id = re.search("[0-9]+", extra)
-            transaction_id = transaction_id.group() if transaction_id else ""
+            transaction_id_ = re.search("[0-9]+", extra)
+            transaction_id = transaction_id_.group() if transaction_id_ else ""
             transaction = Transaction(
                 transaction_type="UPI",
                 transaction_id=transaction_id,
@@ -496,7 +496,7 @@ class AxisCCStatement(Source):
 
     @staticmethod
     def parse_details(expense: Expense) -> Transaction:
-        details = expense.details
+        details = str(expense.details)
         merchant = details.split(",", 1)[0]
         ignore = bool(details.startswith("MB PAYMENT"))
         return Transaction(

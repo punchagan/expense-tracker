@@ -23,7 +23,8 @@ class Transaction:
 class Source:
     name = "base"
     columns: dict[str, None | str | list[str]] = {}
-    date_format: str | None = None
+    date_format: str = ""
+    dtypes: dict[str, str] = {}
 
     @staticmethod
     def parse_details(expense: Expense) -> Transaction:

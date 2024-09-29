@@ -36,7 +36,7 @@ class CashStatement(Source):
 
     @staticmethod
     def parse_details(expense: Expense) -> Transaction:
-        details = expense.details
+        details = str(expense.details)
         remarks, category_name = (each.strip() for each in details.split("/"))
         return Transaction(
             transaction_type="Cash",
