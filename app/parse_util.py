@@ -1,6 +1,9 @@
 # Standard libs
+from __future__ import annotations
+
 from hashlib import sha1
 from pathlib import Path
+from typing import Any, cast
 
 # 3rd party libs
 import pandas as pd
@@ -13,9 +16,12 @@ from app.db_util import (
     parse_details_for_expenses,
 )
 from app.model import Expense
+from app.scrapers.base import Source
 
 
-def get_transformed_row(x, header_columns, filename):
+def get_transformed_row(
+    x: pd.Series[Any], header_columns: dict[str, str], filename: str
+) -> pd.Series[Any]:
     """Transform a parsed row into a row to be saved in the DB."""
     columns = ["id", "date", "details", "amount", "source_file", "source_line"]
     date = x[header_columns["date"]]
@@ -28,17 +34,17 @@ def get_transformed_row(x, header_columns, filename):
         header_columns["credit"],
         header_columns["debit"],
     )
-    v = x[filter(None, amount_columns)].infer_objects(copy=False).fillna(0)
+    v = x[list(filter(None, amount_columns))].infer_objects().fillna(0)
     amount = v[amount_h] if amount_h else v[debit_h] - v[credit_h]
     hash_text = f"{filename}-{x.name}-{details}-{date}-{amount}"
     sha = sha1(hash_text.encode("utf8")).hexdigest()  # noqa: S324
     return pd.Series([sha, date, details, amount, filename, x.name], index=columns)
 
 
-def parse_data(path, source_cls):
+def parse_data(path: Path, source_cls: type[Source]) -> None:
     """Parses the data in a given `path` and dumps to `DB_NAME`."""
     print(f"Parsing {path} using '{source_cls.name}' scraper...")
-    date_column = source_cls.columns["date"]
+    date_column = cast(str, source_cls.columns["date"])
     data = pd.read_csv(
         path,
         parse_dates=[date_column],
@@ -69,7 +75,10 @@ def parse_data(path, source_cls):
     data = data[data["id"].isin(new_ids)]
     if not data.empty:
         data["source"] = source_cls.name
-        expenses = [Expense(**d) for d in data.to_dict("records")]
+        expenses = [
+            Expense(**{str(key): value for key, value in d.items()})
+            for d in data.to_dict("records")
+        ]
         parse_details_for_expenses(expenses)
         session = get_sqlalchemy_session()
         session.add_all(expenses)
