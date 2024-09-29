@@ -86,11 +86,4 @@ ignore = [
     "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
     "S105", # Possible hardcoded password
     "S607", # Starting a process with a partial executable path
-    # Temporarily ignored
-    "ANN001", # Missing type annotation
-    "ANN201", # Missing return type annotation
-    "ANN202", # Missing return type annotation
-    "ANN204", # Missing return type annotation
-    "ANN205", # Missing return type annotation
-    "ANN206", # Missing return type annotation
 ]
