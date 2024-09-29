@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Any
 
 from app.model import Category, Tag
 
@@ -35,7 +36,7 @@ CATEGORIES = [
 COUNTRY = "India"
 
 
-def create_categories(session, categories):
+def create_categories(session: Any, categories: list[str]) -> None:
     categories = sorted(set(categories))
     all_categories = session.query(Category).all()
     all_names = {cat.name for cat in all_categories}
@@ -49,7 +50,7 @@ def create_categories(session, categories):
     session.commit()
 
 
-def create_tags(session, tags):
+def create_tags(session: Any, tags: list[str]) -> None:
     tags = sorted(set(tags))
     all_tags = session.query(Tag).all()
     all_names = {tag.name for tag in all_tags}
@@ -63,17 +64,17 @@ def create_tags(session, tags):
     session.commit()
 
 
-def get_country_data(country=COUNTRY):
+def get_country_data(country: str = COUNTRY) -> tuple[dict[str, str], list[str]]:
     if country == "India":
         cities = ROOT.joinpath("data", "indian-cities.json")
         countries = ROOT.joinpath("data", "country-codes.json")
         with open(countries) as f:
             countries_data = json.load(f)
-            country = next(c for c in countries_data if c["name"] == country)
+            country_data = next(c for c in countries_data if c["name"] == country)
 
         with open(cities) as f:
             cities_data = json.load(f)
 
-        return country, cities_data
+        return country_data, cities_data
     else:
         raise NotImplementedError
