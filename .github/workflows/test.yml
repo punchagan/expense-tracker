@@ -1,0 +1,39 @@
+---
+name: CI Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: "poetry"
+
+      - name: Install Python dependencies
+        run: poetry install --no-root --with=dev
+
+      - name: Run linters
+        run: poetry run ./scripts/lint
+
+      - name: Ensure pyproject.toml and poetry.lock are in sync
+        run: |
+          poetry check
+
+      - name: Ensure models and migrations are in sync
+        run: |
+          poetry run alembic upgrade head
+          poetry run alembic check
