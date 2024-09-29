@@ -10,7 +10,7 @@ from app.lib.git_manager import GitManager
 
 
 @st.fragment
-def setup_repo(repo_path):
+def setup_repo(repo_path: Path) -> GitManager | None:
     actions = [
         f"Create a new repository ({repo_path.name})",
         "Clone an existing repository",
@@ -39,7 +39,7 @@ def setup_repo(repo_path):
     return git_manager
 
 
-def check_git_status():
+def check_git_status() -> GitManager | None:
     try:
         git_manager = GitManager()
     except (FileNotFoundError, ValueError):
