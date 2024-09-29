@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import sqlalchemy as sa
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql.expression import literal
@@ -13,8 +15,8 @@ class Expense(Base):
     amount = sa.Column(sa.Float(asdecimal=True, decimal_return_scale=2), nullable=False)
     ignore = sa.Column(sa.Boolean(), nullable=False, default=False, server_default=literal(False))
     category_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
-    category = relationship("Category", backref="expenses")
-    tags = relationship("Tag", secondary="expense_tag", backref="expenses")
+    category: Optional["Category"] = relationship("Category", backref="expenses")
+    tags: List["Tag"] = relationship("Tag", secondary="expense_tag", backref="expenses")
     source = sa.Column(sa.String(10), server_default=literal(""), nullable=False)
     source_file = sa.Column(sa.String(100), nullable=True)
     source_line = sa.Column(sa.Integer, nullable=True)
@@ -31,7 +33,7 @@ class Expense(Base):
     parent = sa.Column(sa.String(40), sa.ForeignKey("expense.id"))
     reviewed = sa.Column(sa.Boolean(), nullable=False, default=False, server_default=literal(False))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"Expense(id={self.id!r}, date={self.date!r}, amount={self.amount!r}, "
             f"details={self.details!r}, ignore={self.ignore!r}, source={self.source!r}, "
@@ -45,7 +47,7 @@ class NewID(Base):
     __tablename__ = "new_id"
     id = sa.Column(sa.String(40), primary_key=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"NewID(id={self.id!r})"
 
 
@@ -54,7 +56,7 @@ class Category(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(40))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Category(id={self.id!r}, name={self.name!r})"
 
 
@@ -63,7 +65,7 @@ class Tag(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(40))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Tag(id={self.id!r}, name={self.name!r})"
 
 
