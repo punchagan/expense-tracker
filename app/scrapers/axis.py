@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import datetime
 import os
 import re
@@ -52,7 +53,7 @@ def extract_csv_from_xls(xls_path: Path) -> Path:
     return csv_path
 
 
-def login(sb: "seleniumbase.BaseCase") -> None:
+def login(sb: seleniumbase.BaseCase) -> None:
     sb.open("https://omni.axisbank.co.in/axisretailbanking/")
     username = os.environ["AXIS_USERNAME"]
     password = os.environ["AXIS_PASSWORD"]
@@ -64,7 +65,7 @@ def login(sb: "seleniumbase.BaseCase") -> None:
 
 
 def download_account_transactions(
-    sb: "seleniumbase.BaseCase", name: str, start_date: datetime.date, end_date: datetime.date
+    sb: seleniumbase.BaseCase, name: str, start_date: datetime.date, end_date: datetime.date
 ) -> None:
     # Select Accounts Card
     sb.click("mat-nav-list#navList1")
@@ -90,7 +91,7 @@ def download_account_transactions(
 
 
 def download_monthly_account_transactions(
-    sb: "seleniumbase.BaseCase", name: str, year: int, month: int
+    sb: seleniumbase.BaseCase, name: str, year: int, month: int
 ) -> None:
     # Select From Date
     sb.click("input#state_fromdate")
@@ -146,7 +147,7 @@ def download_monthly_account_transactions(
 
 
 def download_cc_statement(
-    sb: "seleniumbase.BaseCase", name: str, start_date: datetime.date, end_date: datetime.date
+    sb: seleniumbase.BaseCase, name: str, start_date: datetime.date, end_date: datetime.date
 ) -> None:
     print(f"Downloading credit-card transactions from {start_date} to {end_date}")
     # View detailed transaction info
