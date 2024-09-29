@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from sqlalchemy import bindparam, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
 
 # Local
 from app.components.git_status import check_git_status
@@ -22,6 +22,9 @@ from app.db_util import (
     sync_db_with_data_repo,
     update_similar_counterparty_categories,
     update_similar_counterparty_names,
+)
+from app.db_util import (
+    get_sqlalchemy_session as get_db_session,
 )
 from app.model import Category, Expense, Tag
 from app.util import daterange_from_year_month, delta_percent, format_month, previous_month
@@ -50,9 +53,8 @@ NUM_COLUMNS_ADJACENT_CHARTS = 40
 
 
 @st.cache_resource
-def get_sqlalchemy_session() -> Any:
-    engine = get_db_engine()
-    return sessionmaker(bind=engine)()
+def get_sqlalchemy_session() -> Session:
+    return get_db_session()
 
 
 @st.cache_data
