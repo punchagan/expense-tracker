@@ -66,6 +66,11 @@ def run() -> None:
         description="Static type checker for Python (config: pyproject.toml)",
     )
     linter_config.external_linter(
+        "gitlint",
+        ["scripts/lint-commits"],
+        description="Checks commit messages for common formatting errors (config: .gitlint)",
+    )
+    linter_config.external_linter(
         "shellcheck",
         ["shellcheck", "-x", "-P", "SCRIPTDIR"],
         ["bash", "sh"],
