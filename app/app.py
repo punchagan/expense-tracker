@@ -1,4 +1,5 @@
 # Standard library
+import os
 import sys
 from pathlib import Path
 
@@ -10,6 +11,11 @@ import streamlit as st
 
 
 def main():
+    if st.secrets.get("ON_CLOUD") or os.getenv("ON_CLOUD"):
+        from app.cloud import prepare_on_cloud
+
+        prepare_on_cloud()
+
     icon = "📊"
     title = "Personal Expense Tracker"
     nav = st.navigation(
