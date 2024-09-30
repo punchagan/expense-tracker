@@ -124,14 +124,14 @@ def load_data(
 def get_categories() -> dict[int, Category]:
     session = get_sqlalchemy_session()
     categories = session.query(Category).order_by("id").all()
-    return {cat.id: cat for cat in categories}
+    return {cast(int, cat.id): cat for cat in categories}
 
 
 @st.cache_data
 def get_tags() -> dict[int, Tag]:
     session = get_sqlalchemy_session()
     tags = session.query(Tag).order_by("id").all()
-    return {tag.id: tag for tag in tags}
+    return {cast(int, tag.id): tag for tag in tags}
 
 
 @st.cache_data
@@ -180,6 +180,8 @@ def write_changes_to_db(df: pd.DataFrame) -> None:
         # Fetch the expense from the DB
         session = get_sqlalchemy_session()
         expense = session.get(Expense, {"id": row["id"]})
+        if expense is None:
+            continue
 
         for key, value in change.items():
             if key == "counterparty_name" and value.endswith("**"):
