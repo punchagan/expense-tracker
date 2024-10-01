@@ -15,7 +15,7 @@ DATA_REPO_PATH = Path(os.getenv("DATA_REPO_PATH", Path.cwd() / "data.git"))
 sys.path.insert(0, str(DATA_REPO_PATH))
 
 try:
-    from conf import TIMEZONE  # type: ignore [attr-defined]
+    from conf import TIMEZONE
 except ImportError:
     TIMEZONE = "Asia/Kolkata"
 
