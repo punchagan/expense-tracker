@@ -454,7 +454,7 @@ def display_extra_filters(
 
 def display_sidebar(
     title: str, categories: dict[int, Category], disabled: bool
-) -> tuple[datetime.date, datetime.date, int]:
+) -> tuple[datetime.date, datetime.date, int, int]:
     with st.sidebar:
         st.title(title)
         st.caption(
@@ -475,7 +475,7 @@ def display_sidebar(
             index=min(2, len(months) - 1),
             disabled=disabled,
         )
-        start_date, end_date = daterange_from_year_month(*option)
+        start_date, end_date, num_days = daterange_from_year_month(*option)
 
         category_ids = [ALL_CATEGORY, NO_CATEGORY, *sorted(categories.keys())]
         category = st.selectbox(
@@ -485,7 +485,7 @@ def display_sidebar(
             disabled=disabled,
         )
 
-    return start_date, end_date, category
+    return start_date, end_date, num_days, category
 
 
 def remove_ignored_rows(data: pd.DataFrame) -> pd.DataFrame:
@@ -493,7 +493,7 @@ def remove_ignored_rows(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def display_barcharts(
-    data: pd.DataFrame, categories: dict[int, Category], tags: dict[int, Tag]
+    data: pd.DataFrame, categories: dict[int, Category], tags: dict[int, Tag], num_month_days: int
 ) -> None:
     # Filter ignored transactions
     data = remove_ignored_rows(data)
@@ -511,6 +511,10 @@ def display_barcharts(
         result_type="expand",
     )
     day_data = data.pivot_table(index="day", columns="category", values="amount", aggfunc="sum")
+    missing_days = set(range(1, num_month_days + 1)) - set(day_data.index)
+    # Fill in missing days data
+    for day in missing_days:
+        day_data.loc[day] = 0
     st.bar_chart(day_data)
 
     # Group data by category
@@ -585,7 +589,9 @@ def dashboard() -> None:
 
     categories = get_categories()
     tags = get_tags()
-    start_date, end_date, category = display_sidebar(title, categories, disabled=False)
+    start_date, end_date, num_month_days, category = display_sidebar(
+        title, categories, disabled=False
+    )
     data = load_data(start_date, end_date, category, db_last_modified)
 
     prev_start, prev_end = previous_month(start_date)
@@ -619,7 +625,7 @@ def dashboard() -> None:
         prev_data = amount_filter_high(prev_data, high)
 
     display_summary_stats(data, prev_data)
-    display_barcharts(data, categories, tags)
+    display_barcharts(data, categories, tags, num_month_days)
     display_transactions(data, categories, tags)
 
 

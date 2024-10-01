@@ -26,7 +26,7 @@ def today() -> datetime.date:
     return datetime.datetime.now(tz=TZINFO).date()
 
 
-def daterange_from_year_month(year: int, month: int) -> tuple[datetime.date, datetime.date]:
+def daterange_from_year_month(year: int, month: int) -> tuple[datetime.date, datetime.date, int]:
     if year > 0 and 0 < month <= NUM_MONTHS:
         start_date = datetime.date(year, month, 1)
         _, num_days = calendar.monthrange(year, month)
@@ -34,11 +34,13 @@ def daterange_from_year_month(year: int, month: int) -> tuple[datetime.date, dat
     elif year > 0:
         start_date = datetime.date(year, 1, 1)
         end_date = datetime.date(year + 1, 1, 1)
+        num_days = 31
     else:
         start_date = datetime.date(1900, 1, 1)
         end_date = datetime.date(2100, 1, 1)
+        num_days = 31
 
-    return start_date, end_date
+    return start_date, end_date, num_days
 
 
 def delta_percent(curr: float, prev: float) -> str:
