@@ -112,7 +112,7 @@ def parse_details_for_expenses(expenses: list[Expense] | Query[Expense], n_debug
             expense.counterparty_name = lookup_value
 
         # Set category id if category_name or remarks exactly match a category id.
-        key = (str(expense.category.name).strip().lower()) or (
+        key = (expense.category is not None and str(expense.category.name).strip().lower()) or (
             expense.remarks is not None and expense.remarks.strip().lower() or ""
         )
         expense.category_id = categories.get(key, expense.category_id)

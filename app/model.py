@@ -31,7 +31,7 @@ class Expense(Base):
     amount = sa.Column(sa.Float(asdecimal=True, decimal_return_scale=2), nullable=False)
     ignore = sa.Column(sa.Boolean(), nullable=False, default=False, server_default=literal(False))
     category_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
-    category: Mapped[Category] = relationship("Category", backref="expenses")
+    category: Mapped[Category | None] = relationship("Category", backref="expenses")
     tags: Mapped[list[Tag]] = relationship("Tag", secondary="expense_tag", backref="expenses")
     source = sa.Column(sa.String(10), server_default=literal(""), nullable=False)
     source_file = sa.Column(sa.String(100), nullable=True)
