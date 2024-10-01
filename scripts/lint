@@ -56,7 +56,7 @@ def run() -> None:
         description="Reformats Python code",
         check_arg=["--check"],
         suppress_line=lambda line: line == "All done! ✨ 🍰 ✨\n"
-        or re.fullmatch(r"\d+ files? would be left unchanged\.\n", line) is not None,
+        or re.fullmatch(r"\d+ files?( would be)? left unchanged\.\n", line) is not None,
     )
     linter_config.external_linter(
         "mypy",
