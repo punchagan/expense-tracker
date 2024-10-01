@@ -501,28 +501,17 @@ def display_barcharts(
     if len(data) == 0:
         return
 
-    col1, col2 = st.columns([4, 1])
-
-    # Add additional columns for day, weekday and category
-    data[["day", "weekday", "category"]] = data.apply(
+    # Add additional columns for day and category
+    data[["day", "category"]] = data.apply(
         lambda row: (
             row["date"].day,
-            row["date"].day_name(),
             format_category(row["category_id"], categories),
         ),
         axis=1,
         result_type="expand",
     )
     day_data = data.pivot_table(index="day", columns="category", values="amount", aggfunc="sum")
-    col1.bar_chart(day_data)
-
-    weekday_data = data.sort_values(by="weekday", key=lambda x: [WEEKDAYS.index(e) for e in x])
-    col2.altair_chart(
-        alt.Chart(weekday_data)
-        .mark_bar()
-        .encode(x=alt.X("weekday", sort=None), y="sum(amount)", color="category"),
-        use_container_width=True,
-    )
+    st.bar_chart(day_data)
 
     # Group data by category
     category_data = data.pivot_table(
