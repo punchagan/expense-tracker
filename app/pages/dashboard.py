@@ -299,7 +299,7 @@ def display_transactions(
             child_df.apply(lambda row: ids.index(row["parent"]) + 0.1, axis=1)
         )
         if not child_df.empty:
-            page_df = pd.concat([page_df, child_df])
+            page_df = pd.concat([page_df, child_df]).sort_index(axis=0)
 
         # Transform the data for display
         page_df["category_id"] = page_df["category_id"].apply(
