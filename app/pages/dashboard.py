@@ -236,7 +236,7 @@ def display_transactions(
 
     n = len(data)
     nc = len(data_clean)
-    page_size = 20
+    page_size = 100
     paginate = len(data_clean) > 2 * page_size
 
     with st.expander(f"Total {n} transactions ({m} uncategorized)", expanded=True):
