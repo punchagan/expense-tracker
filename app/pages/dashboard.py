@@ -511,7 +511,7 @@ def display_barcharts(
         result_type="expand",
     )
 
-    # Create Altair chart
+    # Spending by day chart
     chart = (
         alt.Chart(data)
         .mark_bar()
@@ -527,8 +527,6 @@ def display_barcharts(
         )
         .properties(title="Spending by Day")
     )
-
-    # Display the chart using Streamlit
     st.altair_chart(chart, use_container_width=True)
 
     n_cat = len(data.category.unique())
@@ -540,6 +538,7 @@ def display_barcharts(
         col1, col2 = st, st  # type: ignore [assignment]
 
     if n_cat > 1:
+        # Spending by Category chart
         chart = (
             alt.Chart(data)
             .mark_bar()
@@ -554,6 +553,7 @@ def display_barcharts(
         col1.altair_chart(chart, use_container_width=True)
 
     if n_tag > 1:
+        # Spending by Tag chart
         exploded_data = data.explode("tag_names")
         chart = (
             alt.Chart(exploded_data)
