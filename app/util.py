@@ -14,6 +14,8 @@ DATA_REPO_PATH = Path(os.getenv("DATA_REPO_PATH", Path.cwd() / "data.git"))
 
 
 def get_settings(path: Path) -> dict[str, str | list[str]]:
+    if not path.exists():
+        return {}
     with open(path) as f:
         return toml.load(f)["settings"]
 
