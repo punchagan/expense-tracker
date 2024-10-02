@@ -501,37 +501,40 @@ def display_barcharts(
     if len(data) == 0:
         return
 
-    # Add additional columns for day and category
-    data[["day", "category"]] = data.apply(
+    # Add additional columns for day, category and tags
+    data[["day", "category", "tag_names"]] = data.apply(
         lambda row: (
             row["date"].day,
             format_category(row["category_id"], categories),
+            [format_tag(tag_id, tags) for tag_id in row["tags"]],
         ),
         axis=1,
         result_type="expand",
     )
-    day_data = data.pivot_table(index="day", columns="category", values="amount", aggfunc="sum")
-    missing_days = set(range(1, num_month_days + 1)) - set(day_data.index)
-    # Fill in missing days data
-    for day in missing_days:
-        day_data.loc[day] = 0
-    st.bar_chart(day_data)
 
-    # Group data by category
-    category_data = data.pivot_table(
-        index="category_id", columns="category", values="amount", aggfunc="sum"
-    )
-    category_data.index = pd.Index(
-        [format_category(idx, categories) for idx in category_data.index]
+    # Create Altair chart
+    chart = (
+        alt.Chart(data)
+        .mark_bar()
+        .encode(
+            x=alt.X(
+                "day:O",
+                title="Day of Month",
+                scale=alt.Scale(domain=list(range(1, num_month_days + 1))),
+            ),
+            y=alt.Y("amount:Q", title="Amount"),
+            color=alt.Color("category:N", title="Category"),
+            tooltip=["category", "amount", "counterparty_name", "remarks"],
+        )
+        .properties(title="Daily Spending by Day", width=600, height=400)
     )
 
-    tag_data = data.explode("tags").pivot_table(
-        index="tags", columns="category", values="amount", aggfunc="sum"
-    )
-    tag_data.index = pd.Index([format_tag(idx, tags) for idx in tag_data.index])
+    # Display the chart using Streamlit
+    st.altair_chart(chart, use_container_width=True)
 
-    n_cat = len(category_data.index)
-    n_tag = len(tag_data.index)
+    n_cat = len(data.category.unique())
+    n_tag = len(data.tag_names.explode().unique())
+
     use_columns = (n_tag + n_cat < NUM_COLUMNS_ADJACENT_CHARTS) and n_tag > 0 and n_cat > 0
     if use_columns:
         col1, col2 = st.columns([n_cat, n_tag])
@@ -539,12 +542,33 @@ def display_barcharts(
         col1, col2 = st, st  # type: ignore [assignment]
 
     if n_cat > 1:
-        col1.bar_chart(category_data)
+        chart = (
+            alt.Chart(data)
+            .mark_bar()
+            .encode(
+                x=alt.X("category:N", title="Category", sort="-y"),
+                y=alt.Y("amount:Q", title="Total Amount"),
+                color=alt.Color("category:N", title="Category"),
+                tooltip=["category", "amount", "remarks"],
+            )
+            .properties(title="Total Spending by Category", width=600, height=400)
+        )
+        col1.altair_chart(chart, use_container_width=True)
 
     if n_tag > 1:
-        col2.bar_chart(tag_data)
-        # FIXME: The colors for categories may be different from the other charts!
-        col2.caption("**Note**: colors may be different from the other charts!")
+        exploded_data = data.explode("tag_names")
+        chart = (
+            alt.Chart(exploded_data)
+            .mark_bar()
+            .encode(
+                x=alt.X("tag_names:N", title="Tags", sort="-y"),
+                y=alt.Y("amount:Q", title="Total Amount"),
+                color=alt.Color("category:N", title="Category"),
+                tooltip=["tag_names", "amount", "category", "remarks"],
+            )
+            .properties(title="Total Spending by Tag", width=600, height=400)
+        )
+        col2.altair_chart(chart, use_container_width=True)
 
 
 def format_row(row: dict[str, Any]) -> str:
