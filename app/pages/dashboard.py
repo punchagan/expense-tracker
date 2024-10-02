@@ -511,6 +511,7 @@ def display_barcharts(
         result_type="expand",
     )
 
+    color_scheme = alt.Color("category:N", title="Category")
     click = alt.selection_point(encodings=["color"])
 
     # Spending by day chart
@@ -526,7 +527,7 @@ def display_barcharts(
             y=alt.Y("amount:Q", title="Amount"),
             color=alt.condition(
                 click,
-                if_true=alt.Color("category:N", title="Category"),
+                if_true=color_scheme,
                 if_false=alt.value("lightgray"),
             ),
             tooltip=["category", "amount", "counterparty_name", "remarks"],
@@ -548,7 +549,7 @@ def display_barcharts(
                 x=alt.X("amount:Q", title="Amount"),
                 color=alt.condition(
                     click,
-                    if_true=alt.Color("category:N", title="Category"),
+                    if_true=color_scheme,
                     if_false=alt.value("lightgray"),
                 ),
                 tooltip=["category", "amount", "remarks"],
@@ -570,7 +571,7 @@ def display_barcharts(
                 x=alt.X("amount:Q", title="Amount"),
                 color=alt.condition(
                     click,
-                    if_true=alt.Color("category:N", title="Category"),
+                    if_true=color_scheme,
                     if_false=alt.value("lightgray"),
                 ),
                 tooltip=["tag_names", "amount", "category", "remarks"],
