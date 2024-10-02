@@ -514,7 +514,7 @@ def display_barcharts(
     click = alt.selection_point(encodings=["color"])
 
     # Spending by day chart
-    chart = (
+    chart_day = (
         alt.Chart(data)
         .mark_bar()
         .encode(
@@ -534,19 +534,13 @@ def display_barcharts(
         .properties(title="Spending by Day")
         .add_params(click)
     )
-    st.altair_chart(chart, use_container_width=True)
 
     n_cat = len(data.category.unique())
     n_tag = len(data.tag_names.explode().unique())
-    two_charts = n_tag > 1 and n_cat > 1
-    if two_charts:
-        col1, col2 = st.columns([1, 1])
-    else:
-        col1, col2 = st, st  # type: ignore [assignment]
 
     if n_cat > 1:
         # Spending by Category chart
-        chart = (
+        chart_cat = (
             alt.Chart(data)
             .mark_bar()
             .encode(
@@ -562,12 +556,13 @@ def display_barcharts(
             .properties(title="Spending by Category")
             .add_params(click)
         )
-        col1.altair_chart(chart, use_container_width=True)
+    else:
+        chart_cat = None
 
     if n_tag > 1:
         # Spending by Tag chart
         exploded_data = data.explode("tag_names")
-        chart = (
+        chart_tag = (
             alt.Chart(exploded_data)
             .mark_bar()
             .encode(
@@ -583,7 +578,14 @@ def display_barcharts(
             .properties(title="Spending by Tag")
             .add_params(click)
         )
-        col2.altair_chart(chart, use_container_width=True)
+    else:
+        chart_tag = None
+
+    charts = filter(None, [chart_day, chart_cat, chart_tag])
+    # FIXME: Ideally, we'd like (chart_day & (chart_cat | chart_tag)), but it
+    # doesn't seem to render due to a bug in altair/streamlit?
+    chart = alt.vconcat(*charts)
+    st.altair_chart(cast(alt.Chart, chart), use_container_width=True)
 
 
 def format_row(row: dict[str, Any]) -> str:
