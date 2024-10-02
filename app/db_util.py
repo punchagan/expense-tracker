@@ -14,7 +14,7 @@ from sqlalchemy.orm.session import Session
 from app.data import CATEGORIES, create_categories, create_tags
 from app.model import Category, Expense, Tag
 from app.scrapers import ALL_SCRAPERS
-from app.util import DATA_REPO_PATH
+from app.util import CONFIG, DATA_REPO_PATH
 
 ROOT = Path(__file__).parent.parent
 DB_NAME = os.getenv("EXPENSES_DB", "expenses.db")
@@ -51,22 +51,13 @@ def ensure_categories_created() -> None:
 
 def ensure_tags_created() -> None:
     session = get_sqlalchemy_session()
-    try:
-        from conf import TAGS
-
-        tags = TAGS
-    except ImportError:
-        tags = []
+    tags = cast(list[str], CONFIG.get("tags", []))
     return create_tags(session, tags)
 
 
 def get_config_categories() -> list[str]:
-    try:
-        from conf import EXTRA_CATEGORIES
-
-        categories = CATEGORIES + EXTRA_CATEGORIES
-    except ImportError:
-        categories = CATEGORIES
+    extra_categories = cast(list[str], CONFIG.get("extra_categories", []))
+    categories = CATEGORIES + extra_categories
     return categories
 
 

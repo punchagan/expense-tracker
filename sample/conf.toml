@@ -1,14 +1,14 @@
 # Specify the scrapers to be used
-SCRAPERS = [
+[settings]
+scrapers = [
     "axis",
     "axis-cc",
     "cash",
     "sbi",
 ]
 
-
-# List of additional user defined categories
-EXTRA_CATEGORIES = [
+# List of additional user-defined categories
+extra_categories = [
     # Food & Dining
     "Groceries",
     "Alcohol",
@@ -42,7 +42,7 @@ EXTRA_CATEGORIES = [
     "Stationery",
     "Hobby Education",
     # Medical Expenses
-    "Medication ",
+    "Medication",
     "Doctor Visit",
     "Health insurance",
     "Supplements",
@@ -114,7 +114,7 @@ EXTRA_CATEGORIES = [
 ]
 
 # Define TAGS to be added
-TAGS = [
+tags = [
     "Nationals 2022",
     "Trip to Paris 2022",
     "Birthday 2022",

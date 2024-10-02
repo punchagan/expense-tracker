@@ -2,23 +2,24 @@ import calendar
 import datetime
 import io
 import os
-import sys
 from pathlib import Path
 
 import pytz
+import toml
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
 NUM_MONTHS = 12
 DATA_REPO_PATH = Path(os.getenv("DATA_REPO_PATH", Path.cwd() / "data.git"))
 
-sys.path.insert(0, str(DATA_REPO_PATH))
 
-try:
-    from conf import TIMEZONE
-except ImportError:
-    TIMEZONE = "Asia/Kolkata"
+def get_settings(path: Path) -> dict[str, str | list[str]]:
+    with open(path) as f:
+        return toml.load(f)["settings"]
 
+
+CONFIG = get_settings(DATA_REPO_PATH / "conf.toml")
+TIMEZONE = str(CONFIG.get("timezone", "Asia/Kolkata"))
 TZINFO = pytz.timezone(TIMEZONE)
 
 
