@@ -467,13 +467,21 @@ def display_sidebar(
         st.caption(f"*Expense data last updated on {updated}*")
 
         months = get_months()
+        q_year = st.query_params.get("y", None)
+        q_month = st.query_params.get("m", None)
+        if q_year is not None:
+            selection = (int(q_year), int(q_month) if q_month is not None else 13)
+            index = months.index(selection)
+        else:
+            index = min(2, len(months) - 1)
         option = st.selectbox(
             "Time Period",
             months,
             format_func=format_month,
-            index=min(2, len(months) - 1),
+            index=index,
             disabled=disabled,
         )
+        st.query_params.y, st.query_params.m = map(str, option)
         start_date, end_date, num_days = daterange_from_year_month(*option)
 
         category_ids = [ALL_CATEGORY, NO_CATEGORY, *sorted(categories.keys())]
