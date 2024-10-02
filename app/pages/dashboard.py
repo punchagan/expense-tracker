@@ -49,7 +49,6 @@ DATA_COLUMNS = [
     "ignore",
 ]
 CURRENCY_SYMBOL = "₹"
-NUM_COLUMNS_ADJACENT_CHARTS = 40
 
 
 @st.cache_resource
@@ -534,10 +533,9 @@ def display_barcharts(
 
     n_cat = len(data.category.unique())
     n_tag = len(data.tag_names.explode().unique())
-
-    use_columns = (n_tag + n_cat < NUM_COLUMNS_ADJACENT_CHARTS) and n_tag > 0 and n_cat > 0
-    if use_columns:
-        col1, col2 = st.columns([n_cat, n_tag])
+    two_charts = n_tag > 1 and n_cat > 1
+    if two_charts:
+        col1, col2 = st.columns([1, 1])
     else:
         col1, col2 = st, st  # type: ignore [assignment]
 
@@ -546,8 +544,8 @@ def display_barcharts(
             alt.Chart(data)
             .mark_bar()
             .encode(
-                x=alt.X("category:N", title="Category", sort="-y"),
-                y=alt.Y("amount:Q", title="Total Amount"),
+                y=alt.Y("category:N", title="Category", sort="-x"),
+                x=alt.X("amount:Q", title="Total Amount"),
                 color=alt.Color("category:N", title="Category"),
                 tooltip=["category", "amount", "remarks"],
             )
@@ -561,8 +559,8 @@ def display_barcharts(
             alt.Chart(exploded_data)
             .mark_bar()
             .encode(
-                x=alt.X("tag_names:N", title="Tags", sort="-y"),
-                y=alt.Y("amount:Q", title="Total Amount"),
+                y=alt.Y("tag_names:N", title="Tags", sort="-y"),
+                x=alt.X("amount:Q", title="Total Amount"),
                 color=alt.Color("category:N", title="Category"),
                 tooltip=["tag_names", "amount", "category", "remarks"],
             )
