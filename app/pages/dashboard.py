@@ -525,7 +525,7 @@ def display_barcharts(
             color=alt.Color("category:N", title="Category"),
             tooltip=["category", "amount", "counterparty_name", "remarks"],
         )
-        .properties(title="Daily Spending by Day")
+        .properties(title="Spending by Day")
     )
 
     # Display the chart using Streamlit
@@ -545,11 +545,11 @@ def display_barcharts(
             .mark_bar()
             .encode(
                 y=alt.Y("category:N", title="Category", sort="-x"),
-                x=alt.X("amount:Q", title="Total Amount"),
+                x=alt.X("amount:Q", title="Amount"),
                 color=alt.Color("category:N", title="Category"),
                 tooltip=["category", "amount", "remarks"],
             )
-            .properties(title="Total Spending by Category")
+            .properties(title="Spending by Category")
         )
         col1.altair_chart(chart, use_container_width=True)
 
@@ -560,11 +560,11 @@ def display_barcharts(
             .mark_bar()
             .encode(
                 y=alt.Y("tag_names:N", title="Tags", sort="-y"),
-                x=alt.X("amount:Q", title="Total Amount"),
+                x=alt.X("amount:Q", title="Amount"),
                 color=alt.Color("category:N", title="Category"),
                 tooltip=["tag_names", "amount", "category", "remarks"],
             )
-            .properties(title="Total Spending by Tag")
+            .properties(title="Spending by Tag")
         )
         col2.altair_chart(chart, use_container_width=True)
 
