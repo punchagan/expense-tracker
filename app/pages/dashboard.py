@@ -511,6 +511,8 @@ def display_barcharts(
         result_type="expand",
     )
 
+    click = alt.selection_point(encodings=["color"])
+
     # Spending by day chart
     chart = (
         alt.Chart(data)
@@ -522,10 +524,15 @@ def display_barcharts(
                 scale=alt.Scale(domain=list(range(1, num_month_days + 1))),
             ),
             y=alt.Y("amount:Q", title="Amount"),
-            color=alt.Color("category:N", title="Category"),
+            color=alt.condition(
+                click,
+                if_true=alt.Color("category:N", title="Category"),
+                if_false=alt.value("lightgray"),
+            ),
             tooltip=["category", "amount", "counterparty_name", "remarks"],
         )
         .properties(title="Spending by Day")
+        .add_params(click)
     )
     st.altair_chart(chart, use_container_width=True)
 
@@ -545,10 +552,15 @@ def display_barcharts(
             .encode(
                 y=alt.Y("category:N", title="Category", sort="-x"),
                 x=alt.X("amount:Q", title="Amount"),
-                color=alt.Color("category:N", title="Category"),
+                color=alt.condition(
+                    click,
+                    if_true=alt.Color("category:N", title="Category"),
+                    if_false=alt.value("lightgray"),
+                ),
                 tooltip=["category", "amount", "remarks"],
             )
             .properties(title="Spending by Category")
+            .add_params(click)
         )
         col1.altair_chart(chart, use_container_width=True)
 
@@ -561,10 +573,15 @@ def display_barcharts(
             .encode(
                 y=alt.Y("tag_names:N", title="Tags", sort="-y"),
                 x=alt.X("amount:Q", title="Amount"),
-                color=alt.Color("category:N", title="Category"),
+                color=alt.condition(
+                    click,
+                    if_true=alt.Color("category:N", title="Category"),
+                    if_false=alt.value("lightgray"),
+                ),
                 tooltip=["tag_names", "amount", "category", "remarks"],
             )
             .properties(title="Spending by Tag")
+            .add_params(click)
         )
         col2.altair_chart(chart, use_container_width=True)
 
