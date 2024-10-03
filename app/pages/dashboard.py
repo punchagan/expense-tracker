@@ -139,8 +139,12 @@ def get_months() -> list[tuple[int, int]]:
     sql = "SELECT date FROM expense"
     data = pd.read_sql_query(sql, engine, parse_dates=["date"])
     months = set(data["date"].apply(lambda x: (x.year, x.month)))
+    # NOTE: We use month 13 to represent the whole year
     years = {(y, 13) for (y, _) in months}
     months_sorted = sorted(months.union(years), reverse=True)
+    # NOTE: We use (0, 13) to represent All. We need explicit numbers to
+    # indicate selection, since we want to select the (current_year,
+    # current_month) when year and month are (None, None).
     return [(0, 13), *months_sorted]
 
 
